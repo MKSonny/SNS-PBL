@@ -11,7 +11,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
 
-class MyAdapter(private val db: FirebaseFirestore,private val navigate: NavController, private val viewModel: MyViewModel) : RecyclerView.Adapter<MyAdapter.ViewHolder>() {
+class MyAdapter(private val db: FirebaseFirestore, private val navigate: NavController, private val viewModel: MyViewModel) : RecyclerView.Adapter<MyAdapter.ViewHolder>() {
 
     var storage = Firebase.storage
 
@@ -33,6 +33,7 @@ class MyAdapter(private val db: FirebaseFirestore,private val navigate: NavContr
             }
 
             binding.commentBtn.setOnClickListener {
+                viewModel.setUser(postedUser)
                 navigate.navigate(R.id.action_postFragment_to_commentFragment)
             }
 
