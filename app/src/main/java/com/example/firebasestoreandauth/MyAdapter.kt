@@ -2,19 +2,16 @@ package com.example.firebasestoreandauth
 
 import android.graphics.BitmapFactory
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
+import androidx.navigation.NavController
 import androidx.recyclerview.widget.RecyclerView
 import com.example.firebasestoreandauth.databinding.ItemLayoutBinding
-import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.ktx.storage
 
-class MyAdapter(private val db: FirebaseFirestore, private val viewModel: MyViewModel) : RecyclerView.Adapter<MyAdapter.ViewHolder>() {
+class MyAdapter(private val db: FirebaseFirestore,private val navigate: NavController, private val viewModel: MyViewModel) : RecyclerView.Adapter<MyAdapter.ViewHolder>() {
 
     var storage = Firebase.storage
 
@@ -35,10 +32,14 @@ class MyAdapter(private val db: FirebaseFirestore, private val viewModel: MyView
                 binding.showLikes.text = "좋아요 " + likes + "개"
             }
 
-           binding.commentSend.setOnClickListener {
-               val msg = binding.commentBox.text.toString()
-               db.collection("PostInfo").document(postedUser).update("comments", FieldValue.arrayUnion(msg))
-           }
+            binding.commentBtn.setOnClickListener {
+                navigate.navigate(R.id.action_postFragment_to_commentFragment)
+            }
+
+            binding.commentSend.setOnClickListener {
+                val msg = binding.commentBox.text.toString()
+                db.collection("PostInfo").document(postedUser).update("comments", FieldValue.arrayUnion(msg))
+            }
 
             val imageRef = storage.getReferenceFromUrl(item.postImgUrl)
 

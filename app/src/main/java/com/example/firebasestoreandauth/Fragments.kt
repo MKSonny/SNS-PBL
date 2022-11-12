@@ -1,13 +1,15 @@
 package com.example.firebasestoreandauth
 
-import android.app.Activity
-import android.content.Context
+import android.app.ActionBar
 import android.os.Bundle
 import android.view.View
-import androidx.activity.viewModels
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.fragment.findNavController
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.NavigationUI.setupActionBarWithNavController
+import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.firebasestoreandauth.databinding.PostLayoutBinding
 import com.google.firebase.Timestamp
@@ -15,7 +17,6 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-import java.sql.Time
 
 
 class PostFragment : Fragment(R.layout.post_layout) {
@@ -32,9 +33,9 @@ class PostFragment : Fragment(R.layout.post_layout) {
 
         //val nhf = parentFragmentManager.findFragmentById(R.id.fragments)
 
+        val navigate = findNavController()
 
-
-        val adapter = MyAdapter(db, viewModel)
+        val adapter = MyAdapter(db, navigate, viewModel)
 
         binding.recyclerView.adapter = adapter
         binding.recyclerView.layoutManager = LinearLayoutManager(context)
@@ -92,5 +93,7 @@ class CommentFragment : Fragment(R.layout.comment_layout) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        AppBarConfiguration(setOf(R.id.commentFragment))
     }
 }
