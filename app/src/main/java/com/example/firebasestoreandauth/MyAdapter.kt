@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.firebasestoreandauth.databinding.ItemLayoutBinding
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -34,6 +35,10 @@ class MyAdapter(private val db: FirebaseFirestore, private val viewModel: MyView
                 binding.showLikes.text = "좋아요 " + likes + "개"
             }
 
+           binding.commentSend.setOnClickListener {
+               val msg = binding.commentBox.text.toString()
+               db.collection("PostInfo").document(postedUser).update("comments", FieldValue.arrayUnion(msg))
+           }
 
             val imageRef = storage.getReferenceFromUrl(item.postImgUrl)
 
@@ -49,6 +54,7 @@ class MyAdapter(private val db: FirebaseFirestore, private val viewModel: MyView
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
         val binding = ItemLayoutBinding.inflate(layoutInflater, parent, false)
+
         return ViewHolder(binding)
     }
 
