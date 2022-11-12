@@ -37,7 +37,6 @@ class PostFragment : Fragment(R.layout.post_layout) {
                     val time = document["time"] as Timestamp
                     val comments = document["comments"] as Map<String, String>
                     viewModel.addItem(Item(uid, imgUrl, likes, time, comments))
-                    //viewModel.updateItem(Item(name, imgUrl), viewModel.itemsSize)
                 }
             }
             .addOnFailureListener {
@@ -51,7 +50,6 @@ class PostFragment : Fragment(R.layout.post_layout) {
         val binding = PostLayoutBinding.bind(view)
 
         val viewModel: MyViewModel by viewModels()
-        //val db: FirebaseFirestore = Firebase.firestore
         val adapter = MyAdapter(db, viewModel)
 
         binding.recyclerView.adapter = adapter
@@ -61,29 +59,12 @@ class PostFragment : Fragment(R.layout.post_layout) {
         viewModel.itemLiveData.observe(viewLifecycleOwner) {
             // 전체를 다 바꿔줌으로 비효율적
             // 추가된 부분만 업데이트 될수록 수정 필요
-            //adapter.notifyDataSetChanged()
             when (viewModel.itemNotifiedType) {
                 ItemNotify.ADD -> adapter.notifyItemInserted(viewModel.itemNotified)
                 ItemNotify.UPDATE -> adapter.notifyItemChanged(viewModel.itemNotified)
                 ItemNotify.DELETE -> adapter.notifyItemRemoved(viewModel.itemNotified)
             }
         }
-
-        //val nhf = parentFragmentManager.findFragmentById(R.id.fragments)
-        // val viewModel: MyViewModel by viewModels()
-        //binding.textView.text = "working"
-
-        //val db: FirebaseFirestore = Firebase.firestore
-//        val navigate = findNavController()
-
-
-
-
-
-
-
-        // observe 함수를 adapter 밑에서 구현
-        // 맨위로 끌어올릴 경우 호출되도록? observer pattern 적용
 
 
     }
