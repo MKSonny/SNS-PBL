@@ -7,6 +7,7 @@ import android.view.View
 import androidx.activity.viewModels
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.NavHostFragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.firebasestoreandauth.databinding.PostLayoutBinding
 import com.google.firebase.Timestamp
@@ -28,6 +29,10 @@ class PostFragment : Fragment(R.layout.post_layout) {
         //binding.textView.text = "working"
 
         val db: FirebaseFirestore = Firebase.firestore
+
+        //val nhf = parentFragmentManager.findFragmentById(R.id.fragments)
+
+
 
         val adapter = MyAdapter(db, viewModel)
 
@@ -77,6 +82,13 @@ class ProfileFragment : Fragment(R.layout.profile_layout) {
 }
 
 class FriendsFragment : Fragment(R.layout.friends_layout) {
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+    }
+}
+
+class CommentFragment : Fragment(R.layout.comment_layout) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
