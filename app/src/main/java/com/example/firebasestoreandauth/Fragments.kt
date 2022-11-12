@@ -1,9 +1,7 @@
 package com.example.firebasestoreandauth
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -30,9 +28,9 @@ class PostFragment : Fragment(R.layout.post_layout) {
         //binding.textView.text = "working"
 
         val db: FirebaseFirestore = Firebase.firestore
-        val navigate = findNavController()
+//        val navigate = findNavController()
 
-        val adapter = MyAdapter(db, navigate, viewModel)
+        val adapter = MyAdapter(db, viewModel)
 
         binding.recyclerView.adapter = adapter
         binding.recyclerView.layoutManager = LinearLayoutManager(context)
