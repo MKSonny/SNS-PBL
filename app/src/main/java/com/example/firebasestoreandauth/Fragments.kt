@@ -1,16 +1,13 @@
 package com.example.firebasestoreandauth
 
-import android.app.ActionBar
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.NavigationUI.setupActionBarWithNavController
-import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.firebasestoreandauth.databinding.CommentLayoutBinding
 import com.example.firebasestoreandauth.databinding.PostLayoutBinding
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
@@ -26,16 +23,14 @@ class PostFragment : Fragment(R.layout.post_layout) {
 
         val binding = PostLayoutBinding.bind(view)
 
+        //val nhf = parentFragmentManager.findFragmentById(R.id.fragments)
         val viewModel: MyViewModel by viewModels()
         //binding.textView.text = "working"
 
         val db: FirebaseFirestore = Firebase.firestore
+//        val navigate = findNavController()
 
-        //val nhf = parentFragmentManager.findFragmentById(R.id.fragments)
-
-        val navigate = findNavController()
-
-        val adapter = MyAdapter(db, navigate, viewModel)
+        val adapter = MyAdapter(db, viewModel)
 
         binding.recyclerView.adapter = adapter
         binding.recyclerView.layoutManager = LinearLayoutManager(context)
@@ -51,7 +46,8 @@ class PostFragment : Fragment(R.layout.post_layout) {
                     val imgUrl = document["img"] as String
                     val likes = document["likes"] as Number
                     val time = document["time"] as Timestamp
-                    viewModel.addItem(Item(uid, imgUrl, likes, time))
+                    val comments = document["comments"] as Map<String, String>
+                    viewModel.addItem(Item(uid, imgUrl, likes, time, comments))
                     //viewModel.updateItem(Item(name, imgUrl), viewModel.itemsSize)
                 }
             }
@@ -95,5 +91,28 @@ class CommentFragment : Fragment(R.layout.comment_layout) {
         super.onViewCreated(view, savedInstanceState)
 
         AppBarConfiguration(setOf(R.id.commentFragment))
+
+        val binding = CommentLayoutBinding.bind(view)
+
+        val viewModel: MyViewModel by viewModels()
+        //binding.textView.text = "working"
+
+        val db: FirebaseFirestore = Firebase.firestore
+
+        //val nhf = parentFragmentManager.findFragmentById(R.id.fragments)
+
+        val navigate = findNavController()
+
+        val adapter = CommentAdapter(db, navigate, viewModel)
+
+        binding.commentRecy.adapter = adapter
+        //binding.recyclerView.layoutManager = LinearLayoutManager(context)
+        binding.commentRecy.setHasFixedSize(true)
+
+        // observe 함수를 adapter 밑에서 구현
+        // 맨위로 끌어올릴 경우 호출되도록? observer pattern 적용
+
+
+
     }
 }

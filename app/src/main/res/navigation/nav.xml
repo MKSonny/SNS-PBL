@@ -16,6 +16,12 @@
         <action
             android:id="@+id/action_postFragment_to_commentFragment"
             app:destination="@id/commentFragment" />
+        <action
+            android:id="@+id/action_postFragment_to_friendsFragment"
+            app:destination="@id/friendsFragment" />
+        <action
+            android:id="@+id/action_postFragment_to_profileFragment2"
+            app:destination="@id/profileFragment" />
     </fragment>
     <fragment
         android:id="@+id/profileFragment"
@@ -24,6 +30,9 @@
         <action
             android:id="@+id/action_profileFragment_to_postFragment"
             app:destination="@id/postFragment" />
+        <action
+            android:id="@+id/action_profileFragment_to_postFragment2"
+            app:destination="@id/postFragment" />
     </fragment>
     <fragment
         android:id="@+id/friendsFragment"
@@ -31,14 +40,14 @@
         android:label="FriendsFragment" >
         <action
             android:id="@+id/action_friendsFragment_to_postFragment"
-            app:destination="@id/postFragment"
-            app:enterAnim="@anim/nav_default_enter_anim"
-            app:exitAnim="@anim/nav_default_exit_anim"
-            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+            app:destination="@id/postFragment" />
     </fragment>
     <fragment
         android:id="@+id/commentFragment"
         android:name="com.example.firebasestoreandauth.CommentFragment"
-        android:label="CommentFragment" />
+        android:label="CommentFragment" >
+        <action
+            android:id="@+id/action_commentFragment_to_postFragment"
+            app:destination="@id/postFragment" />
+    </fragment>
 </navigation>
