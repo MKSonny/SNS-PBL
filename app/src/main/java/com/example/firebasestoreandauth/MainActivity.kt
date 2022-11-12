@@ -28,15 +28,16 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        //val nhf = supportFragmentManager.findFragmentById(R.id.fragments) as NavHostFragment
-        //val navController = nhf.navController
+        val nhf = supportFragmentManager.findFragmentById(R.id.my_nav_host) as NavHostFragment
+        val navController = nhf.navController
         //val appbarc = AppBarConfiguration(nhf.navController.graph)
         //setupActionBarWithNavController(nhf.navController, appbarc)
 
-        //binding.bottomNavigationView.setupWithNavController(navController)
-        navigationItemSelect()
+        binding.bottomNavigationView.setupWithNavController(navController)
+        //navigationItemSelect()
     }
 
+    /*
     private fun replaceFragment(fragment: Fragment) {
         val fragmentTransaction: FragmentTransaction = supportFragmentManager.beginTransaction()
         fragmentTransaction.replace(R.id.fragment, fragment)
@@ -56,4 +57,6 @@ class MainActivity : AppCompatActivity() {
             selectedItemId = R.id.postFragment
         }
     }
+
+     */
 }
