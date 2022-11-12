@@ -4,6 +4,7 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.activity.viewModels
+import androidx.fragment.app.commit
 import androidx.lifecycle.ViewModel
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
@@ -18,6 +19,7 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 
 class MainActivity : AppCompatActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val binding = ActivityMainBinding.inflate(layoutInflater)
@@ -27,6 +29,8 @@ class MainActivity : AppCompatActivity() {
         val navController = nhf.navController
         val appbarc = AppBarConfiguration(nhf.navController.graph)
         setupActionBarWithNavController(nhf.navController, appbarc)
+
+        val db: FirebaseFirestore = Firebase.firestore
 
         binding.bottomNavigationView.setupWithNavController(navController)
     }

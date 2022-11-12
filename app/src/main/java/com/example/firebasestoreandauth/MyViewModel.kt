@@ -4,7 +4,10 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.firebase.Timestamp
 
-data class Item(val uid: String, val postImgUrl: String, val likes: Number, val time: Timestamp)
+data class Item(
+    val uid: String, val postImgUrl: String, val likes: Number, val time: Timestamp,
+    val comments: Map<String, String>
+)
 
 enum class ItemNotify {
     ADD, UPDATE, DELETE
@@ -13,6 +16,16 @@ enum class ItemNotify {
 class MyViewModel : ViewModel() {
 
     val items = ArrayList<Item>()
+
+    var curUser: String = ""
+
+    fun setUser(curUser: String) {
+        this.curUser = curUser
+    }
+
+    fun getUser(): String {
+        return curUser
+    }
 
     val itemLiveData = MutableLiveData<ArrayList<Item>>()
 
