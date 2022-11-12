@@ -2,8 +2,9 @@ package com.example.firebasestoreandauth
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.google.firebase.Timestamp
 
-data class Item(val uid: String, val postImgUrl: String)
+data class Item(val uid: String, val postImgUrl: String, val likes: Number, val time: Timestamp)
 
 enum class ItemNotify {
     ADD, UPDATE, DELETE

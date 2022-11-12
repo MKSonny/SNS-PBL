@@ -14,6 +14,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import java.sql.Time
 
 
 class PostFragment : Fragment(R.layout.post_layout) {
@@ -28,20 +29,23 @@ class PostFragment : Fragment(R.layout.post_layout) {
 
         val db: FirebaseFirestore = Firebase.firestore
 
-        val adapter = MyAdapter(viewModel)
+        val adapter = MyAdapter(db, viewModel)
 
         binding.recyclerView.adapter = adapter
         binding.recyclerView.layoutManager = LinearLayoutManager(context)
         binding.recyclerView.setHasFixedSize(true)
 
         // document id로 검색하는 걸 로 수정
-        db.collection("PostInfo")
+        db.collection("PostInfo").orderBy("time", Query.Direction.DESCENDING)
             .get()
             .addOnSuccessListener {
                     result ->
                 for(document in result) {
+                    val uid = document.id
                     val imgUrl = document["img"] as String
-                    viewModel.addItem(Item("lee", imgUrl))
+                    val likes = document["likes"] as Number
+                    val time = document["time"] as Timestamp
+                    viewModel.addItem(Item(uid, imgUrl, likes, time))
                     //viewModel.updateItem(Item(name, imgUrl), viewModel.itemsSize)
                 }
             }
