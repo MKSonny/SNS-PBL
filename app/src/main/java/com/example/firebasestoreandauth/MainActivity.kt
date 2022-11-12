@@ -68,7 +68,7 @@ class MainActivity : AppCompatActivity() {
 
                 }
             }
-
+        ////
         //구글 OAuth를 이용한 로그인 설정
         fbGoogleSignIn =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -82,6 +82,7 @@ class MainActivity : AppCompatActivity() {
                             GoogleAuth.firebaseAuthWithGoogle(
                                 account.idToken.toString(), defaultOnAuthCompleteListener
                             )
+
                         } catch (e: ApiException) {
                             // Google Sign In failed, update UI appropriately
                             Log.w(TAG, "Google sign in failed", e)
@@ -111,6 +112,11 @@ class MainActivity : AppCompatActivity() {
             override fun onSuccess() {
                 super.onSuccess()
                 findUserRecord()
+                Snackbar.make(
+                    binding.root,
+                    "${auth.currentUser?.displayName.toString()}",
+                    Snackbar.LENGTH_SHORT
+                ).show()
             }
 
             override fun onFailure(TAG: String, task: Task<AuthResult>) {
@@ -122,11 +128,11 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
+
     override fun onStart() {
         super.onStart()
-        if (auth.currentUser != null) signOut()
-        if(auth.currentUser == null)
-            signIn()
+        if (auth.currentUser != null) auth.signOut()
+        signIn()
     }
 
     private fun signIn() {
@@ -135,10 +141,6 @@ class MainActivity : AppCompatActivity() {
         fbGoogleSignIn.launch(signInIntent)
     }
 
-    private fun signOut() {
-        Log.d(TAG, "${auth.currentUser?.displayName}이/가 로그아웃 했습니다.")
-        auth.signOut()
-    }
 
     private fun startPersonalInfoActivity() {
         val rIntent = Intent(this@MainActivity, AddPersonalInfoActivity::class.java)

@@ -2,6 +2,9 @@
 
 package com.android.pblsns.firebase.wrapper
 
+import android.util.Log
+import com.example.firebasestoreandauth.MainActivity
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentReference
 
 /**
@@ -51,4 +54,8 @@ fun DocumentReference.removePendingFriends(uid: String) {
             }
         }
     }
+}
+fun FirebaseAuth.signOut() {
+    Log.d("FirebaseAuth", "${this.currentUser?.displayName}이/가 로그아웃 했습니다.")
+    this.signOut()
 }
