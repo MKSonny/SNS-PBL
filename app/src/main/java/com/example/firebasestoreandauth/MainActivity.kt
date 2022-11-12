@@ -3,8 +3,11 @@ package com.example.firebasestoreandauth
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.activity.viewModels
+import androidx.lifecycle.ViewModel
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.firebasestoreandauth.databinding.ActivityMainBinding
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -19,6 +22,8 @@ class MainActivity : AppCompatActivity() {
 
         val nhf = supportFragmentManager.findFragmentById(R.id.fragments) as NavHostFragment
         val navController = nhf.navController
+
+
 
         binding.bottomNavigationView.setupWithNavController(navController)
     }
