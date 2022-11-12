@@ -13,15 +13,27 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.ktx.storage
 
-class MyAdapter( private val viewModel: MyViewModel) : RecyclerView.Adapter<MyAdapter.ViewHolder>() {
+class MyAdapter(private val db: FirebaseFirestore, private val viewModel: MyViewModel) : RecyclerView.Adapter<MyAdapter.ViewHolder>() {
 
     var storage = Firebase.storage
 
     inner class ViewHolder(private val binding: ItemLayoutBinding) : RecyclerView.ViewHolder(binding.root) {
         fun setContents(pos: Int) {
             val item = viewModel.items[pos]
+            val postedUser = item.uid
+            var likes = item.likes.toInt()
 
-            binding.userId.text = item.uid
+            // 프로필 사진 옆 유저 아이디 표시
+            binding.userId.text = postedUser
+            // 좋아요 수를 표시
+            binding.showLikes.text = "좋아요 " + likes + "개"
+
+            binding.likeBtn.setOnClickListener {
+                likes++
+                db.collection("PostInfo").document(postedUser).update("likes", likes)
+                binding.showLikes.text = "좋아요 " + likes + "개"
+            }
+
 
             val imageRef = storage.getReferenceFromUrl(item.postImgUrl)
 
