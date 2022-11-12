@@ -1,7 +1,9 @@
 package com.example.firebasestoreandauth
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -15,27 +17,14 @@ import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 
-
 class PostFragment : Fragment(R.layout.post_layout) {
+    val db: FirebaseFirestore = Firebase.firestore
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
 
-        val binding = PostLayoutBinding.bind(view)
 
-        //val nhf = parentFragmentManager.findFragmentById(R.id.fragments)
         val viewModel: MyViewModel by viewModels()
-        //binding.textView.text = "working"
-
-        val db: FirebaseFirestore = Firebase.firestore
-//        val navigate = findNavController()
-
-        val adapter = MyAdapter(db, viewModel)
-
-        binding.recyclerView.adapter = adapter
-        binding.recyclerView.layoutManager = LinearLayoutManager(context)
-        binding.recyclerView.setHasFixedSize(true)
-
         // document id로 검색하는 걸 로 수정
         db.collection("PostInfo").orderBy("time", Query.Direction.DESCENDING)
             .get()
@@ -54,9 +43,21 @@ class PostFragment : Fragment(R.layout.post_layout) {
             .addOnFailureListener {
 
             }
+    }
 
-        // observe 함수를 adapter 밑에서 구현
-        // 맨위로 끌어올릴 경우 호출되도록? observer pattern 적용
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val binding = PostLayoutBinding.bind(view)
+
+        val viewModel: MyViewModel by viewModels()
+        //val db: FirebaseFirestore = Firebase.firestore
+        val adapter = MyAdapter(db, viewModel)
+
+        binding.recyclerView.adapter = adapter
+        binding.recyclerView.layoutManager = LinearLayoutManager(context)
+        binding.recyclerView.setHasFixedSize(true)
+
         viewModel.itemLiveData.observe(viewLifecycleOwner) {
             // 전체를 다 바꿔줌으로 비효율적
             // 추가된 부분만 업데이트 될수록 수정 필요
@@ -67,6 +68,23 @@ class PostFragment : Fragment(R.layout.post_layout) {
                 ItemNotify.DELETE -> adapter.notifyItemRemoved(viewModel.itemNotified)
             }
         }
+
+        //val nhf = parentFragmentManager.findFragmentById(R.id.fragments)
+        // val viewModel: MyViewModel by viewModels()
+        //binding.textView.text = "working"
+
+        //val db: FirebaseFirestore = Firebase.firestore
+//        val navigate = findNavController()
+
+
+
+
+
+
+
+        // observe 함수를 adapter 밑에서 구현
+        // 맨위로 끌어올릴 경우 호출되도록? observer pattern 적용
+
 
     }
 }
@@ -90,7 +108,7 @@ class CommentFragment : Fragment(R.layout.comment_layout) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        AppBarConfiguration(setOf(R.id.commentFragment))
+        //AppBarConfiguration(setOf(R.id.commentFragment))
 
         val binding = CommentLayoutBinding.bind(view)
 
