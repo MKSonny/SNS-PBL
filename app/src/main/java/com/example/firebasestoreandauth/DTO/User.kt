@@ -7,4 +7,8 @@ data class User(
     var friends: List<String>? = listOf(),
     var requestSent: List<String>? = listOf(),
     var requestReceived:List<String>? = listOf()
-) {}
+) {
+    companion object{
+        const val INVALID_USER = "-1"
+    }
+}

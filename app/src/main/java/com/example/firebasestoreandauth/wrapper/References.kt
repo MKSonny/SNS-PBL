@@ -1,5 +1,6 @@
-package com.android.pblsns.firebase.wrapper
+package com.example.firebasestoreandauth.wrapper
 
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -18,4 +19,14 @@ fun getUserDocumentReference(uid: String): DocumentReference? {
     if (uid.isEmpty()) return null
     val userCollection = firestore.collection("Users")
     return userCollection.document(uid)
+}
+
+/**
+ * 자기 자신에 대한 문서 참조를 리턴하는 함수
+ */
+fun getReferenceOfMine(): DocumentReference? {
+    val auth = Firebase.auth
+    if (auth.currentUser != null)
+        return auth.uid?.let { getUserDocumentReference(it) }
+    return null
 }

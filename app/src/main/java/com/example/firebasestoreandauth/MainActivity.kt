@@ -10,11 +10,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.example.firebasestoreandauth.test.AddPersonalInfoActivity
-import com.android.pblsns.firebase.wrapper.getImageReference
-import com.android.pblsns.firebase.wrapper.getUserDocumentReference
+import com.example.firebasestoreandauth.wrapper.getImageReference
+import com.example.firebasestoreandauth.wrapper.getUserDocumentReference
 import com.example.firebasestoreandauth.auth.GoogleAuth
 import com.example.firebasestoreandauth.auth.OnAuthCompleteListener
 import com.example.firebasestoreandauth.databinding.ActivityMainBinding
+import com.example.firebasestoreandauth.test.SearchFriendActivity
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -36,6 +37,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
     private lateinit var firestore: FirebaseFirestore
     private lateinit var gatherPersonalInfo: ActivityResultLauncher<Intent>
+    private lateinit var searchForFriend: ActivityResultLauncher<Intent>
     private lateinit var storage: FirebaseStorage
     private lateinit var fbGoogleSignIn: ActivityResultLauncher<Intent>
     private lateinit var googleSignInClient: GoogleSignInClient
@@ -55,7 +57,17 @@ class MainActivity : AppCompatActivity() {
         firestore = Firebase.firestore
         storage = Firebase.storage
 
+        initAuth()
 
+    }
+
+    override fun onStart() {
+        super.onStart()
+        if (auth.currentUser != null) auth.signOut()
+        signIn()
+    }
+
+    private fun initAuth() {
         //로그인시 새로 등록한 유저이면 해당 액티비티를 시작
         gatherPersonalInfo =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -65,10 +77,18 @@ class MainActivity : AppCompatActivity() {
                         val birthday = result.data?.getStringExtra("BirthDay")
                         println("${nickname}, ${birthday}")
                     }
-
                 }
             }
-        ////
+        searchForFriend =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                run {
+                    if (result.resultCode == RESULT_OK) {
+                        val nickname = result.data?.getStringExtra("Nickname")
+                        val birthday = result.data?.getStringExtra("BirthDay")
+                        println("${nickname}, ${birthday}")
+                    }
+                }
+            }
         //구글 OAuth를 이용한 로그인 설정
         fbGoogleSignIn =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -112,11 +132,11 @@ class MainActivity : AppCompatActivity() {
             override fun onSuccess() {
                 super.onSuccess()
                 findUserRecord()
-                Snackbar.make(
-                    binding.root,
-                    "${auth.currentUser?.displayName.toString()}",
-                    Snackbar.LENGTH_SHORT
-                ).show()
+//                Snackbar.make(
+//                    binding.root,
+//                    "${auth.currentUser?.displayName.toString()}",
+//                    Snackbar.LENGTH_SHORT
+//                ).show()
             }
 
             override fun onFailure(TAG: String, task: Task<AuthResult>) {
@@ -126,18 +146,13 @@ class MainActivity : AppCompatActivity() {
                 )
             }
         }
-
     }
 
-    override fun onStart() {
-        super.onStart()
-        if (auth.currentUser != null) auth.signOut()
-        signIn()
-    }
 
     private fun signIn() {
         val signInIntent = googleSignInClient.signInIntent
         signInIntent.putExtra("requestCode", RC_SIGN_IN)
+        googleSignInClient.revokeAccess()
         fbGoogleSignIn.launch(signInIntent)
     }
 
@@ -173,17 +188,17 @@ class MainActivity : AppCompatActivity() {
                     if (src.isNotEmpty()) getProfileImage(src)
 
                     //요청 중인 친구가 있는지 확인
-                    val pendingFriends = (data["PendingFriends"]?.run {
+                    val requestReceived = (data["requestReceived"]?.run {
                         this as List<*>
                     }) ?: emptyList<String>()
 
-                    if (pendingFriends.isNotEmpty()) {
+                    if (requestReceived.isNotEmpty()) {
                         Log.d("Friends", "요청 중인 친구가 있습니다.")
-                        Snackbar.make(
-                            binding.root,
-                            "요청 중인 친구가 있습니다. 총 ${pendingFriends.size}명",
-                            Snackbar.LENGTH_SHORT
-                        ).show()
+//                        Snackbar.make(
+//                            binding.root,
+//                            "요청 중인 친구가 있습니다. 총 ${requestReceived.size}명",
+//                            Snackbar.LENGTH_SHORT
+//                        ).show()
                     } //요청 중인 친구가 있다면 사용자에게 알림
                 }
                 reference.addSnapshotListener { snapshot, _ ->
