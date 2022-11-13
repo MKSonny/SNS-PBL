@@ -15,6 +15,12 @@ enum class ItemNotify {
 
 class MyViewModel : ViewModel() {
 //
+    private var meInfo: String = "Son"
+
+    fun getMeInfo() : String {
+        return meInfo
+    }
+
     private var curPos: Int = 0
     private lateinit var postId: String
 

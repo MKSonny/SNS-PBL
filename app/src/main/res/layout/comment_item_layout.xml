@@ -3,7 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:windowSoftInputMode="adjustPan"
+    >
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -11,12 +13,23 @@
         android:layout_weight="1"
         android:orientation="horizontal">
 
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/profileImg"
+            android:layout_width="57dp"
+            android:layout_height="42dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_launcher_background"
+            app:civ_border_color="#FFFFFF"
+            app:civ_border_overlay="true"
+            app:civ_border_width="3dp" />
+
         <TextView
             android:id="@+id/commentId"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="TextView" />
+            android:text="TextView"
+            android:textStyle="bold" />
 
         <TextView
             android:id="@+id/commentText"
@@ -25,13 +38,31 @@
             android:layout_weight="1"
             android:text="TextView" />
 
-        <Button
-            android:id="@+id/button"
-            android:layout_width="wrap_content"
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/editTextTextPersonName3"
+            android:layout_width="321dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Button" />
+            android:ems="10"
+            android:hint="댓글을 입력하세요."
+            android:inputType="textPersonName" />
 
+        <Button
+            android:id="@+id/commentAddBtn"
+            android:layout_width="76dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="#FFFFFF"
+            android:text="게시"
+            android:textColor="#FFFFFF" />
     </LinearLayout>
 
 </LinearLayout>

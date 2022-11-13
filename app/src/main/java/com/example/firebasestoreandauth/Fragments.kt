@@ -18,8 +18,6 @@ class PostFragment : Fragment(R.layout.post_layout) {
     val db: FirebaseFirestore = Firebase.firestore
     //val viewModel: MyViewModel by viewModels()
 
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -55,10 +53,15 @@ class PostFragment : Fragment(R.layout.post_layout) {
         val navigate = findNavController()
         val adapter = MyAdapter(db, navigate, viewModel)
 
+        // 당겨서 새로고침시 할 행동
+        binding.refresh.setOnRefreshListener {
+
+            binding.refresh.isRefreshing=false
+        }
+
         binding.recyclerView.adapter = adapter
         binding.recyclerView.layoutManager = LinearLayoutManager(context)
         binding.recyclerView.setHasFixedSize(true)
-
 
         viewModel.itemLiveData.observe(viewLifecycleOwner) {
             // 전체를 다 바꿔줌으로 비효율적
@@ -107,12 +110,31 @@ class FriendsFragment : Fragment(R.layout.friends_layout) {
 
 class CommentFragment : Fragment(R.layout.comment_layout) {
 
+    lateinit var binding: CommentLayoutBinding
+
+    // 댓글 입력창이 나올 때는 바텀넵뷰를 숨긴다. 11-13
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        val mainActivity = activity as MainActivity
+        mainActivity.HideBottomNav(true)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        val mainActivity = activity as MainActivity
+        mainActivity.HideBottomNav(false)
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         //AppBarConfiguration(setOf(R.id.))
 
-        val binding = CommentLayoutBinding.bind(view)
+        binding = CommentLayoutBinding.bind(view)
+
+
 
         val viewModel = ViewModelProvider(requireActivity()).get(MyViewModel::class.java)
         //val viewModel = MyViewModel()
@@ -120,7 +142,7 @@ class CommentFragment : Fragment(R.layout.comment_layout) {
 
         val db: FirebaseFirestore = Firebase.firestore
 
-        var string: String = "not working"
+        //var string: String = "not working"
 
         val adapter = CommentAdapter(db, viewModel.getComment(viewModel.getPos()))
 
@@ -130,8 +152,5 @@ class CommentFragment : Fragment(R.layout.comment_layout) {
 
         // observe 함수를 adapter 밑에서 구현
         // 맨위로 끌어올릴 경우 호출되도록? observer pattern 적용
-
-
-
     }
 }
