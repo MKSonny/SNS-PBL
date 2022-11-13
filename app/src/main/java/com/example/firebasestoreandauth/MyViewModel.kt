@@ -5,7 +5,11 @@ import androidx.lifecycle.ViewModel
 import com.google.firebase.Timestamp
 
 data class Item(
-    val uid: String, val postImgUrl: String, val likes: Number, val time: Timestamp,
+    val postId: String,
+    val postImgUrl: String,
+    //val likes: Number,
+    //val time: Timestamp,
+    val whoPosted: String,
     val comments: ArrayList<Map<String, String>>
 )
 
@@ -14,7 +18,7 @@ enum class ItemNotify {
 }
 
 class MyViewModel : ViewModel() {
-//
+    // 현재 앱을 사용하는 사용자 이름
     private var meInfo: String = "Son"
 
     fun getMeInfo() : String {
