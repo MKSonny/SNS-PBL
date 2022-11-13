@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModel
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -22,19 +23,27 @@ import com.google.firebase.ktx.Firebase
 
 class MainActivity : AppCompatActivity() {
 
-    lateinit var binding: ActivityMainBinding
+
+    lateinit var appbarc : AppBarConfiguration
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
+        val binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         val nhf = supportFragmentManager.findFragmentById(R.id.my_nav_host) as NavHostFragment
         val navController = nhf.navController
-        //val appbarc = AppBarConfiguration(nhf.navController.graph)
-        //setupActionBarWithNavController(nhf.navController, appbarc)
+        appbarc = AppBarConfiguration(setOf(R.id.profileFragment, R.id.friendsFragment, R.id.postFragment))
+        setupActionBarWithNavController(nhf.navController, appbarc)
 
         binding.bottomNavigationView.setupWithNavController(navController)
         //navigationItemSelect()
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        val navController = findNavController(R.id.my_nav_host)
+        return navController.navigateUp(appbarc)
+                || super.onSupportNavigateUp()
     }
 
     /*

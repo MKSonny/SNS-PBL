@@ -6,7 +6,7 @@ import com.google.firebase.Timestamp
 
 data class Item(
     val uid: String, val postImgUrl: String, val likes: Number, val time: Timestamp,
-    val comments: Map<String, String>
+    val comments: ArrayList<Map<String, String>>
 )
 
 enum class ItemNotify {
@@ -14,6 +14,9 @@ enum class ItemNotify {
 }
 
 class MyViewModel : ViewModel() {
+//
+    private var curPos: Int = 0
+    private lateinit var postId: String
 
     val items = ArrayList<Item>()
 
@@ -31,6 +34,28 @@ class MyViewModel : ViewModel() {
 
     var itemNotified: Int = -1
     var itemNotifiedType: ItemNotify = ItemNotify.ADD
+
+    fun setPostId(postId: String) {
+        this.postId = postId
+    }
+
+    fun getPostId() : String {
+        return postId
+    }
+
+
+    fun setPos(pos: Int) {
+        curPos = pos
+    }
+
+    fun getPos() : Int{
+        return curPos
+    }
+
+    fun getComment(pos: Int) : ArrayList<Map<String, String>> {
+        println("#######"+items.size)
+        return items[pos].comments
+    }
 
     val itemsSize
         get() = items.size
