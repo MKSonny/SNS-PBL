@@ -19,19 +19,20 @@ class MyAdapter(private val db: FirebaseFirestore, private val navigate: NavCont
     inner class ViewHolder(private val binding: ItemLayoutBinding) : RecyclerView.ViewHolder(binding.root) {
         fun setContents(pos: Int) {
             val item = viewModel.items[pos]
-            val postedUser = item.uid
-            var likes = item.likes.toInt()
+            val postId = item.postId
+            val whoPosted = item.whoPosted
+            //var likes = item.likes.toInt()
 
             // 프로필 사진 옆 유저 아이디 표시
-            binding.userId.text = postedUser
+            binding.userId.text = whoPosted
             // 좋아요 수를 표시
-            binding.showLikes.text = "좋아요 " + likes + "개"
-
-            binding.likeBtn.setOnClickListener {
-                likes++
-                db.collection("PostInfo").document(postedUser).update("likes", likes)
-                binding.showLikes.text = "좋아요 " + likes + "개"
-            }
+//            binding.showLikes.text = "좋아요 " + likes + "개"
+//
+//            binding.likeBtn.setOnClickListener {
+//                likes++
+//                db.collection("PostInfo").document(postId).update("likes", likes)
+//                binding.showLikes.text = "좋아요 " + likes + "개"
+//            }
 
             binding.commentBtn.setOnClickListener {
                 //viewModel.setUser(postedUser)
@@ -41,7 +42,19 @@ class MyAdapter(private val db: FirebaseFirestore, private val navigate: NavCont
                 navigate.navigate(R.id.action_postFragment_to_commentFragment)
             }
 
+            var commentsTest = ArrayList<Map<String, String>>()
+            commentsTest.add(mapOf("test" to "hello"))
+
+            val itemMap = hashMapOf(
+                "comments" to commentsTest,
+                "img" to "gs://sns-pbl.appspot.com/상상부기 2.png",
+                "likes" to 1 as Number,
+                "whoPosted" to "testing"
+            )
+
             binding.commentSend.setOnClickListener {
+                db.collection("PostInfo")
+                    .add(itemMap)
                 //val msg = binding.commentBox.text.toString()
                 //db.collection("PostInfo").document(postedUser).update("comments", FieldValue.arrayUnion(msg))
             }
