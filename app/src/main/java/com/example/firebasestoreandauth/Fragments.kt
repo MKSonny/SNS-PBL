@@ -79,6 +79,11 @@ class PostFragment : Fragment(R.layout.post_layout) {
 
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        snapshotListener?.remove()
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -174,17 +179,29 @@ class CommentFragment : Fragment(R.layout.comment_layout) {
 
         binding = CommentLayoutBinding.bind(view)
 
-
-
         val viewModel = ViewModelProvider(requireActivity()).get(MyViewModel::class.java)
         //val viewModel = MyViewModel()
         //binding.textView.text = "working"
 
         val db: FirebaseFirestore = Firebase.firestore
 
+        var newComment = ArrayList<Map<String, String>>()
+
+        println("########yellow##########" + viewModel.items.get(viewModel.getPos()).postId)
+
+        //comment 새로 추가하면 바로 보이는 거 수정해야됨
+        db.collection("PostInfo").document(viewModel.items.get(viewModel.getPos()).postId)
+            .addSnapshotListener {
+                    snapshot, error ->
+                if (snapshot != null && snapshot.exists()) {
+                    val temp = snapshot.data!!["comments"] as ArrayList<Map<String, String>>
+                    newComment.add(temp.get(0))
+                    println("#############red###########" + newComment.get(0))
+                }
+            }
         //var string: String = "not working"
 
-        val adapter = CommentAdapter(db, viewModel.getComment(viewModel.getPos()))
+        val adapter = CommentAdapter(db, newComment)
 
         binding.commentRecy.adapter = adapter
         binding.commentRecy.layoutManager = LinearLayoutManager(context)
