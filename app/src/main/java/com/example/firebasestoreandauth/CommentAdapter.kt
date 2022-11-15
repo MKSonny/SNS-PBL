@@ -1,33 +1,20 @@
 package com.example.firebasestoreandauth
 
+import android.graphics.BitmapFactory
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.firebasestoreandauth.databinding.CommentItemLayoutBinding
+import com.example.firebasestoreandauth.databinding.CommentLayoutBinding
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.ktx.storage
 
 class CommentAdapter(private val db: FirebaseFirestore, private val comments: ArrayList<Map<String, String>>) : RecyclerView.Adapter<CommentAdapter.ViewHolder>() {
-
-    // var storage = Firebase.storage
-    private lateinit var newComment : ArrayList<Map<String, String>>
-    private lateinit var string: String
+    val storage = Firebase.storage
 
     inner class ViewHolder(private val binding: CommentItemLayoutBinding) : RecyclerView.ViewHolder(binding.root) {
-
-        init {
-
-            binding.commentAddBtn.setOnClickListener {
-                val comment = binding.editTextTextPersonName3.text.toString()
-                val newCommentMap = mapOf("Son" to comment)
-                comments.add(newCommentMap)
-                db.collection("PostInfo").document("Son")
-                    .update(mapOf(
-                        "comments" to comments
-                    ))
-            }
-
-
-        }
 
         fun setContents(pos: Int) {
             binding.commentId.text = comments[pos].keys.toString().replace("[","").replace("]","")

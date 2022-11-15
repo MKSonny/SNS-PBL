@@ -21,24 +21,34 @@ class MyAdapter(private val db: FirebaseFirestore, private val navigate: NavCont
             val item = viewModel.items[pos]
             val postId = item.postId
             val whoPosted = item.whoPosted
-            //var likes = item.likes.toInt()
-
+            var likes = item.likes.toInt()
+            var liked = false
             // 프로필 사진 옆 유저 아이디 표시
             binding.userId.text = whoPosted
             // 좋아요 수를 표시
-//            binding.showLikes.text = "좋아요 " + likes + "개"
-//
-//            binding.likeBtn.setOnClickListener {
-//                likes++
-//                db.collection("PostInfo").document(postId).update("likes", likes)
-//                binding.showLikes.text = "좋아요 " + likes + "개"
-//            }
+            binding.showLikes.text = "좋아요 " + likes + "개"
+
+            binding.likeBtn.setOnClickListener {
+                if (it.isSelected) {
+                    likes -= 1
+                    it.setBackgroundResource(R.drawable.icons8__96)
+                }
+                else {
+                    likes += 1
+                    viewModel.items[pos].likes = likes
+                    it.setBackgroundResource(R.drawable.full_heart)
+                }
+                it.isSelected = !it.isSelected
+                db.collection("PostInfo").document(postId).update("likes", likes)
+                binding.showLikes.text = "좋아요 " + likes + "개"
+            }
 
             binding.commentBtn.setOnClickListener {
                 //viewModel.setUser(postedUser)
                 //viewModel.setPostId(postedUser)
                 viewModel.setPos(pos)
                 //println("#$#$#$$#setpos" + viewModel.getPos())
+                viewModel.ClickedPostInfo(item.postId)
                 navigate.navigate(R.id.action_postFragment_to_commentFragment)
             }
 
@@ -52,11 +62,16 @@ class MyAdapter(private val db: FirebaseFirestore, private val navigate: NavCont
                 "whoPosted" to "testing"
             )
 
-            binding.commentSend.setOnClickListener {
-                db.collection("PostInfo")
-                    .add(itemMap)
-                //val msg = binding.commentBox.text.toString()
-                //db.collection("PostInfo").document(postedUser).update("comments", FieldValue.arrayUnion(msg))
+            binding.uid.text = item.whoPosted + " "
+            binding.postTitle.text = item.comments[0][whoPosted]
+
+            val profileImageRef = storage.getReferenceFromUrl(item.profile_img)
+
+            profileImageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener {
+                val bmp = BitmapFactory.decodeByteArray(it, 0, it.size)
+                binding.profileImg.setImageBitmap(bmp)
+            }.addOnFailureListener {
+
             }
 
             val imageRef = storage.getReferenceFromUrl(item.postImgUrl)

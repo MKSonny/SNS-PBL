@@ -5,12 +5,13 @@ import androidx.lifecycle.ViewModel
 import com.google.firebase.Timestamp
 
 data class Item(
+    val profile_img: String,
     val postId: String,
     val postImgUrl: String,
-    //val likes: Number,
-    //val time: Timestamp,
+    var likes: Number,
+    val time: Timestamp,
     val whoPosted: String,
-    val comments: ArrayList<Map<String, String>>
+    var comments: ArrayList<Map<String, String>>
 )
 
 enum class ItemNotify {
@@ -20,11 +21,19 @@ enum class ItemNotify {
 class MyViewModel : ViewModel() {
     // 현재 앱을 사용하는 사용자 이름
     private var meInfo: String = "Son"
+    private lateinit var commentPostInfo : String
 
     fun getMeInfo() : String {
         return meInfo
     }
 
+    fun notifyClickedPostInfo() :String {
+        return commentPostInfo
+    }
+
+    fun ClickedPostInfo(postDocInfo : String) {
+        commentPostInfo = postDocInfo
+    }
 
     private var curPos: Int = 0
 
@@ -38,6 +47,14 @@ class MyViewModel : ViewModel() {
 
     fun getUser(): String {
         return curUser
+    }
+
+    fun addComments(pos : Int, map : Map<String, String>) {
+        items[pos].comments.add(map)
+    }
+
+    fun setComments(new_comments: ArrayList<Map<String, String>>) {
+        items[getPos()].comments = new_comments
     }
 
     val itemLiveData = MutableLiveData<ArrayList<Item>>()
