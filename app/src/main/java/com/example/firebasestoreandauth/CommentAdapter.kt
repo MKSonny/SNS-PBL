@@ -9,12 +9,13 @@ import com.google.firebase.firestore.FirebaseFirestore
 class CommentAdapter(private val db: FirebaseFirestore, private val comments: ArrayList<Map<String, String>>) : RecyclerView.Adapter<CommentAdapter.ViewHolder>() {
 
     // var storage = Firebase.storage
-    private lateinit var commentMap : Map<String,String>
+    private lateinit var newComment : ArrayList<Map<String, String>>
     private lateinit var string: String
 
     inner class ViewHolder(private val binding: CommentItemLayoutBinding) : RecyclerView.ViewHolder(binding.root) {
 
         init {
+
             binding.commentAddBtn.setOnClickListener {
                 val comment = binding.editTextTextPersonName3.text.toString()
                 val newCommentMap = mapOf("Son" to comment)
@@ -24,6 +25,8 @@ class CommentAdapter(private val db: FirebaseFirestore, private val comments: Ar
                         "comments" to comments
                     ))
             }
+
+
         }
 
         fun setContents(pos: Int) {

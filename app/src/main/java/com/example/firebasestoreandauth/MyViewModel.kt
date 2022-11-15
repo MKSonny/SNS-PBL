@@ -25,8 +25,8 @@ class MyViewModel : ViewModel() {
         return meInfo
     }
 
+
     private var curPos: Int = 0
-    private lateinit var postId: String
 
     val items = ArrayList<Item>()
 
@@ -44,15 +44,6 @@ class MyViewModel : ViewModel() {
 
     var itemNotified: Int = -1
     var itemNotifiedType: ItemNotify = ItemNotify.ADD
-
-    fun setPostId(postId: String) {
-        this.postId = postId
-    }
-
-    fun getPostId() : String {
-        return postId
-    }
-
 
     fun setPos(pos: Int) {
         curPos = pos
