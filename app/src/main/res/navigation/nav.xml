@@ -28,19 +28,9 @@
         android:id="@+id/profileFragment"
         android:name="com.example.firebasestoreandauth.ProfileFragment"
         android:label="ProfileFragment" />
-        android:label="FriendsFragment" >
         <action
             android:id="@+id/action_friendsFragment_to_postFragment"
             app:destination="@id/postFragment" />
-    </fragment>
-    <fragment
-        android:id="@+id/profileFragment"
-        android:name="com.example.firebasestoreandauth.ProfileFragment"
-        android:label="ProfileFragment" >
-        <action
-            android:id="@+id/action_profileFragment_to_postFragment"
-            app:destination="@id/postFragment" />
-    </fragment>
     <fragment
         android:id="@+id/commentFragment"
         android:name="com.example.firebasestoreandauth.CommentFragment"
