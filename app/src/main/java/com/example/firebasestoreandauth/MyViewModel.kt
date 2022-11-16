@@ -5,8 +5,13 @@ import androidx.lifecycle.ViewModel
 import com.google.firebase.Timestamp
 
 data class Item(
-    val uid: String, val postImgUrl: String, val likes: Number, val time: Timestamp,
-    val comments: Map<String, String>
+    val profile_img: String,
+    val postId: String,
+    val postImgUrl: String,
+    var likes: Number,
+    val time: Timestamp,
+    val whoPosted: String,
+    var comments: ArrayList<Map<String, String>>
 )
 
 enum class ItemNotify {
@@ -14,6 +19,23 @@ enum class ItemNotify {
 }
 
 class MyViewModel : ViewModel() {
+    // 현재 앱을 사용하는 사용자 이름
+    private var meInfo: String = "Son"
+    private lateinit var commentPostInfo : String
+
+    fun getMeInfo() : String {
+        return meInfo
+    }
+
+    fun notifyClickedPostInfo() :String {
+        return commentPostInfo
+    }
+
+    fun ClickedPostInfo(postDocInfo : String) {
+        commentPostInfo = postDocInfo
+    }
+
+    private var curPos: Int = 0
 
     val items = ArrayList<Item>()
 
@@ -27,10 +49,31 @@ class MyViewModel : ViewModel() {
         return curUser
     }
 
+    fun addComments(pos : Int, map : Map<String, String>) {
+        items[pos].comments.add(map)
+    }
+
+    fun setComments(new_comments: ArrayList<Map<String, String>>) {
+        items[getPos()].comments = new_comments
+    }
+
     val itemLiveData = MutableLiveData<ArrayList<Item>>()
 
     var itemNotified: Int = -1
     var itemNotifiedType: ItemNotify = ItemNotify.ADD
+
+    fun setPos(pos: Int) {
+        curPos = pos
+    }
+
+    fun getPos() : Int{
+        return curPos
+    }
+
+    fun getComment(pos: Int) : ArrayList<Map<String, String>> {
+        println("#######"+items.size)
+        return items[pos].comments
+    }
 
     val itemsSize
         get() = items.size
@@ -61,6 +104,4 @@ class MyViewModel : ViewModel() {
         itemLiveData.value = items
     }
 }
-
-
 

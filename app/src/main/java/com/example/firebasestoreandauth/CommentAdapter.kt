@@ -16,19 +16,16 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
 import java.util.Objects
 
-class CommentAdapter(private val db: FirebaseFirestore, private val navigate: NavController, private val viewModel: MyViewModel) : RecyclerView.Adapter<CommentAdapter.ViewHolder>() {
 
-    // var storage = Firebase.storage
+class CommentAdapter(private val db: FirebaseFirestore, private val comments: ArrayList<Map<String, String>>) : RecyclerView.Adapter<CommentAdapter.ViewHolder>() {
+    val storage = Firebase.storage
 
     inner class ViewHolder(private val binding: CommentItemLayoutBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun setContents(pos: Int) {
-            val item = viewModel.items[pos]
-            val comments = item.comments
 
-            for (it in comments) {
-                binding.commentId.text = it.key
-                binding.commentText.text = it.value
-            }
+        fun setContents(pos: Int) {
+            binding.commentId.text = comments[pos].keys.toString().replace("[","").replace("]","")
+            binding.commentText.text = comments[pos].values.toString().replace("[","").replace("]","")
+
         }
     }
 
@@ -43,5 +40,7 @@ class CommentAdapter(private val db: FirebaseFirestore, private val navigate: Na
         holder.setContents(position)
     }
 
-    override fun getItemCount() = viewModel.itemsSize
+
+    override fun getItemCount() = comments.size
+
 }

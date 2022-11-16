@@ -3,17 +3,19 @@ package com.example.firebasestoreandauth
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Bundle
-import android.util.Log
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
+import android.view.View
+import androidx.activity.viewModels
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentTransaction
+import androidx.fragment.app.commit
+import androidx.lifecycle.ViewModel
+import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.navigateUp
+import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
-import com.example.firebasestoreandauth.test.AddPersonalInfoActivity
-import com.example.firebasestoreandauth.wrapper.getImageReference
-import com.example.firebasestoreandauth.wrapper.getUserDocumentReference
-import com.example.firebasestoreandauth.auth.GoogleAuth
-import com.example.firebasestoreandauth.auth.OnAuthCompleteListener
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.firebasestoreandauth.databinding.ActivityMainBinding
 import com.example.firebasestoreandauth.test.SearchFriendActivity
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -32,7 +34,6 @@ import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.ktx.storage
 
 class MainActivity : AppCompatActivity() {
-
     lateinit var binding: ActivityMainBinding
     private lateinit var auth: FirebaseAuth
     private lateinit var firestore: FirebaseFirestore
@@ -42,6 +43,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var fbGoogleSignIn: ActivityResultLauncher<Intent>
     private lateinit var googleSignInClient: GoogleSignInClient
     private lateinit var defaultOnAuthCompleteListener: OnAuthCompleteListener
+    lateinit var appbarc : AppBarConfiguration
+    lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -220,5 +223,6 @@ class MainActivity : AppCompatActivity() {
         private const val TAG = "GoogleActivity"
         private const val RC_SIGN_IN = 9001
     }
+
 
 }
