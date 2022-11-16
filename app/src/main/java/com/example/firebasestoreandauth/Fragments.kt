@@ -54,30 +54,6 @@ class PostFragment : Fragment(R.layout.post_layout) {
                 }
             }
         }
-
-        // document id로 검색하는 걸 로 수정
-//        db.collection("PostInfo")//.orderBy("time", Query.Direction.DESCENDING)
-//            .get()
-//            .addOnSuccessListener {
-//                    result ->
-//                for(document in result) {
-//                    val uid = document.id
-//                    val imgUrl = document["img"] as String
-//                    //val likes = document["likes"] as Number
-//                    //val time = document["time"] as Timestamp
-//                    val whoPosted = document["whoPosted"] as String
-//                    val comments = document["comments"] as ArrayList<Map<String,String>>
-//
-//                    viewModel.addItem(Item(uid, imgUrl, whoPosted, comments))
-//                    //viewModel.addItem(Item(uid, imgUrl, likes, time, whoPosted, comments))
-//                    //viewModel.updateItem(Item(name, imgUrl), viewModel.itemsSize)
-//                    adapter.notifyItemInserted(viewModel.itemNotified)
-//                }
-//            }
-//            .addOnFailureListener {
-//
-//            }
-
     }
 
     override fun onDestroy() {
@@ -87,7 +63,6 @@ class PostFragment : Fragment(R.layout.post_layout) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         println("*********************onViewCreated")
 
         val binding = PostLayoutBinding.bind(view)
@@ -128,11 +103,6 @@ class PostFragment : Fragment(R.layout.post_layout) {
 //        val navigate = findNavController()
 
 
-
-
-
-
-
         // observe 함수를 adapter 밑에서 구현
         // 맨위로 끌어올릴 경우 호출되도록? observer pattern 적용
 
@@ -149,8 +119,58 @@ class ProfileFragment : Fragment(R.layout.profile_layout) {
 
 class FriendsFragment : Fragment(R.layout.friends_layout) {
 
+
+    var snapshotListener: ListenerRegistration? = null
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val binding = FriendsLayoutBinding.bind(view)
+        val friendModel: FriendViewModel by viewModels()
+        val listAdapter = FriendListAdapter(friendModel)
+        val requestAdapter = RequestReceivedAdapter(friendModel)
+
+        binding.recyclerFriendList.adapter = listAdapter
+        binding.recyclerFriendList.layoutManager = LinearLayoutManager(context)
+        binding.recyclerFriendList.setHasFixedSize(true)
+
+        binding.recyclerReceivedList.adapter = requestAdapter
+        binding.recyclerReceivedList.layoutManager = LinearLayoutManager(context)
+        binding.recyclerReceivedList.setHasFixedSize(true)
+
+        friendModel.friend.observe(viewLifecycleOwner) {
+            listAdapter.notifyDataSetChanged()
+        }
+        friendModel.requestReceived.observe(viewLifecycleOwner) {
+            requestAdapter.notifyDataSetChanged()
+        }
+
+        snapshotListener = getReferenceOfMine()?.addSnapshotListener { snapshot, e ->
+            val TAG = "SnapshotListener"
+            if (e != null) {
+                Log.w(TAG, "Listen failed.", e)
+                return@addSnapshotListener
+            }
+            if (snapshot != null && snapshot.exists()) {
+                val user = snapshot.toUser()
+                if (user.UID == User.INVALID_USER) return@addSnapshotListener
+                Log.d(TAG, "Current data: ${user}")
+                friendModel.friend.setList(user.friends!!)
+                friendModel.requestReceived.setList(user.requestReceived!!.toList())
+            } else {
+                Log.d(TAG, "Current data: null")
+            }
+        }
+
+        binding.startFindFriendButton.setOnClickListener {
+            val intent = Intent(activity, SearchFriendActivity::class.java)
+            startActivity(intent)
+        }
+
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        snapshotListener?.remove()
     }
 }
 
@@ -175,6 +195,25 @@ class CommentFragment : Fragment(R.layout.comment_layout) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+
+        //AppBarConfiguration(setOf(R.id.commentFragment))
+
+        val binding = CommentLayoutBinding.bind(view)
+
+        val viewModel: MyViewModel by viewModels()
+        //binding.textView.text = "working"
+
+        val db: FirebaseFirestore = Firebase.firestore
+
+        //val nhf = parentFragmentManager.findFragmentById(R.id.fragments)
+
+        val navigate = findNavController()
+
+        val adapter = CommentAdapter(db, navigate, viewModel)
+
+        binding.commentRecy.adapter = adapter
+        //binding.recyclerView.layoutManager = LinearLayoutManager(context)
 
         //AppBarConfiguration(setOf(R.id.))
 
@@ -229,9 +268,5 @@ class CommentFragment : Fragment(R.layout.comment_layout) {
 
         binding.commentRecy.adapter = adapter
         binding.commentRecy.layoutManager = LinearLayoutManager(context)
-        binding.commentRecy.setHasFixedSize(true)
-
-        // observe 함수를 adapter 밑에서 구현
-        // 맨위로 끌어올릴 경우 호출되도록? observer pattern 적용
     }
 }

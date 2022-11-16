@@ -3,6 +3,7 @@ package com.example.firebasestoreandauth
 import android.graphics.BitmapFactory
 import android.view.LayoutInflater
 import android.view.ViewGroup
+
 import androidx.fragment.app.FragmentManager
 import androidx.navigation.NavController
 import androidx.recyclerview.widget.RecyclerView
@@ -12,19 +13,23 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
 
+
 class MyAdapter(private val db: FirebaseFirestore, private val navigate: NavController, private val viewModel: MyViewModel) : RecyclerView.Adapter<MyAdapter.ViewHolder>() {
+
 
     var storage = Firebase.storage
 
     inner class ViewHolder(private val binding: ItemLayoutBinding) : RecyclerView.ViewHolder(binding.root) {
         fun setContents(pos: Int) {
             val item = viewModel.items[pos]
+
             val postId = item.postId
             val whoPosted = item.whoPosted
             var likes = item.likes.toInt()
             var liked = false
             // 프로필 사진 옆 유저 아이디 표시
             binding.userId.text = whoPosted
+
             // 좋아요 수를 표시
             binding.showLikes.text = "좋아요 " + likes + "개"
 
@@ -70,9 +75,7 @@ class MyAdapter(private val db: FirebaseFirestore, private val navigate: NavCont
             profileImageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener {
                 val bmp = BitmapFactory.decodeByteArray(it, 0, it.size)
                 binding.profileImg.setImageBitmap(bmp)
-            }.addOnFailureListener {
-
-            }
+            }.addOnFailureListener {}
 
             val imageRef = storage.getReferenceFromUrl(item.postImgUrl)
 

@@ -18,10 +18,16 @@
         <action
             android:id="@+id/action_postFragment_to_commentFragment"
             app:destination="@id/commentFragment" />
+
     </fragment>
     <fragment
         android:id="@+id/friendsFragment"
         android:name="com.example.firebasestoreandauth.FriendsFragment"
+        android:label="FriendsFragment" />
+    <fragment
+        android:id="@+id/profileFragment"
+        android:name="com.example.firebasestoreandauth.ProfileFragment"
+        android:label="ProfileFragment" />
         android:label="FriendsFragment" >
         <action
             android:id="@+id/action_friendsFragment_to_postFragment"
