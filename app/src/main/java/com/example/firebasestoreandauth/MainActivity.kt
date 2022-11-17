@@ -3,27 +3,28 @@ package com.example.firebasestoreandauth
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.util.Log
 import android.view.View
-import androidx.activity.viewModels
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentTransaction
-import androidx.fragment.app.commit
-import androidx.lifecycle.ViewModel
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
-import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.firebasestoreandauth.auth.GoogleAuth
+import com.example.firebasestoreandauth.auth.OnAuthCompleteListener
 import com.example.firebasestoreandauth.databinding.ActivityMainBinding
-import com.example.firebasestoreandauth.test.SearchFriendActivity
+import com.example.firebasestoreandauth.test.AddPersonalInfoActivity
+import com.example.firebasestoreandauth.wrapper.getImageReference
+import com.example.firebasestoreandauth.wrapper.getUserDocumentReference
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
-import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
@@ -43,9 +44,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var fbGoogleSignIn: ActivityResultLauncher<Intent>
     private lateinit var googleSignInClient: GoogleSignInClient
     private lateinit var defaultOnAuthCompleteListener: OnAuthCompleteListener
-    lateinit var appbarc : AppBarConfiguration
-    lateinit var binding: ActivityMainBinding
-
+    private lateinit var appBarc : AppBarConfiguration
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -53,6 +52,8 @@ class MainActivity : AppCompatActivity() {
         val nhf = supportFragmentManager.findFragmentById(R.id.my_nav_host) as NavHostFragment
         val navController = nhf.navController
         binding.bottomNavigationView.setupWithNavController(navController)
+        appBarc = AppBarConfiguration(setOf(R.id.profileFragment, R.id.friendsFragment, R.id.postFragment))
+        setupActionBarWithNavController(nhf.navController, appBarc)
 
 
         //Firebase 초기화
@@ -66,8 +67,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        if (auth.currentUser != null) auth.signOut()
-        signIn()
+//        if (auth.currentUser != null) auth.signOut()
+//        signIn()
     }
 
     private fun initAuth() {
@@ -216,6 +217,15 @@ class MainActivity : AppCompatActivity() {
                 Log.e(FIRESTORE, it.exception.toString())
             }
         }
+    }
+    override fun onSupportNavigateUp(): Boolean {
+        val navController = findNavController(R.id.my_nav_host)
+        return navController.navigateUp(appBarc)
+                || super.onSupportNavigateUp()
+    }
+
+    fun HideBottomNav(state: Boolean) {
+        if (state) binding.bottomNavigationView.visibility = View.GONE else binding.bottomNavigationView.visibility = View.VISIBLE
     }
 
     companion object {

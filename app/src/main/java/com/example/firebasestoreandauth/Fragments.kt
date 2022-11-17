@@ -1,14 +1,22 @@
 package com.example.firebasestoreandauth
 
+import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.firebasestoreandauth.DTO.User
 import com.example.firebasestoreandauth.databinding.CommentLayoutBinding
+import com.example.firebasestoreandauth.databinding.FriendsLayoutBinding
 import com.example.firebasestoreandauth.databinding.PostLayoutBinding
+import com.example.firebasestoreandauth.test.SearchFriendActivity
+import com.example.firebasestoreandauth.wrapper.getReferenceOfMine
+import com.example.firebasestoreandauth.wrapper.toUser
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.FirebaseFirestore
@@ -41,7 +49,7 @@ class PostFragment : Fragment(R.layout.post_layout) {
                         val likes = document["likes"] as Number
                         val time = document["time"] as Timestamp
                         val whoPosted = document["whoPosted"] as String
-                        val comments = document["comments"] as ArrayList<Map<String,String>>
+                        val comments = document["testing"] as ArrayList<Map<String,String>>
 
                         viewModel.addItem(Item(profile_img, uid, imgUrl, likes, time, whoPosted, comments))
                         //viewModel.addItem(Item(uid, imgUrl, likes, time, whoPosted, comments))
@@ -83,30 +91,6 @@ class PostFragment : Fragment(R.layout.post_layout) {
         binding.recyclerView.adapter = adapter
         binding.recyclerView.layoutManager = LinearLayoutManager(context)
         binding.recyclerView.setHasFixedSize(true)
-
-//        viewModel.itemLiveData.observe(viewLifecycleOwner) {
-//            // 전체를 다 바꿔줌으로 비효율적
-//            // 추가된 부분만 업데이트 될수록 수정 필요
-//            //adapter.notifyDataSetChanged()
-//            when (viewModel.itemNotifiedType) {
-//                ItemNotify.ADD -> adapter.notifyItemInserted(viewModel.itemNotified)
-//                ItemNotify.UPDATE -> adapter.notifyItemChanged(viewModel.itemNotified)
-//                ItemNotify.DELETE -> adapter.notifyItemRemoved(viewModel.itemNotified)
-//            }
-//        }
-
-        //val nhf = parentFragmentManager.findFragmentById(R.id.fragments)
-        // val viewModel: MyViewModel by viewModels()
-        //binding.textView.text = "working"
-
-        //val db: FirebaseFirestore = Firebase.firestore
-//        val navigate = findNavController()
-
-
-        // observe 함수를 adapter 밑에서 구현
-        // 맨위로 끌어올릴 경우 호출되도록? observer pattern 적용
-
-
     }
 }
 
@@ -118,10 +102,7 @@ class ProfileFragment : Fragment(R.layout.profile_layout) {
 }
 
 class FriendsFragment : Fragment(R.layout.friends_layout) {
-
-
     var snapshotListener: ListenerRegistration? = null
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val binding = FriendsLayoutBinding.bind(view)
@@ -188,37 +169,14 @@ class CommentFragment : Fragment(R.layout.comment_layout) {
 
     override fun onDestroy() {
         super.onDestroy()
-
         val mainActivity = activity as MainActivity
         mainActivity.HideBottomNav(false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-
         //AppBarConfiguration(setOf(R.id.commentFragment))
-
         val binding = CommentLayoutBinding.bind(view)
-
-        val viewModel: MyViewModel by viewModels()
-        //binding.textView.text = "working"
-
-        val db: FirebaseFirestore = Firebase.firestore
-
-        //val nhf = parentFragmentManager.findFragmentById(R.id.fragments)
-
-        val navigate = findNavController()
-
-        val adapter = CommentAdapter(db, navigate, viewModel)
-
-        binding.commentRecy.adapter = adapter
-        //binding.recyclerView.layoutManager = LinearLayoutManager(context)
-
-        //AppBarConfiguration(setOf(R.id.))
-
-        binding = CommentLayoutBinding.bind(view)
-
         val viewModel = ViewModelProvider(requireActivity()).get(MyViewModel::class.java)
         //val viewModel = MyViewModel()
         //binding.textView.text = "working"
@@ -245,12 +203,12 @@ class CommentFragment : Fragment(R.layout.comment_layout) {
 
         binding.button.setOnClickListener {
             val comment = binding.commentEdit.text.toString()
-            val newCommentMap = mapOf("Son" to comment)
+            val newCommentMap = mapOf("UXEKfhpQLYnVFXCTFl9P" to comment)
             comments.add(newCommentMap)
             // 여기 .document에 내 uid가 들어가야 된다.
             db.collection("PostInfo").document(viewModel.notifyClickedPostInfo())
                 .update(mapOf(
-                    "comments" to comments
+                    "testing" to comments
                 ))
             //viewModel.setComments(comments)
             adapter.notifyItemInserted(comments.size - 1)

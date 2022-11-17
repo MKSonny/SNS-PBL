@@ -23,7 +23,17 @@ class CommentAdapter(private val db: FirebaseFirestore, private val comments: Ar
     inner class ViewHolder(private val binding: CommentItemLayoutBinding) : RecyclerView.ViewHolder(binding.root) {
 
         fun setContents(pos: Int) {
-            binding.commentId.text = comments[pos].keys.toString().replace("[","").replace("]","")
+            db.collection("SonUsers").document(comments[pos].keys.toString().replace("[","").replace("]",""))
+                .get().addOnSuccessListener {
+                    binding.commentId.setText(it["nickName"].toString())
+                    val profile_img = it["profileImage"].toString()
+                    val profileImageRef = storage.getReferenceFromUrl(profile_img)
+                    profileImageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener {
+                        val bmp = BitmapFactory.decodeByteArray(it, 0, it.size)
+                        binding.profileImg.setImageBitmap(bmp)
+                    }.addOnFailureListener {}
+                }
+            //binding.commentId.text = comments[pos].keys.toString().replace("[","").replace("]","")
             binding.commentText.text = comments[pos].values.toString().replace("[","").replace("]","")
 
         }
