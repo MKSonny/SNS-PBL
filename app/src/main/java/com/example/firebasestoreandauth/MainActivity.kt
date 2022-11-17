@@ -67,8 +67,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        if (auth.currentUser != null) auth.signOut()
-        signIn()
+//        if (auth.currentUser != null) auth.signOut()
+//        signIn()
     }
 
     private fun initAuth() {
