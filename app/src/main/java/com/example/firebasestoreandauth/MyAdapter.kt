@@ -13,6 +13,7 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
+import kotlin.time.Duration.Companion.nanoseconds
 
 
 class MyAdapter(private val db: FirebaseFirestore, private val navigate: NavController, private val viewModel: MyViewModel) : RecyclerView.Adapter<MyAdapter.ViewHolder>() {
@@ -25,11 +26,12 @@ class MyAdapter(private val db: FirebaseFirestore, private val navigate: NavCont
         MONTH(12,Int.MAX_VALUE,"년 전")
     }
 
-    var curTime = System.currentTimeMillis()
+    //var curTime = System.currentTimeMillis()
 
     fun timeDiff(timestamp: Timestamp): String? {
         val curTime = System.currentTimeMillis()
-        var diffTime = (curTime- timestamp.seconds) / 1000
+        curTime.nanoseconds
+        var diffTime = (curTime - timestamp.nanoseconds) / 1000
         var msg: String? = null
         if(diffTime < TimeValue.SEC.value )
             msg= "방금 전"
@@ -50,7 +52,7 @@ class MyAdapter(private val db: FirebaseFirestore, private val navigate: NavCont
     inner class ViewHolder(private val binding: ItemLayoutBinding) : RecyclerView.ViewHolder(binding.root) {
         fun setContents(pos: Int) {
             var item = viewModel.items[pos]
-            timeDiff(item.time)
+            binding.timeStamp.text = timeDiff(item.time)
             val postId = item.postId
             val whoPosted = item.whoPosted
             var likes = item.likes.toInt()
