@@ -1,3 +1,7 @@
 package com.example.firebasestoreandauth
 
-class Comment(uid: String, comment: String)
+data class Comment(
+    val profileImageRef: String,
+    val uid: String,
+    val comment: String
+)

@@ -49,7 +49,7 @@ class PostFragment : Fragment(R.layout.post_layout) {
                         val likes = document["likes"] as Number
                         val time = document["time"] as Timestamp
                         val whoPosted = document["whoPosted"] as String
-                        val comments = document["comments"] as ArrayList<Map<String,String>>
+                        val comments = document["testing"] as ArrayList<Map<String,String>>
 
                         viewModel.addItem(Item(profile_img, uid, imgUrl, likes, time, whoPosted, comments))
                         //viewModel.addItem(Item(uid, imgUrl, likes, time, whoPosted, comments))
@@ -203,12 +203,12 @@ class CommentFragment : Fragment(R.layout.comment_layout) {
 
         binding.button.setOnClickListener {
             val comment = binding.commentEdit.text.toString()
-            val newCommentMap = mapOf("Son" to comment)
+            val newCommentMap = mapOf("UXEKfhpQLYnVFXCTFl9P" to comment)
             comments.add(newCommentMap)
             // 여기 .document에 내 uid가 들어가야 된다.
             db.collection("PostInfo").document(viewModel.notifyClickedPostInfo())
                 .update(mapOf(
-                    "comments" to comments
+                    "testing" to comments
                 ))
             //viewModel.setComments(comments)
             adapter.notifyItemInserted(comments.size - 1)

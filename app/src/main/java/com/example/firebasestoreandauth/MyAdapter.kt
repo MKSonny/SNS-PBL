@@ -8,6 +8,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.navigation.NavController
 import androidx.recyclerview.widget.RecyclerView
 import com.example.firebasestoreandauth.databinding.ItemLayoutBinding
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
@@ -16,19 +17,59 @@ import com.google.firebase.storage.ktx.storage
 
 class MyAdapter(private val db: FirebaseFirestore, private val navigate: NavController, private val viewModel: MyViewModel) : RecyclerView.Adapter<MyAdapter.ViewHolder>() {
 
+    enum class TimeValue(val value: Int,val maximum : Int, val msg : String) {
+        SEC(60,60,"분 전"),
+        MIN(60,24,"시간 전"),
+        HOUR(24,30,"일 전"),
+        DAY(30,12,"달 전"),
+        MONTH(12,Int.MAX_VALUE,"년 전")
+    }
+
+    var curTime = System.currentTimeMillis()
+
+    fun timeDiff(timestamp: Timestamp): String? {
+        val curTime = System.currentTimeMillis()
+        var diffTime = (curTime- timestamp.seconds) / 1000
+        var msg: String? = null
+        if(diffTime < TimeValue.SEC.value )
+            msg= "방금 전"
+        else {
+            for (i in TimeValue.values()) {
+                diffTime /= i.value
+                if (diffTime < i.maximum) {
+                    msg=i.msg
+                    break
+                }
+            }
+        }
+        return msg
+    }
 
     var storage = Firebase.storage
 
     inner class ViewHolder(private val binding: ItemLayoutBinding) : RecyclerView.ViewHolder(binding.root) {
         fun setContents(pos: Int) {
-            val item = viewModel.items[pos]
-
+            var item = viewModel.items[pos]
+            timeDiff(item.time)
             val postId = item.postId
             val whoPosted = item.whoPosted
             var likes = item.likes.toInt()
+            println("##$###$$$###timestamp+" + item.time)
+            var profileRef: String
             var liked = false
             // 프로필 사진 옆 유저 아이디 표시
-            binding.userId.text = whoPosted
+            db.collection("SonUsers").document(whoPosted)
+                .get()
+                .addOnSuccessListener {
+                    binding.userId.setText(it["nickName"].toString())
+                    binding.uid.setText(it["nickName"].toString())
+                    val profileImageRef = storage.getReferenceFromUrl(it["profileImage"].toString())
+
+                    profileImageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener {
+                        val bmp = BitmapFactory.decodeByteArray(it, 0, it.size)
+                        binding.profileImg.setImageBitmap(bmp)
+                    }.addOnFailureListener {}
+                }
 
             // 좋아요 수를 표시
             binding.showLikes.text = "좋아요 " + likes + "개"
@@ -67,15 +108,11 @@ class MyAdapter(private val db: FirebaseFirestore, private val navigate: NavCont
                 "whoPosted" to "testing"
             )
 
-            binding.uid.text = item.whoPosted + " "
+
+            //binding.uid.text = item.whoPosted + " "
+            //binding.postTitle.text = item.comments[0][whoPosted]
             binding.postTitle.text = item.comments[0][whoPosted]
 
-            val profileImageRef = storage.getReferenceFromUrl(item.profile_img)
-
-            profileImageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener {
-                val bmp = BitmapFactory.decodeByteArray(it, 0, it.size)
-                binding.profileImg.setImageBitmap(bmp)
-            }.addOnFailureListener {}
 
             val imageRef = storage.getReferenceFromUrl(item.postImgUrl)
 
