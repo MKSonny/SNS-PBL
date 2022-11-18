@@ -49,6 +49,22 @@ class PostFragment : Fragment(R.layout.post_layout) {
         }
         //for (it in friends)
         println("adfadfadfadfadf444#$$"+friends.size)
+
+        var nowRefresh = false
+        db.collection("PostInfo").get().addOnSuccessListener {
+            for (doc in it) {
+                val uid = doc.id
+                val profile_img = doc["profile_img"] as String
+                val imgUrl = doc["img"] as String
+                val likes = doc["likes"] as Number
+                val time = doc["time"] as Timestamp
+                val whoPosted = doc["whoPosted"] as String
+                val comments = doc["testing"] as ArrayList<Map<String,String>>
+
+                viewModel.addItem(Item(profile_img, uid, imgUrl, likes, time, whoPosted, comments))
+                adapter.notifyItemInserted(viewModel.itemNotified)
+            }
+        }
         snapshotListener = db.collection("PostInfo").addSnapshotListener { snapshot, error ->
 
             for (doc in snapshot!!.documentChanges) {
@@ -56,19 +72,19 @@ class PostFragment : Fragment(R.layout.post_layout) {
                     DocumentChange.Type.ADDED -> {
                         val document = doc.document
                         val whoPosted = document["whoPosted"] as String
-                        for (it in friends) {
-                            println("adfadfadfadfadf#$$"+it)
-                            if ( it == whoPosted) {
-                                val uid = doc.document.id
-                                val profile_img = document["profile_img"] as String
-                                val imgUrl = document["img"] as String
-                                val likes = document["likes"] as Number
-                                val time = document["time"] as Timestamp
-                                val comments = document["testing"] as ArrayList<Map<String,String>>
-
-                                viewModel.addItem(Item(profile_img, uid, imgUrl, likes, time, whoPosted, comments))
-                            }
-                        }
+                        //for (it in friends) {
+                        //    println("adfadfadfadfadf#$$"+it)
+                         //   if ( it == whoPosted) {
+//                                val uid = doc.document.id
+//                                val profile_img = document["profile_img"] as String
+//                                val imgUrl = document["img"] as String
+//                                val likes = document["likes"] as Number
+//                                val time = document["time"] as Timestamp
+//                                val comments = document["testing"] as ArrayList<Map<String,String>>
+//
+//                                viewModel.addItem(Item(profile_img, uid, imgUrl, likes, time, whoPosted, comments))
+                         //   }
+                        //}
                         //viewModel.addItem(Item(uid, imgUrl, likes, time, whoPosted, comments))
                         //adapter.notifyItemInserted(viewModel.itemNotified)
                     }
@@ -98,7 +114,7 @@ class PostFragment : Fragment(R.layout.post_layout) {
 
 
         binding.refresh.setOnRefreshListener {
-            adapter.notifyItemInserted(viewModel.itemNotified)
+            //adapter.notifyItemInserted(viewModel.itemNotified)
             //snapshotListener?.remove()
             binding.refresh.isRefreshing=false
         }
