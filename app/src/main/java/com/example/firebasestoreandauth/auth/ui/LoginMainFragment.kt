@@ -92,7 +92,6 @@ class LoginMainFragment : Fragment() {
         //구글 OAuth를 이용한 로그인 설정
         fbGoogleSignIn =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-                run {
                     if (it.resultCode == AppCompatActivity.RESULT_OK) {
                         val task = GoogleSignIn.getSignedInAccountFromIntent(it.data)
                         try {
@@ -107,7 +106,6 @@ class LoginMainFragment : Fragment() {
                             Log.w(TAG, "Google sign in failed", e)
                         }
                     }
-                }
             }
         googleSignInClient = GoogleSignIn.getClient(
             requireContext(),

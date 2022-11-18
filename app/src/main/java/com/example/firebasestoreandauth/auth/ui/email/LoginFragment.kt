@@ -27,14 +27,10 @@ class LoginFragment : Fragment() {
     private lateinit var auth: FirebaseAuth
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
-
         _binding = FragmentEmailLoginBinding.inflate(inflater, container, false)
         return binding.root
-
     }
 
     override fun onDestroyView() {
@@ -75,17 +71,19 @@ class LoginFragment : Fragment() {
         )
         loginButton.setOnClickListener {
             loadingProgressBar.visibility = View.VISIBLE
-
             auth.signInWithEmailAndPassword(
                 usernameEditText.text.toString(),
                 passwordEditText.text.toString()
             ).addOnCompleteListener {
                 if (it.isSuccessful) {
-                    activity?.finish()
-//                    val myDoc = getReferenceOfMine()?.get()?.isSuccessful
-//                    if (myDoc == false)
-//                        view?.findNavController()
-//                            ?.navigate(R.id.action_emailLoginFragment_to_setNickNameFragment)
+                    getReferenceOfMine()?.get()?.addOnCompleteListener {
+                        if (it.result.exists()) {
+                            activity?.finish()
+                        } else {
+                            view.findNavController()
+                                .navigate(R.id.action_emailLoginFragment_to_setNickNameFragment)
+                        }
+                    }
                 } else {
                     val activity = activity
                     if (activity != null)
@@ -99,8 +97,8 @@ class LoginFragment : Fragment() {
             }
         }
         binding.signUpButton.setOnClickListener {
-            view?.findNavController()
-                ?.navigate(R.id.action_emailLoginFragment_to_emailSignUpFragment)
+            view.findNavController()
+                .navigate(R.id.action_emailLoginFragment_to_emailSignUpFragment)
         }
     }
 }
