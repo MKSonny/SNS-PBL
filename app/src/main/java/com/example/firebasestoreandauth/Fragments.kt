@@ -38,20 +38,37 @@ class PostFragment : Fragment(R.layout.post_layout) {
 
         adapter = MyAdapter(db, navigate, viewModel)
 
+        var friends = ArrayList<String>()
+        // 로그인 후 나의 문서 코드를 document 안에 수정합니다.
+        db.collection("SonUsers").document("UXEKfhpQLYnVFXCTFl9P").get().addOnSuccessListener {
+            val friends2 = it["friends"] as ArrayList<String>
+            for (str in friends2) {
+                val temp = str
+                friends.add(temp)
+            }
+        }
+        //for (it in friends)
+        println("adfadfadfadfadf444#$$"+friends.size)
         snapshotListener = db.collection("PostInfo").addSnapshotListener { snapshot, error ->
+
             for (doc in snapshot!!.documentChanges) {
                 when (doc.type) {
                     DocumentChange.Type.ADDED -> {
                         val document = doc.document
-                        val uid = doc.document.id
-                        val profile_img = document["profile_img"] as String
-                        val imgUrl = document["img"] as String
-                        val likes = document["likes"] as Number
-                        val time = document["time"] as Timestamp
                         val whoPosted = document["whoPosted"] as String
-                        val comments = document["testing"] as ArrayList<Map<String,String>>
+                        for (it in friends) {
+                            println("adfadfadfadfadf#$$"+it)
+                            if ( it == whoPosted) {
+                                val uid = doc.document.id
+                                val profile_img = document["profile_img"] as String
+                                val imgUrl = document["img"] as String
+                                val likes = document["likes"] as Number
+                                val time = document["time"] as Timestamp
+                                val comments = document["testing"] as ArrayList<Map<String,String>>
 
-                        viewModel.addItem(Item(profile_img, uid, imgUrl, likes, time, whoPosted, comments))
+                                viewModel.addItem(Item(profile_img, uid, imgUrl, likes, time, whoPosted, comments))
+                            }
+                        }
                         //viewModel.addItem(Item(uid, imgUrl, likes, time, whoPosted, comments))
                         //adapter.notifyItemInserted(viewModel.itemNotified)
                     }
