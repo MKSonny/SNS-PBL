@@ -1,7 +1,6 @@
 package com.example.firebasestoreandauth
 
 import android.content.Intent
-import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -18,6 +17,7 @@ import com.example.firebasestoreandauth.test.SearchFriendActivity
 import com.example.firebasestoreandauth.wrapper.getReferenceOfMine
 import com.example.firebasestoreandauth.wrapper.toUser
 import com.google.firebase.Timestamp
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
@@ -133,7 +133,7 @@ class FriendsFragment : Fragment(R.layout.friends_layout) {
             }
             if (snapshot != null && snapshot.exists()) {
                 val user = snapshot.toUser()
-                if (user.UID == User.INVALID_USER) return@addSnapshotListener
+                if (user.uid == User.INVALID_USER) return@addSnapshotListener
                 Log.d(TAG, "Current data: ${user}")
                 friendModel.friend.setList(user.friends!!)
                 friendModel.requestReceived.setList(user.requestReceived!!.toList())
@@ -145,6 +145,9 @@ class FriendsFragment : Fragment(R.layout.friends_layout) {
         binding.startFindFriendButton.setOnClickListener {
             val intent = Intent(activity, SearchFriendActivity::class.java)
             startActivity(intent)
+        }
+        binding.signOut.setOnClickListener {
+            Firebase.auth.signOut()
         }
 
     }
@@ -164,13 +167,13 @@ class CommentFragment : Fragment(R.layout.comment_layout) {
         super.onCreate(savedInstanceState)
 
         val mainActivity = activity as MainActivity
-        mainActivity.HideBottomNav(true)
+        mainActivity.hideBottomNav(true)
     }
 
     override fun onDestroy() {
         super.onDestroy()
         val mainActivity = activity as MainActivity
-        mainActivity.HideBottomNav(false)
+        mainActivity.hideBottomNav(false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

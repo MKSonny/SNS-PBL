@@ -4,11 +4,11 @@ package com.example.firebasestoreandauth.wrapper
 
 import android.util.Log
 import com.example.firebasestoreandauth.DTO.User
-import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.QuerySnapshot
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 
 /**
  * 사용자를 찾는 DocumentSnapshot 에서
@@ -17,8 +17,8 @@ import com.google.firebase.firestore.QuerySnapshot
 fun DocumentSnapshot.toUser(): User {
     return this.data.let {
         User(
-            UID = it?.get("uid").toString() ?: User.INVALID_USER,
-            NickName = it?.get("nickName").toString() ?: User.INVALID_USER,
+            uid = it?.get("uid").toString() ?: User.INVALID_USER,
+            nickname = it?.get("nickName").toString() ?: User.INVALID_USER,
             BirthDay = it?.get("birthDay").toString() ?: User.INVALID_USER,
             profileImage = it?.get("profileImage").toString() ?: User.INVALID_USER,
             friends = it?.get("friends")
@@ -84,4 +84,10 @@ fun DocumentReference.removeReceivedRequest(uid: String) {
 fun FirebaseAuth.signOut() {
     Log.d("FirebaseAuth", "${this.currentUser?.displayName}이/가 로그아웃 했습니다.")
     this.signOut()
+}
+
+fun User.toFirebase(){
+    val firestore = Firebase.firestore
+    val userCollection = firestore.collection("Users")
+    userCollection.document(this.uid.toString()).set(this)
 }

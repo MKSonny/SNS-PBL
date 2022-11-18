@@ -54,7 +54,6 @@ open interface OnAuthCompleteListener {
      *  로그인한 유저의 정보를 이용해서 할 것들
      */
     fun onSuccess() {
-
     }
 
     /**

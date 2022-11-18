@@ -15,7 +15,7 @@ import com.example.firebasestoreandauth.DTO.User
 import com.example.firebasestoreandauth.databinding.ActivitySearchFriendBinding
 import com.example.firebasestoreandauth.databinding.FriendQueryItemLayoutBinding
 import com.example.firebasestoreandauth.wrapper.getReferenceOfMine
-import com.example.firebasestoreandauth.wrapper.getUserDocumentReference
+import com.example.firebasestoreandauth.wrapper.getUserDocumentWith
 import com.example.firebasestoreandauth.wrapper.sendRequestToFriend
 import com.example.firebasestoreandauth.wrapper.toUser
 import com.google.firebase.auth.ktx.auth
@@ -67,9 +67,9 @@ class SearchFriendActivity : AppCompatActivity() {
             //For test purpose only!
             if (idx > queryResult.size - 1)
                 return
-            val uid = queryResult[idx].UID
+            val uid = queryResult[idx].uid
             if (uid != null) {
-                val reference = getUserDocumentReference(uid)
+                val reference = getUserDocumentWith(uid)
                 reference?.get()?.addOnSuccessListener { _ ->
                     reference.sendRequestToFriend(uid)
                 }
@@ -110,7 +110,7 @@ class SearchResultViewModel() : ViewModel() {
     fun getItem(idx: Int): User {
         return (
                 if (idx > _list.size)
-                    User(UID = "-1", profileImage = "-1")
+                    User(uid = "-1", profileImage = "-1")
                 else
                     _list[idx])
     }
@@ -139,18 +139,18 @@ class SearchResultAdapter(val viewModel: SearchResultViewModel) :
         private val addButton = binding.queryFriendAdd
         fun setContent(idx: Int) {
             val record = viewModel.getItem(idx)
-            if (record.UID != "-1")
-                nickname.text = record.NickName
+            if (record.uid != "-1")
+                nickname.text = record.nickname
             //TODO: GetImage From Storage
             addButton.setOnClickListener {
-                if (Firebase.auth.currentUser != null && record.UID != null) {
-                    val uid = record.UID
-                    val reference = getUserDocumentReference(uid!!)
+                if (Firebase.auth.currentUser != null && record.uid != null) {
+                    val uid = record.uid
+                    val reference = getUserDocumentWith(uid!!)
                     reference?.get()?.addOnSuccessListener { _ ->
                         reference.sendRequestToFriend(uid)
                     }
                 }
-                Log.d("SearchResultAdapter", "You clicked ${record.NickName}")
+                Log.d("SearchResultAdapter", "You clicked ${record.nickname}")
             }
 
         }

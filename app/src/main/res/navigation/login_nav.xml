@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/login_nam"
+    app:startDestination="@id/loginMainFragment">
+
+    <fragment
+        android:id="@+id/loginMainFragment"
+        android:name="com.example.firebasestoreandauth.auth.ui.LoginMainFragment"
+        android:label="LoginMainFragment" >
+        <action
+            android:id="@+id/action_loginMainFragment_to_emailLoginFragment"
+            app:destination="@id/emailLoginFragment" />
+        <action
+            android:id="@+id/action_loginMainFragment_to_setNickNameFragment"
+            app:destination="@id/setNickNameFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/emailLoginFragment"
+        android:name="com.example.firebasestoreandauth.auth.ui.email.LoginFragment"
+        android:label="fragment_email_login"
+        tools:layout="@layout/fragment_email_login" >
+        <action
+            android:id="@+id/action_emailLoginFragment_to_emailSignUpFragment"
+            app:destination="@id/emailSignUpFragment" />
+        <action
+            android:id="@+id/action_emailLoginFragment_to_setNickNameFragment"
+            app:destination="@id/setNickNameFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/emailSignUpFragment"
+        android:name="com.example.firebasestoreandauth.auth.ui.email.SignUpFragment"
+        android:label="EmailSignUpFragment" >
+        <action
+            android:id="@+id/action_emailSignUpFragment_to_setNickNameFragment"
+            app:destination="@id/setNickNameFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/setNickNameFragment"
+        android:name="com.example.firebasestoreandauth.auth.ui.detail.SetNickNameFragment"
+        android:label="fragment_set_nick_name"
+        tools:layout="@layout/fragment_set_nick_name" >
+        <action
+            android:id="@+id/action_setNickNameFragment_to_setBirthdayFragment"
+            app:destination="@id/setBirthdayFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/setBirthdayFragment"
+        android:name="com.example.firebasestoreandauth.auth.ui.detail.SetBirthdayFragment"
+        android:label="SetBirthdayFragment" />
+</navigation>
