@@ -1,6 +1,7 @@
 package com.example.firebasestoreandauth.wrapper
 
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -19,6 +20,16 @@ fun getUserDocumentReference(uid: String): DocumentReference? {
     if (uid.isEmpty()) return null
     val userCollection = firestore.collection("Users")
     return userCollection.document(uid)
+}
+
+fun getUserCollectionReference():CollectionReference{
+    val firestore = Firebase.firestore
+    return firestore.collection("SonUsers")
+}
+
+fun getPostCollectionReference():CollectionReference{
+    val firestore = Firebase.firestore
+    return firestore.collection("PostInfo")
 }
 
 /**

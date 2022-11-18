@@ -4,7 +4,9 @@ package com.example.firebasestoreandauth.wrapper
 
 import android.util.Log
 import com.example.firebasestoreandauth.DTO.User
+import com.example.firebasestoreandauth.Item
 import com.google.android.gms.tasks.Task
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
@@ -79,6 +81,27 @@ fun DocumentReference.removeReceivedRequest(uid: String) {
             }
         }
     }
+}
+
+fun DocumentSnapshot.toPostItem(): Item {
+    val whoPosted = (this["whoPosted"] ?: Item.INVALID_ITEM) as String
+    val document = this
+    val uid = this.id
+    val profile_img = (document["profile_img"] ?: "") as String
+    val imgUrl =
+        (document["img"] ?: "") as String
+    val likes =
+        (document["likes"] ?: "") as Number
+    val time =
+        (document["time"] ?: Timestamp.now()) as Timestamp
+    val comments =
+        (document["testing"] ?: ArrayList<Map<String, String>>()) as ArrayList<Map<String, String>>
+
+    return Item(
+        profile_img, uid, imgUrl,
+        likes, time, whoPosted, comments
+    )
+
 }
 
 fun FirebaseAuth.signOut() {

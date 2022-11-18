@@ -12,7 +12,11 @@ data class Item(
     val time: Timestamp,
     val whoPosted: String,
     var comments: ArrayList<Map<String, String>>
-)
+){
+    companion object{
+        const val INVALID_ITEM = "-1"
+    }
+}
 
 enum class ItemNotify {
     ADD, UPDATE, DELETE
