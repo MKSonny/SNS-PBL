@@ -40,17 +40,15 @@ class PostFragment : Fragment(R.layout.post_layout) {
 
         var friends = ArrayList<String>()
         // 로그인 후 나의 문서 코드를 document 안에 수정합니다.
-        db.collection("SonUsers").document("UXEKfhpQLYnVFXCTFl9P").get().addOnSuccessListener {
-            val friends2 = it["friends"] as ArrayList<String>
-            for (str in friends2) {
-                val temp = str
-                friends.add(temp)
-            }
-        }
+
+
+        //}
         //for (it in friends)
-        println("adfadfadfadfadf444#$$"+friends.size)
+        println("adfadfadfadfadf444#$$" + friends.size)
 
         var nowRefresh = false
+    db.collection("SonUsers").document("UXEKfhpQLYnVFXCTFl9P").get().addOnSuccessListener {
+        val friends = it["friends"] as ArrayList<String>
         db.collection("PostInfo").get().addOnSuccessListener {
             for (doc in it) {
                 val uid = doc.id
@@ -59,10 +57,16 @@ class PostFragment : Fragment(R.layout.post_layout) {
                 val likes = doc["likes"] as Number
                 //val time = doc["time"] as Timestamp
                 val whoPosted = doc["whoPosted"] as String
-                val comments = doc["testing"] as ArrayList<Map<String,String>>
+
+                val comments = doc["testing"] as ArrayList<Map<String, String>>
 
                 //viewModel.addItem(Item(profile_img, uid, imgUrl, likes, time, whoPosted, comments))
-                viewModel.addItem(Item(profile_img, uid, imgUrl, likes, whoPosted, comments))
+
+                for (friend in friends) {
+                    if (whoPosted == friend)
+                        viewModel.addItem(Item(profile_img, uid, imgUrl, likes, whoPosted, comments))
+                }
+
                 adapter.notifyItemInserted(viewModel.itemNotified)
             }
             nowRefresh = true
@@ -74,15 +78,28 @@ class PostFragment : Fragment(R.layout.post_layout) {
                         DocumentChange.Type.ADDED -> {
                             val document = doc.document
                             val whoPosted = document["whoPosted"] as String
+                            for (friend in friends) {
+                                if (whoPosted != friend)
+                                    continue
+                            }
                             val uid = doc.document.id
                             val profile_img = document["profile_img"] as String
                             val imgUrl = document["img"] as String
                             val likes = document["likes"] as Number
 //                            val time = document["time"] as Timestamp
-                            val comments = document["testing"] as ArrayList<Map<String,String>>
+                            val comments = document["testing"] as ArrayList<Map<String, String>>
 
                             //viewModel.addItem(Item(profile_img, uid, imgUrl, likes, time, whoPosted, comments))
-                            viewModel.addItem(Item(profile_img, uid, imgUrl, likes, whoPosted, comments))
+                            viewModel.addItem(
+                                Item(
+                                    profile_img,
+                                    uid,
+                                    imgUrl,
+                                    likes,
+                                    whoPosted,
+                                    comments
+                                )
+                            )
                             //adapter.notifyItemInserted(viewModel.itemNotified)
 
                         }
@@ -94,6 +111,7 @@ class PostFragment : Fragment(R.layout.post_layout) {
                 }
             }
         }
+    }
     }
 
     override fun onDestroy() {
