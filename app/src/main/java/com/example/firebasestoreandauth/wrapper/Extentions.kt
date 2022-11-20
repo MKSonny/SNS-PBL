@@ -27,7 +27,6 @@ fun DocumentSnapshot.toUser(): User {
             requestReceived = (it?.get("requestReceived") ?: listOf<String>()) as List<String>,
         )
     }
-
 }
 
 /**
@@ -50,7 +49,7 @@ fun DocumentReference.sendRequestToFriend() {
                 val newRequest = requestReceived.toMutableList()
                 newRequest.add(uid)
                 other.requestReceived = newRequest
-                getReferenceOfMine()?.apply{
+                getReferenceOfMine()?.apply {
                     val myDoc = this
                     get().addOnSuccessListener { snapshot ->
                         val me = snapshot.toUser()
@@ -78,20 +77,29 @@ fun DocumentReference.sendRequestToFriend() {
  *  친구요청을 삭제하는 Extension Function
  *  @param uid 삭제하려는 대상
  */
-fun DocumentReference.removeReceivedRequest(uid: String) {
-    this.get().addOnCompleteListener { response ->
-        run {
-            val data = response.result.data
-            val requestReceived = data?.get("requestReceived")?.run {
-                this as MutableList<String>?
-            }
-            if (requestReceived != null) {
-                for (item in requestReceived) {
-                    if (item == uid) {
-                        requestReceived.remove(uid)
-                    }
+fun DocumentReference.rejectFriendRequest(uid: String) {
+    this.apply {
+        val usr = Firebase.auth.currentUser ?: return
+        val uid = usr.uid
+        val othDoc = this
+        get().addOnSuccessListener { snapshot ->
+            val other = snapshot.toUser()
+            val otherSent = (other.requestSent ?: listOf())
+            if (other.uid == User.INVALID_USER)
+                return@addOnSuccessListener
+            otherSent.filter { it != uid }
+            other.requestSent = otherSent
+            getReferenceOfMine()?.apply {
+                val myDoc = this
+                get().addOnSuccessListener { mySnapshot ->
+                    val me = mySnapshot.toUser()
+                    val received = (me.requestReceived ?: listOf())
+                    if (me.uid == User.INVALID_USER)
+                        return@addOnSuccessListener
+                    val newReceived = received.filter { it != other.uid }
+                    myDoc.set(me)
+                    othDoc.set(other)
                 }
-                this.update(mapOf("requestReceived" to requestReceived))
             }
         }
     }
@@ -124,6 +132,35 @@ fun DocumentReference.acceptFriendRequest(uid: String) {
                     newOthFriends.add(me.uid!!)
                     other.friends = newOthFriends
                     other.requestSent = newOthSent
+                    othDoc.set(other)
+                    myDoc.set(me)
+                }
+            }
+
+        }
+    }
+}
+
+fun DocumentReference.deleteFriend() {
+    this.apply {
+        val othDoc = this
+        get().addOnSuccessListener { snapshot ->
+            val other = snapshot.toUser()
+            val othFriends = (other.friends ?: listOf())
+            val auth = Firebase.auth
+            if (other.uid == User.INVALID_USER || auth.currentUser == null)
+                return@addOnSuccessListener
+            val newOthFriends = othFriends.filter { it != auth.currentUser!!.uid }
+            other.friends = newOthFriends
+            getReferenceOfMine()?.apply {
+                val myDoc = this
+                get().addOnSuccessListener { mySnapshot ->
+                    val me = mySnapshot.toUser()
+                    val myFriends = (me.friends?: listOf())
+                    if (me.uid == User.INVALID_USER)
+                        return@addOnSuccessListener
+                    val newMyFriends = myFriends.filter { it != other.uid }
+                    me.friends =newMyFriends
                     othDoc.set(other)
                     myDoc.set(me)
                 }
