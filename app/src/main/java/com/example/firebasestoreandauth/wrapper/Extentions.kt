@@ -9,7 +9,6 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.firestore.ktx.snapshots
 import com.google.firebase.ktx.Firebase
 
 /**
@@ -35,14 +34,41 @@ fun DocumentSnapshot.toUser(): User {
  *  친구요청을 보내는 Extension Function
  */
 fun DocumentReference.sendRequestToFriend() {
-    val reference = this
     val cu = Firebase.auth.currentUser
-    val uid = cu?.uid ?: ""
+    val uid = cu?.uid ?: ""//현재 사용자의 uid를 가져옴
     if (uid.isNotEmpty()) {
-        this.get().addOnSuccessListener { snapshot ->
-            val other = snapshot.toUser()
-            if (other.uid == User.INVALID_USER) {
+        this.apply {
+            val othDoc = this
+            get().addOnSuccessListener { snapshot ->
+                val other = snapshot.toUser()
+                val requestReceived = (other.requestReceived ?: listOf())
+                val friends = (other.friends ?: listOf())
+                if (other.uid == User.INVALID_USER || requestReceived.contains(uid)
+                    || friends.contains(uid)
+                ) return@addOnSuccessListener
 
+                val newRequest = requestReceived.toMutableList()
+                newRequest.add(uid)
+                other.requestReceived = newRequest
+                getReferenceOfMine()?.apply{
+                    val myDoc = this
+                    get().addOnSuccessListener { snapshot ->
+                        val me = snapshot.toUser()
+                        val oUid = other.uid
+                        val requestSent = me.requestSent ?: listOf()
+                        val friends = me.friends ?: listOf()
+                        if (oUid == null || me.uid == User.INVALID_USER
+                            || requestSent.contains(oUid) || friends.contains(oUid)
+                        )
+                            return@addOnSuccessListener
+                        val newSent = requestSent.toMutableList()
+                        newSent.add(oUid)
+
+                        me.requestSent = newSent
+                        myDoc.set(me)
+                        othDoc.set(other)
+                    }
+                }
             }
         }
     }
@@ -72,47 +98,37 @@ fun DocumentReference.removeReceivedRequest(uid: String) {
 }
 
 fun DocumentReference.acceptFriendRequest(uid: String) {
-    this.get().addOnCompleteListener { response ->
-        run {
-            val data = response.result.data
-            val requestReceived =
-                (data?.get("requestReceived") ?: listOf<String>()) as MutableList<String>
-            val currentFriend = (data?.get("friends") ?: listOf<String>()) as MutableList<String>
+    this.apply {
+        val myDoc = this
+        get().addOnSuccessListener { snapshot ->
+            val me = snapshot.toUser()
+            val myFriends = (me.friends ?: listOf())
+            val myReceived = (me.requestReceived ?: listOf())
+            if (me.uid == User.INVALID_USER || myFriends.contains(uid))
+                return@addOnSuccessListener
+            val newFriends = myFriends.toMutableList()
+            newFriends.add(uid)
+            val newReceived = myReceived.toMutableList().filter { it != uid }
+            me.friends = newFriends
+            me.requestReceived = newReceived
+            getUserDocumentWith(uid)?.apply {
+                val othDoc = this
+                get().addOnSuccessListener { snapshot ->
+                    val other = snapshot.toUser()
+                    val otherSent = (other.requestSent ?: listOf())
+                    val otherFriends = (other.friends ?: listOf())
+                    if (other.uid == User.INVALID_USER)
+                        return@addOnSuccessListener
+                    val newOthSent = otherSent.filter { it != me.uid }
+                    val newOthFriends = otherFriends.toMutableList()
+                    newOthFriends.add(me.uid!!)
+                    other.friends = newOthFriends
+                    other.requestSent = newOthSent
+                    othDoc.set(other)
+                    myDoc.set(me)
+                }
+            }
 
-            requestReceived?.let { requests ->
-                val newRequest = requests.filter {
-                    it != uid
-                }
-                this.update(mapOf("requestReceived" to newRequest))
-            }
-            currentFriend?.let { friends ->
-                val res = friends.filter {
-                    it == uid
-                }
-                if (res.isEmpty()) {
-                    friends.add(uid)
-                    this.update(mapOf("friends" to friends))
-                }
-            }
-            //welcome to callback hell
-            getUserDocumentWith(uid)?.let {
-                get().addOnCompleteListener { snapshot ->
-                    if (snapshot.isSuccessful) {
-                        val other = snapshot.result.toUser()
-                        val me = Firebase.auth.currentUser?.uid ?: ""
-                        if (me.isEmpty())
-                            return@addOnCompleteListener
-                        val friends = (other.friends ?: listOf()).toMutableList()
-                        if (!friends.contains(me))
-                            friends.add(me)
-                        val sent = (other.requestSent ?: listOf()).filter {
-                            it != me
-                        }
-                        it.update(mapOf("friends" to friends))
-                        it.update(mapOf("requestSent" to sent))
-                    }
-                }
-            }
         }
     }
 }
