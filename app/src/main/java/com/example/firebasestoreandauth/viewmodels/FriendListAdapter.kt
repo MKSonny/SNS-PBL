@@ -1,9 +1,8 @@
-package com.example.firebasestoreandauth
+package com.example.firebasestoreandauth.viewmodels
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.example.firebasestoreandauth.DTO.User
 import com.example.firebasestoreandauth.databinding.FriendListItemBinding
 
 class FriendListAdapter(private val viewModel: FriendViewModel) :

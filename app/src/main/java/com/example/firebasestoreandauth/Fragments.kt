@@ -1,23 +1,14 @@
 package com.example.firebasestoreandauth
 
-import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.firebasestoreandauth.DTO.User
 import com.example.firebasestoreandauth.databinding.CommentLayoutBinding
-import com.example.firebasestoreandauth.databinding.FriendsLayoutBinding
 import com.example.firebasestoreandauth.databinding.PostLayoutBinding
-import com.example.firebasestoreandauth.test.SearchFriendActivity
-import com.example.firebasestoreandauth.wrapper.getReferenceOfMine
-import com.example.firebasestoreandauth.wrapper.toUser
 import com.google.firebase.Timestamp
-import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
@@ -44,16 +35,14 @@ class PostFragment : Fragment(R.layout.post_layout) {
                     DocumentChange.Type.ADDED -> {
                         val document = doc.document
                         val uid = doc.document.id
-                        val profile_img = document["profile_img"] as String
-                        val imgUrl = document["img"] as String
-                        val likes = document["likes"] as Number
-                        val time = document["time"] as Timestamp
-                        val whoPosted = document["whoPosted"] as String
-                        val comments = document["comments"] as ArrayList<Map<String,String>>
+                        val profile_img = (document["profile_img"]?:"") as String
+                        val imgUrl = (document["img"]?:"") as String
+                        val likes = (document["likes"]?:-1) as Number
+                        val time = (document["time"]?: Timestamp.now()) as Timestamp
+                        val whoPosted = (document["whoPosted"]?:"") as String
+                        val comments = (document["comments"] ?: arrayListOf<Map<String,String>>()) as ArrayList<Map<String,String>>
 
                         viewModel.addItem(Item(profile_img, uid, imgUrl, likes, time, whoPosted, comments))
-                        //viewModel.addItem(Item(uid, imgUrl, likes, time, whoPosted, comments))
-                        //adapter.notifyItemInserted(viewModel.itemNotified)
                     }
                     DocumentChange.Type.REMOVED -> {
 
@@ -91,70 +80,6 @@ class PostFragment : Fragment(R.layout.post_layout) {
         binding.recyclerView.adapter = adapter
         binding.recyclerView.layoutManager = LinearLayoutManager(context)
         binding.recyclerView.setHasFixedSize(true)
-    }
-}
-
-class ProfileFragment : Fragment(R.layout.profile_layout) {
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-    }
-}
-
-class FriendsFragment : Fragment(R.layout.friends_layout) {
-    var snapshotListener: ListenerRegistration? = null
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        val binding = FriendsLayoutBinding.bind(view)
-        val friendModel: FriendViewModel by viewModels()
-        val listAdapter = FriendListAdapter(friendModel)
-        val requestAdapter = RequestReceivedAdapter(friendModel)
-
-        binding.recyclerFriendList.adapter = listAdapter
-        binding.recyclerFriendList.layoutManager = LinearLayoutManager(context)
-        binding.recyclerFriendList.setHasFixedSize(true)
-
-        binding.recyclerReceivedList.adapter = requestAdapter
-        binding.recyclerReceivedList.layoutManager = LinearLayoutManager(context)
-        binding.recyclerReceivedList.setHasFixedSize(true)
-
-        friendModel.friend.observe(viewLifecycleOwner) {
-            listAdapter.notifyDataSetChanged()
-        }
-        friendModel.requestReceived.observe(viewLifecycleOwner) {
-            requestAdapter.notifyDataSetChanged()
-        }
-
-        snapshotListener = getReferenceOfMine()?.addSnapshotListener { snapshot, e ->
-            val TAG = "SnapshotListener"
-            if (e != null) {
-                Log.w(TAG, "Listen failed.", e)
-                return@addSnapshotListener
-            }
-            if (snapshot != null && snapshot.exists()) {
-                val user = snapshot.toUser()
-                if (user.uid == User.INVALID_USER) return@addSnapshotListener
-                Log.d(TAG, "Current data: ${user}")
-                friendModel.friend.setList(user.friends!!)
-                friendModel.requestReceived.setList(user.requestReceived!!.toList())
-            } else {
-                Log.d(TAG, "Current data: null")
-            }
-        }
-
-        binding.startFindFriendButton.setOnClickListener {
-            val intent = Intent(activity, SearchFriendActivity::class.java)
-            startActivity(intent)
-        }
-        binding.signOut.setOnClickListener {
-            Firebase.auth.signOut()
-        }
-
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        snapshotListener?.remove()
     }
 }
 

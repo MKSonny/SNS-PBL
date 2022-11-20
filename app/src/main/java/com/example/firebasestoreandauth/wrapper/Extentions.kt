@@ -18,7 +18,7 @@ fun DocumentSnapshot.toUser(): User {
     return this.data.let {
         User(
             uid = it?.get("uid").toString() ?: User.INVALID_USER,
-            nickname = it?.get("nickName").toString() ?: User.INVALID_USER,
+            nickname = it?.get("nickname").toString() ?: User.INVALID_USER,
             BirthDay = it?.get("birthDay").toString() ?: User.INVALID_USER,
             profileImage = it?.get("profileImage").toString() ?: User.INVALID_USER,
             friends = it?.get("friends")
@@ -62,7 +62,6 @@ fun DocumentReference.sendRequestToFriend(uid: String) {
  *  @param uid 삭제하려는 대상
  */
 fun DocumentReference.removeReceivedRequest(uid: String) {
-    val reference = this
     this.get().addOnCompleteListener { response ->
         run {
             val data = response.result.data
@@ -81,12 +80,48 @@ fun DocumentReference.removeReceivedRequest(uid: String) {
     }
 }
 
+fun DocumentReference.acceptFriendRequest(uid: String) {
+    this.get().addOnCompleteListener { response ->
+        run {
+            val data = response.result.data
+            val requestReceived = (data?.get("requestReceived")?: listOf<String>())  as MutableList<String>
+            val currentFriend = (data?.get("friends")?: listOf<String>() ) as MutableList<String>
+
+            requestReceived?.let { requests ->
+                val newRequest = requests.filter {
+                    it !== uid
+                }
+                this.update(mapOf("requestReceived" to newRequest))
+            }
+            currentFriend?.let { friends ->
+                val res = friends.filter {
+                    it === uid
+                }
+                if (res.isEmpty()) {
+                    friends.add(uid)
+                    this.update(mapOf("friends" to friends))
+                }
+            }
+
+        }
+
+    }
+}
+
 fun FirebaseAuth.signOut() {
     Log.d("FirebaseAuth", "${this.currentUser?.displayName}이/가 로그아웃 했습니다.")
     this.signOut()
 }
 
-fun User.toFirebase(){
+fun User.toFirebase(callback: () -> Unit?) {
+    val firestore = Firebase.firestore
+    val userCollection = firestore.collection("Users")
+    userCollection.document(this.uid.toString()).set(this).addOnSuccessListener {
+        callback()
+    }
+}
+
+fun User.toFirebase() {
     val firestore = Firebase.firestore
     val userCollection = firestore.collection("Users")
     userCollection.document(this.uid.toString()).set(this)

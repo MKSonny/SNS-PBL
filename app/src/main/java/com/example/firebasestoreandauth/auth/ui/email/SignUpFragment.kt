@@ -80,7 +80,6 @@ class SignUpFragment : Fragment() {
                     if (myDoc == false)
                         view?.findNavController()
                             ?.navigate(R.id.action_emailSignUpFragment_to_setNickNameFragment)
-//                    activity?.finish()
                 } else {
                     val activity = activity
                     if (activity != null)

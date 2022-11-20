@@ -1,4 +1,4 @@
-package com.example.firebasestoreandauth
+package com.example.firebasestoreandauth.viewmodels
 
 import androidx.lifecycle.ViewModel
 

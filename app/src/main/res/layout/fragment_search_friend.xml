@@ -4,12 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/friendsFragment"
-    >
-
+    tools:context=".test.SearchFriendActivity">
 
     <androidx.appcompat.widget.Toolbar
-        android:id="@+id/friend_toolbar"
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?attr/colorPrimary"
@@ -18,46 +16,40 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:menu="@menu/friend_menu" />
+        app:menu="@menu/find_friend"
+        app:navigationIcon="@android:drawable/ic_menu_close_clear_cancel">
+
+    </androidx.appcompat.widget.Toolbar>
 
     <TextView
-        android:id="@+id/textView7"
-        android:layout_width="wrap_content"
+        android:id="@+id/searchResult"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:text="TextView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/keyword" />
+
+    <EditText
+        android:id="@+id/keyword"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
         android:layout_marginTop="24dp"
-        android:layout_marginEnd="326dp"
-        android:text="받은 친구 요청"
+        android:layout_marginEnd="24dp"
+        android:ems="10"
+        android:hint="id"
+        android:inputType="textPersonName"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/friend_toolbar" />
+        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_received_list"
+        android:id="@+id/queryHolder"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView7" />
-
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:text="친구 목록"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/recycler_received_list" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_friend_list"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="28dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView" />
-
+        app:layout_constraintTop_toBottomOf="@+id/searchResult" />
 </androidx.constraintlayout.widget.ConstraintLayout>

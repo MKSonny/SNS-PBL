@@ -1,18 +1,27 @@
 package com.example.firebasestoreandauth.test
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.ViewGroup
-import androidx.activity.viewModels
+import android.view.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.firebasestoreandauth.DTO.User
-import com.example.firebasestoreandauth.databinding.ActivitySearchFriendBinding
+import com.example.firebasestoreandauth.R
+import com.example.firebasestoreandauth.databinding.FragmentSearchFriendBinding
 import com.example.firebasestoreandauth.databinding.FriendQueryItemLayoutBinding
 import com.example.firebasestoreandauth.wrapper.getReferenceOfMine
 import com.example.firebasestoreandauth.wrapper.getUserDocumentWith
@@ -22,27 +31,45 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 
-class SearchFriendActivity : AppCompatActivity() {
-    private lateinit var binding: ActivitySearchFriendBinding
+class SearchFriendActivity : Fragment() {
+    private var _binding: FragmentSearchFriendBinding? = null
+    private val binding get() = _binding!!
+    private val viewModel: SearchResultViewModel by viewModels()
+
     private var queryResult = mutableListOf<User>()
-    override fun onCreate(savedInstanceState: Bundle?) {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        super.onCreateView(inflater, container, savedInstanceState)
+        _binding = FragmentSearchFriendBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         super.onCreate(savedInstanceState)
-        binding = ActivitySearchFriendBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        binding.searchButton.setOnClickListener {
-            val keyword = binding.keyword.text.toString() //keyword : Email, NickName, RealName
-            searchFriendWithKeyword(keyword)
-        }
-        binding.requestToFriend.setOnClickListener {
-            sendRequest()
-        }
-
-        val viewModel: SearchResultViewModel by viewModels()
         val adapter = SearchResultAdapter(viewModel)
+        val toolbar = binding.toolbar
 
-        binding.queryHolder.adapter = adapter
-        binding.queryHolder.layoutManager = LinearLayoutManager(this)
-        binding.queryHolder.setHasFixedSize(true)
+        //툴바 세팅
+        binding.apply {
+            queryHolder.adapter = adapter
+            queryHolder.layoutManager = LinearLayoutManager(requireActivity())
+            queryHolder.setHasFixedSize(true)
+        }
+
+        (activity as AppCompatActivity).setSupportActionBar(toolbar)
+        toolbar.title = "친구 찾기"
+        setupMenu()
+
+        viewModel.addObserver(viewLifecycleOwner) { adapter.notifyDataSetChanged() }
 
         getReferenceOfMine()?.addSnapshotListener { snapshot, e ->
             val TAG = "SnapshotListener"
@@ -58,30 +85,54 @@ class SearchFriendActivity : AppCompatActivity() {
         }
     }
 
-    private fun sendRequest() {
-        val uid = Firebase.auth.currentUser?.uid
-        val idx = binding.editIndexButton
-            .text
-            .toString().toInt()
-        if (Firebase.auth.currentUser != null) {
-            //For test purpose only!
-            if (idx > queryResult.size - 1)
-                return
-            val uid = queryResult[idx].uid
-            if (uid != null) {
-                val reference = getUserDocumentWith(uid)
-                reference?.get()?.addOnSuccessListener { _ ->
-                    reference.sendRequestToFriend(uid)
-                }
-            }
-        }
-    }
+    private fun setupMenu() {
+        (requireActivity() as MenuHost)
+            .addMenuProvider(
+                object : MenuProvider {
+                    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                        menuInflater.inflate(R.menu.find_friend, menu)
+                    }
 
+                    override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                        return when (menuItem.itemId) {
+                            R.id.search -> {
+                                val keyword = binding.keyword.text.toString()
+                                searchFriendWithKeyword(keyword)
+                                true
+                            }
+                            else -> {
+                                false
+                            }
+                        }
+                    }
+
+                }, viewLifecycleOwner, Lifecycle.State.RESUMED
+            )
+    }
+//
+//    private fun sendRequest() {
+//        val uid = Firebase.auth.currentUser?.uid
+//        val idx = binding.editIndexButton
+//            .text
+//            .toString().toInt()
+//        if (Firebase.auth.currentUser != null) {
+//            //For test purpose only!
+//            if (idx > queryResult.size - 1)
+//                return
+//            val uid = queryResult[idx].uid
+//            if (uid != null) {
+//                val reference = getUserDocumentWith(uid)
+//                reference?.get()?.addOnSuccessListener { _ ->
+//                    reference.sendRequestToFriend(uid)
+//                }
+//            }
+//        }
+//    }
 
     private fun searchFriendWithKeyword(keyword: String) {
         val db = Firebase.firestore
         db.collection("Users")
-            .whereEqualTo("nickName", keyword)
+            .whereEqualTo("nickname", keyword)
             .get()
             .addOnCompleteListener { it ->
                 if (it.isSuccessful) {
@@ -98,41 +149,48 @@ class SearchFriendActivity : AppCompatActivity() {
             }
     }
 
-}
+    class SearchResultViewModel() : ViewModel() {
+        private var _list: MutableLiveData<List<User>> = MutableLiveData(emptyList())
 
-class SearchResultViewModel() : ViewModel() {
-    private var _list: List<User> = listOf()
+        fun addObserver(lifecycleOwner: LifecycleOwner, callback: ()->Unit){
+            _list.observe(lifecycleOwner){
+               callback()
+            }
+        }
 
-    fun setQueryResult(list: List<User>) {
-        _list = list.toList()
+        fun setQueryResult(list: List<User>) {
+            _list.value = list.toList()
+        }
+
+        fun getItem(idx: Int): User {
+            return (
+                    if (idx > _list.value!!.size)
+                        User(uid = "-1", profileImage = "-1")
+                    else
+                        _list.value!![idx])
+        }
+
+        fun getSize(): Int = _list.value!!.size
     }
-
-    fun getItem(idx: Int): User {
-        return (
-                if (idx > _list.size)
-                    User(uid = "-1", profileImage = "-1")
-                else
-                    _list[idx])
-    }
-
-    fun getSize(): Int = _list.size
-
 }
 
 class SearchResultViewModelFactory(private val context: Context) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(SearchResultViewModel::class.java)) {
+        if (modelClass.isAssignableFrom(SearchFriendActivity.SearchResultViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return SearchResultViewModel() as T
+            return SearchFriendActivity.SearchResultViewModel() as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
 
-class SearchResultAdapter(val viewModel: SearchResultViewModel) :
+class SearchResultAdapter(val viewModel: SearchFriendActivity.SearchResultViewModel) :
     RecyclerView.Adapter<SearchResultAdapter.ViewHolder>() {
 
-    class ViewHolder(binding: FriendQueryItemLayoutBinding, val viewModel: SearchResultViewModel) :
+    class ViewHolder(
+        binding: FriendQueryItemLayoutBinding,
+        val viewModel: SearchFriendActivity.SearchResultViewModel
+    ) :
         RecyclerView.ViewHolder(binding.root) {
         private val nickname = binding.queryFriendNickname
         val image = binding.queryFriendProfileImage

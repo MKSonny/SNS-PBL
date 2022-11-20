@@ -1,5 +1,6 @@
 package com.example.firebasestoreandauth.auth.ui.detail
 
+import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -8,11 +9,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
 import com.example.firebasestoreandauth.DTO.User
 import com.example.firebasestoreandauth.auth.LoginMainViewModel
 import com.example.firebasestoreandauth.databinding.FragmentSetBirthDayBinding
 import com.example.firebasestoreandauth.wrapper.toFirebase
+import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -39,7 +40,7 @@ class SetBirthdayFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val birthday = binding.editNickName
-        val nextButton = binding.button2
+        val nextButton = binding.submit
         val store = Firebase.firestore
         nextButton.isEnabled = false
 
@@ -51,13 +52,19 @@ class SetBirthdayFragment : Fragment() {
             }
         }
         binding.editNickName.addTextChangedListener(afterTextChangedListener)
-        binding.button2.setOnClickListener {
+        binding.submit.setOnClickListener {
             viewModel.setBirthday(birthday.text.toString())
+            val builder = UserProfileChangeRequest.Builder()
+            builder.displayName = viewModel.nickname.value.toString()
+            builder.photoUri = Uri.EMPTY
+
+            Firebase.auth.currentUser?.updateProfile(builder.build())
+
             User(
                 Firebase.auth.currentUser?.uid,
                 nickname = viewModel.nickname.value.toString(),
-                profileImage = null,
-            ).toFirebase()
+                profileImage = "",
+            ).toFirebase { requireActivity().finish() } //가입을 완료하고 프래그먼트를 종료
         }
     }
 

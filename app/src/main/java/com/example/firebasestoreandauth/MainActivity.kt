@@ -43,7 +43,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.postFragment
             )
         )
-        setupActionBarWithNavController(nhf.navController, appbarc)
+//        setupActionBarWithNavController(nhf.navController, appbarc)
 
         //Firebase 초기화
         auth = Firebase.auth

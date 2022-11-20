@@ -1,10 +1,11 @@
-package com.example.firebasestoreandauth
+package com.example.firebasestoreandauth.viewmodels
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.example.firebasestoreandauth.DTO.User
 import com.example.firebasestoreandauth.databinding.RequestReceivedItemLayoutBinding
+import com.example.firebasestoreandauth.wrapper.acceptFriendRequest
+import com.example.firebasestoreandauth.wrapper.getReferenceOfMine
 import com.google.android.material.snackbar.Snackbar
 
 class RequestReceivedAdapter(private val viewModel: FriendViewModel) :
@@ -18,10 +19,11 @@ class RequestReceivedAdapter(private val viewModel: FriendViewModel) :
         private val image = binding.requestReceivedProfileImage
         private val acceptButton = binding.acceptRequestButton
         fun setContent(idx: Int) {
-            val user = viewModel.requestReceived.getItem(idx)
-            nickname.text = user
+            val uid = viewModel.requestReceived.getItem(idx)
+            nickname.text = uid
             acceptButton.setOnClickListener {
-                Snackbar.make(binding.root, "${user}", Snackbar.LENGTH_SHORT).show()
+                getReferenceOfMine()?.acceptFriendRequest(uid)
+                Snackbar.make(binding.root, "$uid", Snackbar.LENGTH_SHORT).show()
             }
         }
 

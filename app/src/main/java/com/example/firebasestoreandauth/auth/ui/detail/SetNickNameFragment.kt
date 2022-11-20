@@ -42,7 +42,7 @@ class SetNickNameFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         val nickname = binding.editNickName
         val goodNickname = binding.usableNickname
-        val nextButton = binding.button2
+        val nextButton = binding.submit
         val store = Firebase.firestore
         goodNickname.visibility = View.INVISIBLE
         nextButton.isEnabled = false
@@ -72,7 +72,7 @@ class SetNickNameFragment : Fragment() {
             }
         }
         binding.editNickName.addTextChangedListener(afterTextChangedListener)
-        binding.button2.setOnClickListener {
+        binding.submit.setOnClickListener {
             viewModel.nickname.value = (nickname.text.toString())
             view?.findNavController()
                 ?.navigate(R.id.action_setNickNameFragment_to_setBirthdayFragment)
