@@ -1,5 +1,4 @@
 package com.example.firebasestoreandauth.viewmodels
-
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -16,7 +15,7 @@ class FriendListAdapter(private val viewModel: FriendViewModel) :
         private val image = binding.friendProfileImage
         fun setContent(idx: Int) {
             val user = viewModel.friend.getItem(idx)
-            nickname.text = user
+            nickname.text = user.nickname
         }
 
     }

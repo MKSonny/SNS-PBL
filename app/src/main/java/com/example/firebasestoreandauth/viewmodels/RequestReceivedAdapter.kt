@@ -18,12 +18,15 @@ class RequestReceivedAdapter(private val viewModel: FriendViewModel) :
         private val nickname = binding.requestReceivedNickname
         private val image = binding.requestReceivedProfileImage
         private val acceptButton = binding.acceptRequestButton
+
         fun setContent(idx: Int) {
-            val uid = viewModel.requestReceived.getItem(idx)
-            nickname.text = uid
+            val user = viewModel.requestReceived.getItem(idx)
+            nickname.text = user.nickname
             acceptButton.setOnClickListener {
-                getReferenceOfMine()?.acceptFriendRequest(uid)
-                Snackbar.make(binding.root, "$uid", Snackbar.LENGTH_SHORT).show()
+                if ((user.uid ?: "").isNotEmpty()) {
+                    getReferenceOfMine()?.acceptFriendRequest(user.uid!!)
+                }
+                Snackbar.make(binding.root, "${user.nickname}", Snackbar.LENGTH_SHORT).show()
             }
         }
 

@@ -1,6 +1,5 @@
 package com.example.firebasestoreandauth.fragments
 
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
@@ -13,20 +12,21 @@ import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.firebasestoreandauth.DTO.User
+import com.example.firebasestoreandauth.R
+import com.example.firebasestoreandauth.databinding.FriendsLayoutBinding
 import com.example.firebasestoreandauth.viewmodels.FriendListAdapter
 import com.example.firebasestoreandauth.viewmodels.FriendViewModel
-import com.example.firebasestoreandauth.R
 import com.example.firebasestoreandauth.viewmodels.RequestReceivedAdapter
-import com.example.firebasestoreandauth.databinding.FriendsLayoutBinding
-import com.example.firebasestoreandauth.test.SearchFriendActivity
 import com.example.firebasestoreandauth.wrapper.getReferenceOfMine
+import com.example.firebasestoreandauth.wrapper.getUserCollection
 import com.example.firebasestoreandauth.wrapper.toUser
 import com.google.firebase.firestore.ListenerRegistration
-import androidx.appcompat.widget.Toolbar;
-import androidx.navigation.fragment.findNavController
-import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.firestore.MetadataChanges
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 
 /**
  * 친구와 관련된 정보를 표시하는 프래그먼트
@@ -50,7 +50,7 @@ class FriendsFragment : Fragment(R.layout.friends_layout) {
 
         (activity as AppCompatActivity).setSupportActionBar(toolbar)
         setupMenu()
-        toolbar.title= "친구 목록"//추후 수정해야 할 수 있음 https://dreamaz.tistory.com/102
+        toolbar.title = "친구 목록"//추후 수정해야 할 수 있음 https://dreamaz.tistory.com/102
 
         friendModel.apply {
             friend.observe(viewLifecycleOwner) {
@@ -73,23 +73,56 @@ class FriendsFragment : Fragment(R.layout.friends_layout) {
             setHasFixedSize(true)
         }
 
-
-        snapshotListener = getReferenceOfMine()?.addSnapshotListener { snapshot, e ->
+        Firebase.firestore.clearPersistence()
+        snapshotListener = getReferenceOfMine()?.addSnapshotListener (MetadataChanges.INCLUDE){ snapshot, e ->
             val TAG = "SnapshotListener"
             if (e != null) {
                 Log.w(TAG, "Listen failed.", e)
                 return@addSnapshotListener
             }
             if (snapshot != null && snapshot.exists()) {
+                //먼저 나에 대한 문서 참조를 가져옴
                 val user = snapshot.toUser()
                 if (user.uid == User.INVALID_USER) return@addSnapshotListener
                 Log.d(TAG, "Current data: ${user}")
-                friendModel.friend.setList(user.friends!!)
-                friendModel.requestReceived.setList(user.requestReceived!!.toList())
+                updateView(user, friendModel,listAdapter, requestAdapter)
+
             } else {
                 Log.d(TAG, "Current data: null")
             }
+
         }
+    }
+
+    private fun updateView(user: User, friendModel: FriendViewModel, listAdapter:FriendListAdapter, requestReceivedAdapter: RequestReceivedAdapter) {
+        val col = getUserCollection()
+        if (user.friends!!.isNotEmpty()) {
+            col.whereIn("uid", user.friends!!).get().addOnCompleteListener { snapshot ->
+                if (snapshot.isSuccessful) {
+                    val list = snapshot.result.documents.map {
+                        it.toUser()
+                    }.toList()
+                    friendModel.friend.setList(list)
+                }
+            }
+        }
+        else{
+            friendModel.friend.setList(emptyList())
+        }
+        if (user.requestReceived!!.isNotEmpty()) {
+            col.whereIn("uid", user.requestReceived!!).get().addOnCompleteListener { snapshot ->
+                if (snapshot.isSuccessful) {
+                    val list = snapshot.result.documents.map {
+                        it.toUser()
+                    }.toList()
+                    friendModel.requestReceived.setList(list)
+                }
+            }
+        }else{
+            friendModel.requestReceived.setList(emptyList())
+        }
+        listAdapter.notifyDataSetChanged()
+        requestReceivedAdapter.notifyDataSetChanged()
     }
 
 

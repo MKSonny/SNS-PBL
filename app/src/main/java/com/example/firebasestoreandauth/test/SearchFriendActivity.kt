@@ -109,25 +109,6 @@ class SearchFriendActivity : Fragment() {
                 }, viewLifecycleOwner, Lifecycle.State.RESUMED
             )
     }
-//
-//    private fun sendRequest() {
-//        val uid = Firebase.auth.currentUser?.uid
-//        val idx = binding.editIndexButton
-//            .text
-//            .toString().toInt()
-//        if (Firebase.auth.currentUser != null) {
-//            //For test purpose only!
-//            if (idx > queryResult.size - 1)
-//                return
-//            val uid = queryResult[idx].uid
-//            if (uid != null) {
-//                val reference = getUserDocumentWith(uid)
-//                reference?.get()?.addOnSuccessListener { _ ->
-//                    reference.sendRequestToFriend(uid)
-//                }
-//            }
-//        }
-//    }
 
     private fun searchFriendWithKeyword(keyword: String) {
         val db = Firebase.firestore
@@ -205,7 +186,7 @@ class SearchResultAdapter(val viewModel: SearchFriendActivity.SearchResultViewMo
                     val uid = record.uid
                     val reference = getUserDocumentWith(uid!!)
                     reference?.get()?.addOnSuccessListener { _ ->
-                        reference.sendRequestToFriend(uid)
+                        reference.sendRequestToFriend()
                     }
                 }
                 Log.d("SearchResultAdapter", "You clicked ${record.nickname}")
