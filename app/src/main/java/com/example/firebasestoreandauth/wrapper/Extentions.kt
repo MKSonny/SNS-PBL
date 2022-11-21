@@ -18,10 +18,10 @@ import com.google.firebase.ktx.Firebase
 fun DocumentSnapshot.toUser(): User {
     return this.data.let {
         User(
-            uid = it?.get("uid").toString() ?: User.INVALID_USER,
-            nickname = it?.get("nickname").toString() ?: User.INVALID_USER,
-            BirthDay = it?.get("birthDay").toString() ?: User.INVALID_USER,
-            profileImage = it?.get("profileImage").toString() ?: User.INVALID_USER,
+            uid = (it?.get("uid").toString() ?: User.INVALID_USER) as String,
+            nickname = (it?.get("nickname").toString() ?: User.INVALID_USER) as String,
+            BirthDay = (it?.get("birthDay").toString() ?: User.INVALID_USER) as String,
+            profileImage = (it?.get("profileImage").toString() ?: User.INVALID_USER) as String,
             friends = (it?.get("friends") ?: listOf<String>()) as List<String>,
             requestSent = (it?.get("requestSent") ?: listOf<String>()) as List<String>,
             requestReceived = (it?.get("requestReceived") ?: listOf<String>()) as List<String>,
@@ -42,7 +42,7 @@ fun DocumentReference.sendRequestToFriend() {
                 val other = snapshot.toUser()
                 val requestReceived = (other.requestReceived ?: listOf())
                 val friends = (other.friends ?: listOf())
-                if (other.uid == User.INVALID_USER || requestReceived.contains(uid)
+                if (other.uid == User.INVALID_USER||other.uid == uid || requestReceived.contains(uid)
                     || friends.contains(uid)
                 ) return@addOnSuccessListener
 
@@ -74,10 +74,10 @@ fun DocumentReference.sendRequestToFriend() {
 }
 
 /**
- *  친구요청을 삭제하는 Extension Function
+ *  친구찾기를 거절하는 기능
  *  @param uid 삭제하려는 대상
  */
-fun DocumentReference.rejectFriendRequest(uid: String) {
+fun DocumentReference.rejectFriendRequest() {
     this.apply {
         val usr = Firebase.auth.currentUser ?: return
         val uid = usr.uid
@@ -105,6 +105,9 @@ fun DocumentReference.rejectFriendRequest(uid: String) {
     }
 }
 
+/**
+ * 친구 찾기를 수락하는 기능
+ */
 fun DocumentReference.acceptFriendRequest(uid: String) {
     this.apply {
         val myDoc = this
@@ -141,6 +144,9 @@ fun DocumentReference.acceptFriendRequest(uid: String) {
     }
 }
 
+/**
+ * 친구를 삭제하는 기능
+ */
 fun DocumentReference.deleteFriend() {
     this.apply {
         val othDoc = this
