@@ -18,6 +18,7 @@ import com.example.firebasestoreandauth.databinding.FriendsLayoutBinding
 import com.example.firebasestoreandauth.databinding.PostLayoutBinding
 import com.example.firebasestoreandauth.test.SearchFriendActivity
 import com.example.firebasestoreandauth.wrapper.getReferenceOfMine
+import com.example.firebasestoreandauth.wrapper.toItem
 import com.example.firebasestoreandauth.wrapper.toUser
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentChange
@@ -53,22 +54,23 @@ class PostFragment : Fragment(R.layout.post_layout) {
         val friends = it["friends"] as ArrayList<String>
         db.collection("PostInfo").get().addOnSuccessListener {
             for (doc in it) {
-                val uid = doc.id
-                val profile_img = doc["profile_img"] as String
-                val imgUrl = doc["img"] as String
-                val likes = doc["likes"] as Number
-                //val time = doc["time"] as Timestamp
-                val whoPosted = doc["whoPosted"] as String
-
-                val comments = doc["testing"] as ArrayList<Map<String, String>>
+                val post = doc.toItem()
+//                val uid = doc.id
+//                val profile_img = doc["profile_img"] as String
+//                val imgUrl = doc["img"] as String
+//                val likes = doc["likes"] as Number
+//                //val time = doc["time"] as Timestamp
+//                val whoPosted = doc["whoPosted"] as String
+//
+//                val comments = doc["testing"] as ArrayList<Map<String, String>>
 
                 //viewModel.addItem(Item(profile_img, uid, imgUrl, likes, time, whoPosted, comments))
-
+                //viewModel.addItem(post)
                 for (friend in friends) {
-                    if (whoPosted == friend)
-                        viewModel.addItem(Item(profile_img, uid, imgUrl, likes, whoPosted, comments))
+                    if (post.whoPosted == friend)
+                        viewModel.addItem(post)
+                        //viewModel.addItem(Item(profile_img, uid, imgUrl, likes, whoPosted, comments))
                 }
-
                 adapter.notifyItemInserted(viewModel.itemNotified)
             }
             nowRefresh = true
@@ -79,29 +81,40 @@ class PostFragment : Fragment(R.layout.post_layout) {
                     when (doc.type) {
                         DocumentChange.Type.ADDED -> {
                             val document = doc.document
-                            val whoPosted = document["whoPosted"] as String
-                            for (friend in friends) {
-                                if (whoPosted != friend)
-                                    continue
+                            val post = document.toItem()
+                            println("####$$$####" + post.postId)
+                            if (post.postId == User.INVALID_USER) {
+                                continue
                             }
-                            val uid = doc.document.id
-                            val profile_img = document["profile_img"] as String
-                            val imgUrl = document["img"] as String
-                            val likes = document["likes"] as Number
-//                            val time = document["time"] as Timestamp
-                            val comments = document["testing"] as ArrayList<Map<String, String>>
+                            for (friend in friends) {
+                                if (post.whoPosted == friend)
+                                    viewModel.addItem(post)
+                                //viewModel.addItem(Item(profile_img, uid, imgUrl, likes, whoPosted, comments))
+                            }
+                            //viewModel.addItem(post)
+//                            val whoPosted = document["whoPosted"] as String
+//                            for (friend in friends) {
+//                                if (whoPosted != friend)
+//                                    continue
+//                            }
+//                            val uid = doc.document.id
+//                            val profile_img = document["profile_img"] as String
+//                            val imgUrl = document["img"] as String
+//                            val likes = document["likes"] as Number
+////                            val time = document["time"] as Timestamp
+//                            val comments = document["testing"] as ArrayList<Map<String, String>>
 
                             //viewModel.addItem(Item(profile_img, uid, imgUrl, likes, time, whoPosted, comments))
-                            viewModel.addItem(
-                                Item(
-                                    profile_img,
-                                    uid,
-                                    imgUrl,
-                                    likes,
-                                    whoPosted,
-                                    comments
-                                )
-                            )
+//                            viewModel.addItem(
+//                                Item(
+//                                    profile_img,
+//                                    uid,
+//                                    imgUrl,
+//                                    likes,
+//                                    whoPosted,
+//                                    comments
+//                                )
+//                            )
                             //adapter.notifyItemInserted(viewModel.itemNotified)
 
                         }

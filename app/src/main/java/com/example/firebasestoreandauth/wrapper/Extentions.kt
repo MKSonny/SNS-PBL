@@ -4,6 +4,7 @@ package com.example.firebasestoreandauth.wrapper
 
 import android.util.Log
 import com.example.firebasestoreandauth.DTO.User
+import com.example.firebasestoreandauth.Item
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentChange
@@ -16,23 +17,21 @@ import com.google.firebase.firestore.QuerySnapshot
  * User를 추출하는 확장메서드
  */
 
-fun DocumentSnapshot.toItem(): User {
+fun DocumentSnapshot.toItem(): Item {
     return this.data.let {
-        User(
-            UID = it?.get("uid").toString() ?: User.INVALID_USER,
-            NickName = it?.get("nickName").toString() ?: User.INVALID_USER,
-            BirthDay = it?.get("birthDay").toString() ?: User.INVALID_USER,
-            profileImage = it?.get("profileImage").toString() ?: User.INVALID_USER,
-            friends = it?.get("friends")
-                ?.run { this as List<*> } as List<String>? ?: listOf(),
-            requestSent = it?.get("requestSent")
-                ?.run { this as List<*> } as List<String>? ?: listOf(),
-            requestReceived = it?.get("requestReceived")
-                ?.run { this as List<*> } as List<String>? ?: listOf(),
+        Item(
+            profile_img = (it?.get("profile_img") ?: "gs://sns-pbl.appspot.com/post_img_err.png") as String,
+            postImgUrl = (it?.get("img") ?: "gs://sns-pbl.appspot.com/post_img_err.png") as String,
+            likes = (it?.get("likes") ?: 0) as Number,
+            //profileImage = it?.get("profileImage").toString() ?: User.INVALID_USER,
+            whoPosted = (it?.get("whoPosted") ?: User.INVALID_USER) as String,
+            comments = (it?.get("testing")
+                ?.run { this as ArrayList<Map<String, String>> } ?: listOf()) as ArrayList<Map<String, String>>,
+            postId = ((it?.get("post_id") ?: User.INVALID_USER) as String)
         )
     }
-
 }
+
 
 fun DocumentSnapshot.toUser(): User {
     return this.data.let {

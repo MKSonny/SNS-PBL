@@ -66,7 +66,17 @@ class MyAdapter(private val db: FirebaseFirestore, private val navigate: NavCont
                 "whoPosted" to "UXEKfhpQLYnVFXCTFl9P"
             )
             binding.button2.setOnClickListener {
-                db.collection("PostInfo").add(tempItemMap)
+                val forPostId = db.collection("PostInfo").document()
+                val tempItemMap2 = hashMapOf(
+                    "comments" to tempComments,
+                    "likes" to 0,
+                    //"img" to "gs://sns-pbl.appspot.com/wine.jpg",
+                    //"profile_img" to "gs://sns-pbl.appspot.com/상상부기 2.png",
+                    "testing" to tempComments,
+                    "whoPosted" to "odcYUEo7Mhbhmbc13Xzm",
+                    "post_id" to forPostId.id
+                )
+                forPostId.set(tempItemMap2)
             }
             val postId = item.postId
             val whoPosted = item.whoPosted
