@@ -140,9 +140,6 @@ class FriendsFragment : Fragment(R.layout.friends_layout) {
                             findNavController()?.navigate(R.id.action_friendsFragment_to_searchFriendActivity)
                             true
                         }
-                        R.id.search_in_list -> {
-                            true
-                        }
                         else -> {
                             false
                         }

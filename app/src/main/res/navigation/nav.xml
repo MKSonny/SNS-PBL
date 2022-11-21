@@ -45,7 +45,7 @@
     </fragment>
     <fragment
         android:id="@+id/searchFriendActivity"
-        android:name="com.example.firebasestoreandauth.test.SearchFriendActivity"
+        android:name="com.example.firebasestoreandauth.test.SearchFriendFragment"
         android:label="fragment_search_friend"
         tools:layout="@layout/fragment_search_friend" />
 </navigation>

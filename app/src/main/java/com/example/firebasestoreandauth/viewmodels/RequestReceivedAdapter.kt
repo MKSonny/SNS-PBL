@@ -3,21 +3,27 @@ package com.example.firebasestoreandauth.viewmodels
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.example.firebasestoreandauth.databinding.RequestReceivedItemLayoutBinding
+import com.bumptech.glide.Glide
+import com.example.firebasestoreandauth.DTO.User
+import com.example.firebasestoreandauth.databinding.FriendRequestReceivedItemLayoutBinding
 import com.example.firebasestoreandauth.wrapper.acceptFriendRequest
 import com.example.firebasestoreandauth.wrapper.getReferenceOfMine
-import com.google.android.material.snackbar.Snackbar
+import com.example.firebasestoreandauth.wrapper.getUserDocumentWith
+import com.example.firebasestoreandauth.wrapper.rejectFriendRequest
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.ktx.storage
 
 class RequestReceivedAdapter(private val viewModel: FriendViewModel) :
     RecyclerView.Adapter<RequestReceivedAdapter.ViewHolder>() {
     inner class ViewHolder(
-        private val binding: RequestReceivedItemLayoutBinding,
+        private val binding: FriendRequestReceivedItemLayoutBinding,
         private val viewModel: FriendViewModel
     ) :
         RecyclerView.ViewHolder(binding.root) {
         private val nickname = binding.requestReceivedNickname
         private val image = binding.requestReceivedProfileImage
         private val acceptButton = binding.acceptRequestButton
+        private val rejectButton = binding.rejectRequestButton
 
         fun setContent(idx: Int) {
             val user = viewModel.requestReceived.getItem(idx)
@@ -26,15 +32,28 @@ class RequestReceivedAdapter(private val viewModel: FriendViewModel) :
                 if ((user.uid ?: "").isNotEmpty()) {
                     getReferenceOfMine()?.acceptFriendRequest(user.uid!!)
                 }
-                Snackbar.make(binding.root, "${user.nickname}", Snackbar.LENGTH_SHORT).show()
+            }
+            rejectButton.setOnClickListener {
+                if ((user.uid ?: "").isNotEmpty()) {
+                    user.uid?.let { it1 -> if (it1 != User.INVALID_USER) getUserDocumentWith(it1)?.rejectFriendRequest() }
+                }
+            }
+            if (user.profileImage == null || user.profileImage == User.INVALID_USER
+                || (user.profileImage ?: "").isEmpty()
+            ) return
+            image.clipToOutline = true
+            val stRef = Firebase.storage
+            val pathRef = stRef.getReferenceFromUrl(user.profileImage!!)
+            pathRef.getBytes(3 * 1024 * 1024).addOnCompleteListener {
+                if (it.isSuccessful)
+                    Glide.with(image.rootView.context).asBitmap().load(it.result).into(image)
             }
         }
-
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
-        val binding = RequestReceivedItemLayoutBinding.inflate(layoutInflater, parent, false)
+        val binding = FriendRequestReceivedItemLayoutBinding.inflate(layoutInflater, parent, false)
         return ViewHolder(binding, viewModel)
     }
 

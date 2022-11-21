@@ -33,7 +33,7 @@
                 android:value="" />
         </activity>
         <activity android:name=".test.AddPersonalInfoActivity" />
-        <activity android:name=".test.SearchFriendActivity" />
+        <activity android:name=".test.SearchFriendFragment" />
     </application>
 
 </manifest>

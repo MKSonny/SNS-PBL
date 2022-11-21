@@ -70,21 +70,21 @@ class MyAdapter(private val db: FirebaseFirestore, private val navigate: NavCont
             binding.uid.text = item.whoPosted + " "
             binding.postTitle.text = item.comments[0][whoPosted]
 
-            val profileImageRef = storage.getReferenceFromUrl(item.profile_img)
+//            val profileImageRef = storage.getReferenceFromUrl(item.profile_img)
 
-            profileImageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener {
-                val bmp = BitmapFactory.decodeByteArray(it, 0, it.size)
-                binding.profileImg.setImageBitmap(bmp)
-            }.addOnFailureListener {}
+//            profileImageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener {
+//                val bmp = BitmapFactory.decodeByteArray(it, 0, it.size)
+//                binding.profileImg.setImageBitmap(bmp)
+//            }.addOnFailureListener {}
 
-            val imageRef = storage.getReferenceFromUrl(item.postImgUrl)
+//            val imageRef = storage.getReferenceFromUrl(item.postImgUrl)
 
-            imageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener {
-                val bmp = BitmapFactory.decodeByteArray(it, 0, it.size)
-                binding.postImg.setImageBitmap(bmp)
-            }.addOnFailureListener {
-
-            }
+//            imageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener {
+//                val bmp = BitmapFactory.decodeByteArray(it, 0, it.size)
+//                binding.postImg.setImageBitmap(bmp)
+//            }.addOnFailureListener {
+//
+//            }
         }
     }
 

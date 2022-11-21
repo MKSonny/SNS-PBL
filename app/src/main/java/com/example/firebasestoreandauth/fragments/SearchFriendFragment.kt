@@ -1,7 +1,6 @@
 package com.example.firebasestoreandauth.test
 
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.*
@@ -13,12 +12,11 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.firebasestoreandauth.DTO.User
 import com.example.firebasestoreandauth.R
 import com.example.firebasestoreandauth.databinding.FragmentSearchFriendBinding
@@ -30,8 +28,9 @@ import com.example.firebasestoreandauth.wrapper.toUser
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.ktx.storage
 
-class SearchFriendActivity : Fragment() {
+class SearchFriendFragment: Fragment() {
     private var _binding: FragmentSearchFriendBinding? = null
     private val binding get() = _binding!!
     private val viewModel: SearchResultViewModel by viewModels()
@@ -133,9 +132,9 @@ class SearchFriendActivity : Fragment() {
     class SearchResultViewModel() : ViewModel() {
         private var _list: MutableLiveData<List<User>> = MutableLiveData(emptyList())
 
-        fun addObserver(lifecycleOwner: LifecycleOwner, callback: ()->Unit){
-            _list.observe(lifecycleOwner){
-               callback()
+        fun addObserver(lifecycleOwner: LifecycleOwner, callback: () -> Unit) {
+            _list.observe(lifecycleOwner) {
+                callback()
             }
         }
 
@@ -157,41 +156,51 @@ class SearchFriendActivity : Fragment() {
 
 class SearchResultViewModelFactory(private val context: Context) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(SearchFriendActivity.SearchResultViewModel::class.java)) {
+        if (modelClass.isAssignableFrom(SearchFriendFragment.SearchResultViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return SearchFriendActivity.SearchResultViewModel() as T
+            return SearchFriendFragment.SearchResultViewModel() as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
 
-class SearchResultAdapter(val viewModel: SearchFriendActivity.SearchResultViewModel) :
+class SearchResultAdapter(val viewModel: SearchFriendFragment.SearchResultViewModel) :
     RecyclerView.Adapter<SearchResultAdapter.ViewHolder>() {
 
     class ViewHolder(
         binding: FriendQueryItemLayoutBinding,
-        val viewModel: SearchFriendActivity.SearchResultViewModel
+        val viewModel: SearchFriendFragment.SearchResultViewModel
     ) :
         RecyclerView.ViewHolder(binding.root) {
         private val nickname = binding.queryFriendNickname
         val image = binding.queryFriendProfileImage
         private val addButton = binding.queryFriendAdd
         fun setContent(idx: Int) {
-            val record = viewModel.getItem(idx)
-            if (record.uid != "-1")
-                nickname.text = record.nickname
+            val user = viewModel.getItem(idx)
+            if (user.uid != "-1")
+                nickname.text = user.nickname
             //TODO: GetImage From Storage
             addButton.setOnClickListener {
-                if (Firebase.auth.currentUser != null && record.uid != null) {
-                    val uid = record.uid
+                if (Firebase.auth.currentUser != null && user.uid != null) {
+                    val uid = user.uid
                     val reference = getUserDocumentWith(uid!!)
                     reference?.get()?.addOnSuccessListener { _ ->
                         reference.sendRequestToFriend()
                     }
                 }
-                Log.d("SearchResultAdapter", "You clicked ${record.nickname}")
+                Log.d("SearchResultAdapter", "You clicked ${user.nickname}")
             }
 
+            if (user.profileImage == null || user.profileImage == User.INVALID_USER
+                || (user.profileImage ?: "").isEmpty()
+            ) return
+            image.clipToOutline = true
+            val stRef = Firebase.storage
+            val pathRef = stRef.getReferenceFromUrl(user.profileImage!!)
+            pathRef.getBytes(3 * 1024 * 1024).addOnCompleteListener {
+                if (it.isSuccessful)
+                    Glide.with(image.rootView.context).asBitmap().load(it.result).into(image)
+            }
         }
     }
 
