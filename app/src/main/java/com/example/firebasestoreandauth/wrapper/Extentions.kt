@@ -6,6 +6,7 @@ import android.util.Log
 import com.example.firebasestoreandauth.DTO.User
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.QuerySnapshot
@@ -14,6 +15,25 @@ import com.google.firebase.firestore.QuerySnapshot
  * 사용자를 찾는 DocumentSnapshot 에서
  * User를 추출하는 확장메서드
  */
+
+fun DocumentSnapshot.toItem(): User {
+    return this.data.let {
+        User(
+            UID = it?.get("uid").toString() ?: User.INVALID_USER,
+            NickName = it?.get("nickName").toString() ?: User.INVALID_USER,
+            BirthDay = it?.get("birthDay").toString() ?: User.INVALID_USER,
+            profileImage = it?.get("profileImage").toString() ?: User.INVALID_USER,
+            friends = it?.get("friends")
+                ?.run { this as List<*> } as List<String>? ?: listOf(),
+            requestSent = it?.get("requestSent")
+                ?.run { this as List<*> } as List<String>? ?: listOf(),
+            requestReceived = it?.get("requestReceived")
+                ?.run { this as List<*> } as List<String>? ?: listOf(),
+        )
+    }
+
+}
+
 fun DocumentSnapshot.toUser(): User {
     return this.data.let {
         User(

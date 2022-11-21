@@ -53,7 +53,7 @@ class MainActivity : AppCompatActivity() {
         val navController = nhf.navController
         binding.bottomNavigationView.setupWithNavController(navController)
         appBarc = AppBarConfiguration(setOf(R.id.profileFragment, R.id.friendsFragment, R.id.postFragment))
-        setupActionBarWithNavController(nhf.navController, appBarc)
+        //setupActionBarWithNavController(nhf.navController, appBarc)
 
 
         //Firebase 초기화

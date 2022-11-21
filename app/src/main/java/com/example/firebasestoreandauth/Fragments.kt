@@ -5,10 +5,12 @@ import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.ui.AppBarConfiguration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.firebasestoreandauth.DTO.User
 import com.example.firebasestoreandauth.databinding.CommentLayoutBinding
@@ -121,14 +123,15 @@ class PostFragment : Fragment(R.layout.post_layout) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+
         println("*********************onViewCreated")
 
         val binding = PostLayoutBinding.bind(view)
+        //(activity as AppCompatActivity).setSupportActionBar(binding.friendToolbar)
         val viewModel = ViewModelProvider(requireActivity()).get(MyViewModel::class.java)
         //val viewModel: MyViewModel by viewModels()
         val db: FirebaseFirestore = Firebase.firestore
-
-
 
         binding.refresh.setOnRefreshListener {
             if (viewModel.itemsSize > viewModel.itemNotified) {
@@ -238,6 +241,11 @@ class CommentFragment : Fragment(R.layout.comment_layout) {
         val viewModel = ViewModelProvider(requireActivity()).get(MyViewModel::class.java)
         //val viewModel = MyViewModel()
         //binding.textView.text = "working"
+
+        binding.backToPost.setOnClickListener {
+            //findNavController().navigate(R.id.postFragment)
+            findNavController().navigateUp()
+        }
 
         val db: FirebaseFirestore = Firebase.firestore
         var storage = Firebase.storage
