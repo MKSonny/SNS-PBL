@@ -1,16 +1,31 @@
 package com.example.firebasestoreandauth
 
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.util.Log
 import android.view.View
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
+import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
-import com.example.firebasestoreandauth.auth.LoginActivity
+import com.example.firebasestoreandauth.auth.GoogleAuth
+import com.example.firebasestoreandauth.auth.OnAuthCompleteListener
 import com.example.firebasestoreandauth.databinding.ActivityMainBinding
+import com.example.firebasestoreandauth.test.AddPersonalInfoActivity
+import com.example.firebasestoreandauth.wrapper.getImageReference
+import com.example.firebasestoreandauth.wrapper.getUserDocumentReference
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.tasks.Task
+import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -35,14 +50,9 @@ class MainActivity : AppCompatActivity() {
         val nhf = supportFragmentManager.findFragmentById(R.id.my_nav_host) as NavHostFragment
         val navController = nhf.navController
         binding.bottomNavigationView.setupWithNavController(navController)
-        appbarc = AppBarConfiguration(
-            setOf(
-                R.id.profileFragment,
-                R.id.friendsFragment,
-                R.id.postFragment
-            )
-        )
-//        setupActionBarWithNavController(nhf.navController, appbarc)
+        appBarc = AppBarConfiguration(setOf(R.id.profileFragment, R.id.friendsFragment, R.id.postFragment))
+        //setupActionBarWithNavController(nhf.navController, appBarc)
+
 
         //Firebase 초기화
         auth = Firebase.auth
