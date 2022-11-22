@@ -1,17 +1,6 @@
 package com.example.firebasestoreandauth
 
-import android.Manifest
-import android.content.ContentUris
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.graphics.BitmapFactory
-import android.net.Uri
-import android.os.Bundle
-import android.os.Environment
-import android.provider.MediaStore
-import android.text.TextUtils.replace
-import android.util.Log
-import android.view.LayoutInflater
+
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -35,6 +24,9 @@ import com.example.firebasestoreandauth.wrapper.toUser
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.ktx.auth
+import com.example.firebasestoreandauth.databinding.CommentLayoutBinding
+import com.example.firebasestoreandauth.databinding.PostLayoutBinding
+import com.example.firebasestoreandauth.wrapper.toItem
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -64,30 +56,48 @@ class PostFragment : Fragment(R.layout.post_layout) {
 
         adapter = MyAdapter(db, navigate, viewModel)
 
+        var friends = ArrayList<String>()
+        // 로그인 후 나의 문서 코드를 document 안에 수정합니다.
+
+        var nowRefresh = false
+    db.collection("SonUsers").document("UXEKfhpQLYnVFXCTFl9P").get().addOnSuccessListener {
+        val friends = it["friends"] as ArrayList<String>
+        db.collection("PostInfo").get().addOnSuccessListener {
+            for (doc in it) {
+                val post = doc.toItem()
+                for (friend in friends) {
+                    if (post.whoPosted == friend)
+                        viewModel.addItem(post)
+                }
+                adapter.notifyItemInserted(viewModel.itemNotified)
+            }
+            nowRefresh = true
+        }
         snapshotListener = db.collection("PostInfo").addSnapshotListener { snapshot, error ->
-            for (doc in snapshot!!.documentChanges) {
-                when (doc.type) {
-                    DocumentChange.Type.ADDED -> {
-                       /* val document = doc.document
-                        val uid = doc.document.id
-                        val profile_img = document["profile_img"] as String
-                        val imgUrl = document["img"] as String
-                        val likes = document["likes"] as Number
-                        //val time = document["time"] as Timestamp
-                        val whoPosted = document["whoPosted"] as String
-                        val comments = document["testing"] as ArrayList<Map<String,String>>
+            if (nowRefresh) {
+                for (doc in snapshot!!.documentChanges) {
+                    when (doc.type) {
+                        DocumentChange.Type.ADDED -> {
+                            val document = doc.document
+                            val post = document.toItem()
+                            println("####$$$####" + post.postId)
+                            if (post.postId == User.INVALID_USER) {
+                                continue
+                            }
+                            for (friend in friends) {
+                                if (post.whoPosted == friend)
+                                    viewModel.addItem(post)
+                            }
+                        }
+                        DocumentChange.Type.REMOVED -> {
 
-                        //viewModel.addItem(Item(profile_img, uid, imgUrl, likes, time, whoPosted, comments))
-                        //viewModel.addItem(Item(uid, imgUrl, likes, time, whoPosted, comments))
-                        //adapter.notifyItemInserted(viewModel.itemNotified)*/
+                        }
+                        else -> {}
                     }
-                    DocumentChange.Type.REMOVED -> {
-
-                    }
-                    else -> {}
                 }
             }
         }
+    }
     }
 
     override fun onDestroy() {
@@ -101,15 +111,14 @@ class PostFragment : Fragment(R.layout.post_layout) {
 
         val binding = PostLayoutBinding.bind(view)
         val viewModel = ViewModelProvider(requireActivity()).get(MyViewModel::class.java)
-        //val viewModel: MyViewModel by viewModels()
         val db: FirebaseFirestore = Firebase.firestore
 
-
-
         binding.refresh.setOnRefreshListener {
-            adapter.notifyItemInserted(viewModel.itemNotified)
-            //snapshotListener?.remove()
-            binding.refresh.isRefreshing=false
+            if (viewModel.itemsSize > viewModel.itemNotified) {
+                println("activated222333")
+                adapter.notifyItemInserted(viewModel.itemsSize)
+            }
+            binding.refresh.isRefreshing = false
         }
 
         //val adapter = MyAdapter(db, navigate, viewModel)
@@ -508,6 +517,7 @@ class FriendsFragment : Fragment(R.layout.friends_layout) {
     }
 }
 
+
 class CommentFragment : Fragment(R.layout.comment_layout) {
 
     lateinit var binding: CommentLayoutBinding
@@ -517,13 +527,13 @@ class CommentFragment : Fragment(R.layout.comment_layout) {
         super.onCreate(savedInstanceState)
 
         val mainActivity = activity as MainActivity
-        mainActivity.HideBottomNav(true)
+        mainActivity.hideBottomNav(true)
     }
 
     override fun onDestroy() {
         super.onDestroy()
         val mainActivity = activity as MainActivity
-        mainActivity.HideBottomNav(false)
+        mainActivity.hideBottomNav(false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -534,22 +544,16 @@ class CommentFragment : Fragment(R.layout.comment_layout) {
         //val viewModel = MyViewModel()
         //binding.textView.text = "working"
 
+        binding.backToPost.setOnClickListener {
+            //findNavController().navigate(R.id.postFragment)
+            findNavController().navigateUp()
+        }
+
         val db: FirebaseFirestore = Firebase.firestore
         var storage = Firebase.storage
         var newComment = ArrayList<Map<String, String>>()
 
         println("########yellow##########" + viewModel.items.get(viewModel.getPos()).postId)
-
-        //comment 새로 추가하면 바로 보이는 거 수정해야됨
-//        db.collection("PostInfo").document(viewModel.items.get(viewModel.getPos()).postId)
-//            .addSnapshotListener {
-//                    snapshot, error ->
-//                if (snapshot != null && snapshot.exists()) {
-//                    val temp = snapshot.data!!["comments"] as ArrayList<Map<String, String>>
-//                    newComment.add(temp.get(0))
-//                    println("#############red###########" + newComment.get(0))
-//                }
-//            }
         val comments = viewModel.getComment(viewModel.getPos())
 
         val adapter = CommentAdapter(db, comments)
@@ -570,15 +574,6 @@ class CommentFragment : Fragment(R.layout.comment_layout) {
         }
         //var string: String = "not working"
         val postId = viewModel.items.get(viewModel.getPos()).postId
-//        db.collection("PostInfo").document(postId)
-//            .addSnapshotListener {
-//                    snapshot, error ->
-//                if ((snapshot != null) && snapshot.exists()) {
-//                    val temp = snapshot.data!!["comments"] as ArrayList<Map<String, String>>
-//                    viewModel.setComments(temp)
-//                    adapter.notifyItemInserted(viewModel.itemNotified)              }
-//            }
-
         binding.commentRecy.adapter = adapter
         binding.commentRecy.layoutManager = LinearLayoutManager(context)
     }

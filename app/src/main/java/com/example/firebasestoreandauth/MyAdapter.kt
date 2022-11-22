@@ -52,11 +52,36 @@ class MyAdapter(private val db: FirebaseFirestore, private val navigate: NavCont
     inner class ViewHolder(private val binding: ItemLayoutBinding) : RecyclerView.ViewHolder(binding.root) {
         fun setContents(pos: Int) {
             var item = viewModel.items[pos]
-            binding.timeStamp.text = timeDiff(item.time)
+            //binding.timeStamp.text = timeDiff(item.time)
+            val tempComments = ArrayList<Map<String, String>>()
+            tempComments.add(
+                mapOf("only" to "friends")
+            )
+            val tempItemMap = hashMapOf(
+                "comments" to tempComments,
+                "likes" to 0,
+                "img" to "gs://sns-pbl.appspot.com/wine.jpg",
+                "profile_img" to "gs://sns-pbl.appspot.com/상상부기 2.png",
+                "testing" to tempComments,
+                "whoPosted" to "UXEKfhpQLYnVFXCTFl9P"
+            )
+            binding.button2.setOnClickListener {
+                val forPostId = db.collection("PostInfo").document()
+                val tempItemMap2 = hashMapOf(
+                    "comments" to tempComments,
+                    "likes" to 0,
+                    //"img" to "gs://sns-pbl.appspot.com/wine.jpg",
+                    //"profile_img" to "gs://sns-pbl.appspot.com/상상부기 2.png",
+                    "testing" to tempComments,
+                    "whoPosted" to "odcYUEo7Mhbhmbc13Xzm",
+                    "post_id" to forPostId.id
+                )
+                forPostId.set(tempItemMap2)
+            }
             val postId = item.postId
             val whoPosted = item.whoPosted
             var likes = item.likes.toInt()
-            println("##$###$$$###timestamp+" + item.time)
+            //println("##$###$$$###timestamp+" + item.time)
             var profileRef: String
             var liked = false
             // 프로필 사진 옆 유저 아이디 표시

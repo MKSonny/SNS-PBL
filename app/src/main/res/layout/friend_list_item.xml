@@ -4,17 +4,31 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <ImageView
-        android:id="@+id/friend_profile_image"
-        android:layout_width="53dp"
-        android:layout_height="48dp"
-        app:srcCompat="@drawable/ic_baseline_person_24" />
+    <androidx.cardview.widget.CardView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="0"
+        android:innerRadius="0dp"
+        android:shape="ring"
+        android:thicknessRatio="1.9"
+        app:cardCornerRadius="40dp">
+
+        <ImageView
+            android:id="@+id/friend_profile_image"
+            android:layout_width="48sp"
+            android:layout_height="48sp"
+            android:layout_weight="0"
+            android:scaleType="centerCrop" />
+    </androidx.cardview.widget.CardView>
 
     <TextView
         android:id="@+id/friend_nickname"
         android:layout_width="wrap_content"
-        android:layout_height="40sp"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
         android:layout_weight="7"
-        android:text="TextView" />
+        android:gravity="center"
+        android:text="TextView"
+        android:textSize="20sp" />
 
 </LinearLayout>
