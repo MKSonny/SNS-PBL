@@ -26,15 +26,27 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.firebasestoreandauth.DTO.User
 import com.example.firebasestoreandauth.databinding.*
+<<<<<<< Updated upstream
 import com.example.firebasestoreandauth.viewmodels.FriendListAdapter
 import com.example.firebasestoreandauth.viewmodels.FriendViewModel
 import com.example.firebasestoreandauth.viewmodels.RequestReceivedAdapter
+=======
+>>>>>>> Stashed changes
 import com.example.firebasestoreandauth.wrapper.ProfileViewModel
 import com.example.firebasestoreandauth.wrapper.getReferenceOfMine
 import com.example.firebasestoreandauth.wrapper.toItem
 import com.example.firebasestoreandauth.wrapper.toUser
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.ktx.auth
+<<<<<<< Updated upstream
+=======
+import com.example.firebasestoreandauth.databinding.CommentLayoutBinding
+import com.example.firebasestoreandauth.databinding.PostLayoutBinding
+import com.example.firebasestoreandauth.viewmodels.FriendListAdapter
+import com.example.firebasestoreandauth.viewmodels.FriendViewModel
+import com.example.firebasestoreandauth.viewmodels.RequestReceivedAdapter
+import com.example.firebasestoreandauth.wrapper.toItem
+>>>>>>> Stashed changes
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -414,6 +426,7 @@ class ProfileFragment : Fragment(R.layout.profile_layout) {
     }
 
     //갤러리 호출 후 프로필사진 변경
+
     private fun selectGalleryProfile(){
         val writePermission = ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
         val readPermission = ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.READ_EXTERNAL_STORAGE)
