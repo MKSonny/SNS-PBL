@@ -1,6 +1,16 @@
 package com.example.firebasestoreandauth
 
 
+import android.Manifest
+import android.content.ContentUris
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.graphics.BitmapFactory
+import android.net.Uri
+import android.os.Bundle
+import android.provider.MediaStore
+import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -10,23 +20,21 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.commit
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.firebasestoreandauth.DTO.User
 import com.example.firebasestoreandauth.databinding.*
-import com.example.firebasestoreandauth.test.SearchFriendActivity
+import com.example.firebasestoreandauth.viewmodels.FriendListAdapter
+import com.example.firebasestoreandauth.viewmodels.FriendViewModel
+import com.example.firebasestoreandauth.viewmodels.RequestReceivedAdapter
 import com.example.firebasestoreandauth.wrapper.ProfileViewModel
 import com.example.firebasestoreandauth.wrapper.getReferenceOfMine
+import com.example.firebasestoreandauth.wrapper.toItem
 import com.example.firebasestoreandauth.wrapper.toUser
 import com.google.android.material.snackbar.Snackbar
-import com.google.firebase.Timestamp
 import com.google.firebase.auth.ktx.auth
-import com.example.firebasestoreandauth.databinding.CommentLayoutBinding
-import com.example.firebasestoreandauth.databinding.PostLayoutBinding
-import com.example.firebasestoreandauth.wrapper.toItem
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -36,12 +44,7 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
-import java.io.File
-import java.io.IOException
-import java.text.SimpleDateFormat
-import java.time.LocalDateTime
 import java.util.*
-import kotlin.collections.ArrayList
 
 class PostFragment : Fragment(R.layout.post_layout) {
     val db: FirebaseFirestore = Firebase.firestore
@@ -461,60 +464,6 @@ class ProfileFragment : Fragment(R.layout.profile_layout) {
         _binding = null
     }
 
-}
-
-class FriendsFragment : Fragment(R.layout.friends_layout) {
-    var snapshotListener: ListenerRegistration? = null
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        val binding = FriendsLayoutBinding.bind(view)
-        val friendModel: FriendViewModel by viewModels()
-        val listAdapter = FriendListAdapter(friendModel)
-        val requestAdapter = RequestReceivedAdapter(friendModel)
-
-        binding.recyclerFriendList.adapter = listAdapter
-        binding.recyclerFriendList.layoutManager = LinearLayoutManager(context)
-        binding.recyclerFriendList.setHasFixedSize(true)
-
-        binding.recyclerReceivedList.adapter = requestAdapter
-        binding.recyclerReceivedList.layoutManager = LinearLayoutManager(context)
-        binding.recyclerReceivedList.setHasFixedSize(true)
-
-        friendModel.friend.observe(viewLifecycleOwner) {
-            listAdapter.notifyDataSetChanged()
-        }
-        friendModel.requestReceived.observe(viewLifecycleOwner) {
-            requestAdapter.notifyDataSetChanged()
-        }
-
-        snapshotListener = getReferenceOfMine()?.addSnapshotListener { snapshot, e ->
-            val TAG = "SnapshotListener"
-            if (e != null) {
-                Log.w(TAG, "Listen failed.", e)
-                return@addSnapshotListener
-            }
-            if (snapshot != null && snapshot.exists()) {
-                val user = snapshot.toUser()
-                if (user.UID == User.INVALID_USER) return@addSnapshotListener
-                Log.d(TAG, "Current data: ${user}")
-                friendModel.friend.setList(user.friends!!)
-                friendModel.requestReceived.setList(user.requestReceived!!.toList())
-            } else {
-                Log.d(TAG, "Current data: null")
-            }
-        }
-
-        binding.startFindFriendButton.setOnClickListener {
-            val intent = Intent(activity, SearchFriendActivity::class.java)
-            startActivity(intent)
-        }
-
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        snapshotListener?.remove()
-    }
 }
 
 

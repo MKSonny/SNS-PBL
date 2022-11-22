@@ -30,7 +30,7 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
 
-class SearchFriendFragment: Fragment() {
+class SearchFriendFragment : Fragment() {
     private var _binding: FragmentSearchFriendBinding? = null
     private val binding get() = _binding!!
     private val viewModel: SearchResultViewModel by viewModels()
@@ -70,6 +70,12 @@ class SearchFriendFragment: Fragment() {
 
         viewModel.addObserver(viewLifecycleOwner) { adapter.notifyDataSetChanged() }
 
+        binding.searchButton.setOnClickListener {
+            val keyword = binding.keyword.text.toString()
+            searchFriendWithKeyword(keyword)
+
+        }
+
         getReferenceOfMine()?.addSnapshotListener { snapshot, e ->
             val TAG = "SnapshotListener"
             if (e != null) {
@@ -89,7 +95,6 @@ class SearchFriendFragment: Fragment() {
             .addMenuProvider(
                 object : MenuProvider {
                     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                        menuInflater.inflate(R.menu.find_friend, menu)
                     }
 
                     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
@@ -192,7 +197,7 @@ class SearchResultAdapter(val viewModel: SearchFriendFragment.SearchResultViewMo
             }
 
             if (user.profileImage == null || user.profileImage == User.INVALID_USER
-                || (user.profileImage ?: "").isEmpty()||user.profileImage =="null"
+                || (user.profileImage ?: "").isEmpty() || user.profileImage == "null"
             ) return
             image.clipToOutline = true
             val stRef = Firebase.storage
