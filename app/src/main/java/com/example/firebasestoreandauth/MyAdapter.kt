@@ -102,15 +102,23 @@ class MyAdapter(private val db: FirebaseFirestore, private val navigate: NavCont
             // 좋아요 수를 표시
             binding.showLikes.text = "좋아요 " + likes + "개"
 
+            if (viewModel.items[pos].liked){
+                binding.likeBtn.setBackgroundResource(R.drawable.full_heart)
+                binding.likeBtn.isSelected = true
+                //viewModel.items[pos].liked = false
+            }
+
             binding.likeBtn.setOnClickListener {
                 if (it.isSelected) {
                     likes -= 1
                     it.setBackgroundResource(R.drawable.icons8__96)
+                    viewModel.items[pos].liked = false
                 }
                 else {
                     likes += 1
-                    viewModel.items[pos].likes = likes
                     it.setBackgroundResource(R.drawable.full_heart)
+                    viewModel.items[pos].liked = true
+                    viewModel.items[pos].likes = likes
                 }
                 it.isSelected = !it.isSelected
                 db.collection("PostInfo").document(postId).update("likes", likes)

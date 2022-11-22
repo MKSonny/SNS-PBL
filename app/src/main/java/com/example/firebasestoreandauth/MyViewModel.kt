@@ -90,7 +90,7 @@ class MyViewModel : ViewModel() {
         itemLiveData.value = items
     }
 
-    fun addItem(pos: Int) {
+    fun deleteItem(pos: Int) {
         itemNotifiedType = ItemNotify.DELETE
         itemNotified = pos
         items.removeAt(pos)
