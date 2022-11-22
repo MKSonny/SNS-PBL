@@ -20,6 +20,7 @@ import com.example.firebasestoreandauth.wrapper.toItem
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
@@ -51,12 +52,14 @@ class PostFragment : Fragment(R.layout.post_layout) {
         db.collection("SonUsers").document("UXEKfhpQLYnVFXCTFl9P").get().addOnSuccessListener {
         val friends = it["friends"] as ArrayList<String>
             friends.add("UXEKfhpQLYnVFXCTFl9P") // 자기 게시물도 볼 수 있도록
-        db.collection("PostInfo").get().addOnSuccessListener {
+        db.collection("PostInfo").orderBy("time", Query.Direction.DESCENDING).get().addOnSuccessListener {
             for (doc in it) {
                 val post = doc.toItem()
                 for (friend in friends) {
-                    if (post.whoPosted == friend)
+                    if (post.whoPosted == friend) {
                         viewModel.addItem(post)
+                    }
+
                 }
                 adapter.notifyItemInserted(viewModel.itemNotified)
             }

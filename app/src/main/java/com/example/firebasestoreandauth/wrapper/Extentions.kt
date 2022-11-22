@@ -5,12 +5,15 @@ package com.example.firebasestoreandauth.wrapper
 import android.util.Log
 import com.example.firebasestoreandauth.DTO.Item
 import com.example.firebasestoreandauth.DTO.User
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import java.sql.Types.TIMESTAMP
 
 /**
  * 사용자를 찾는 DocumentSnapshot 에서
@@ -25,6 +28,7 @@ fun DocumentSnapshot.toItem(): Item {
             likes = (it?.get("likes") ?: 0) as Number,
             //profileImage = it?.get("profileImage").toString() ?: User.INVALID_USER,
             whoPosted = (it?.get("whoPosted") ?: User.INVALID_USER) as String,
+            time = ((it?.get("time")) ?: Timestamp(1669091942, 278000000) ) as Timestamp,
             comments = (it?.get("testing")
                 ?.run { this as ArrayList<Map<String, String>> } ?: listOf()) as ArrayList<Map<String, String>>,
             postId = ((it?.get("post_id") ?: User.INVALID_USER) as String)
