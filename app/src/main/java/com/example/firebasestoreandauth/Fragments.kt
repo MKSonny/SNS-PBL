@@ -77,6 +77,7 @@ class PostFragment : Fragment(R.layout.post_layout) {
                             val document = doc.document
                             val post = document.toItem()
                             println("####$$$####" + post.postId)
+                            //11-22 여기 추가해야 됨
                             if (post.postId == User.INVALID_USER) {
                                 continue
                             }

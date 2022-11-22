@@ -28,9 +28,11 @@ fun DocumentSnapshot.toItem(): Item {
             likes = (it?.get("likes") ?: 0) as Number,
             //profileImage = it?.get("profileImage").toString() ?: User.INVALID_USER,
             whoPosted = (it?.get("whoPosted") ?: User.INVALID_USER) as String,
-            time = ((it?.get("time")) ?: Timestamp(1669091942, 278000000) ) as Timestamp,
+            time = ((it?.get("time")) ?: Timestamp(0, 0) ) as Timestamp,
+//            comments = (it?.get("testing")
+//                ?.run { this as ArrayList<Map<String, String>> } ?: listOf()) as ArrayList<Map<String, String>>,
             comments = (it?.get("testing")
-                ?.run { this as ArrayList<Map<String, String>> } ?: listOf()) as ArrayList<Map<String, String>>,
+                ?.run { this as ArrayList<Map<String, String>> } ?: listOf(mapOf("댓글" to "오류"))) as ArrayList<Map<String, String>>,
             postId = ((it?.get("post_id") ?: User.INVALID_USER) as String)
         )
     }
