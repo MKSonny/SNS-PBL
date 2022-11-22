@@ -1,34 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <androidx.cardview.widget.CardView
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="0"
-        android:innerRadius="0dp"
-        android:shape="ring"
-        android:thicknessRatio="1.9"
-        app:cardCornerRadius="40dp">
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-        <ImageView
-            android:id="@+id/friend_profile_image"
-            android:layout_width="48sp"
-            android:layout_height="48sp"
+        <androidx.cardview.widget.CardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_weight="0"
-            android:scaleType="centerCrop" />
-    </androidx.cardview.widget.CardView>
+            android:innerRadius="0dp"
+            android:shape="ring"
+            android:thicknessRatio="1.9"
+            app:cardCornerRadius="40dp">
 
-    <TextView
-        android:id="@+id/friend_nickname"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:layout_weight="7"
-        android:gravity="center"
-        android:text="TextView"
-        android:textSize="20sp" />
+            <ImageView
+                android:id="@+id/friend_profile_image"
+                android:layout_width="48sp"
+                android:layout_height="48sp"
+                android:layout_weight="0"
+                android:scaleType="centerCrop" />
+        </androidx.cardview.widget.CardView>
 
-</LinearLayout>
+        <TextView
+            android:id="@+id/friend_nickname"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:layout_weight="7"
+            android:gravity="center"
+            android:text="TextView"
+            android:textSize="20sp" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="0">
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
