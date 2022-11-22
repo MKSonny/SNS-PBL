@@ -27,9 +27,11 @@ import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.AuthResult
 
 class LoginMainFragment : Fragment() {
-    private lateinit var binding: FragmentLoginMainBinding
+    private var _binding: FragmentLoginMainBinding? = null
+    private val binding get() = _binding!!
     private lateinit var fbGoogleSignIn: ActivityResultLauncher<Intent?>
     private lateinit var googleSignInClient: GoogleSignInClient
+    private val viewModel: LoginMainViewModel by activityViewModels()
 
     companion object {
         fun newInstance() = LoginMainFragment()
@@ -37,8 +39,6 @@ class LoginMainFragment : Fragment() {
         private const val TAG = "GoogleActivity"
         private const val RC_SIGN_IN = 9001
     }
-
-    private val viewModel: LoginMainViewModel by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,14 +49,24 @@ class LoginMainFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentLoginMainBinding.inflate(inflater)
+        _binding = FragmentLoginMainBinding.inflate(inflater)
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         binding.loginStartWithEmailButton.setOnClickListener {
             view?.findNavController()?.navigate(R.id.action_loginMainFragment_to_emailLoginFragment)
         }
         binding.startWithGoogleButton.setOnClickListener {
             signInWithGoogle()
         }
-        return binding.root
+
     }
 
     private fun signInWithGoogle() {
@@ -73,11 +83,14 @@ class LoginMainFragment : Fragment() {
 
         override fun onSuccess() {
             super.onSuccess()
-//            if (getReferenceOfMine() == null) {
-//                view?.findNavController()
-//                    ?.navigate(R.id.action_loginMainFragment_to_setNickNameFragment2)
-//            }
-//            activity?.finish()
+            getReferenceOfMine()?.get()?.addOnCompleteListener {
+                if (it.result.exists()) {
+                    activity?.finish()
+                } else {
+                    requireActivity().findNavController(android.R.id.content)
+                        .navigate(R.id.action_emailLoginFragment_to_setNickNameFragment)
+                }
+            }
         }
 
         override fun onFailure(TAG: String, task: Task<AuthResult>) {
@@ -92,20 +105,20 @@ class LoginMainFragment : Fragment() {
         //구글 OAuth를 이용한 로그인 설정
         fbGoogleSignIn =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-                    if (it.resultCode == AppCompatActivity.RESULT_OK) {
-                        val task = GoogleSignIn.getSignedInAccountFromIntent(it.data)
-                        try {
-                            // Google Sign In was successful, authenticate with Firebase
-                            val account = task.getResult(ApiException::class.java)!!
-                            Log.d(TAG, "firebaseAuthWithGoogle:" + account.id)
-                            GoogleAuth.firebaseAuthWithGoogle(
-                                account.idToken.toString(), defaultOnAuthCompleteListener
-                            )
-                        } catch (e: ApiException) {
-                            // Google Sign In failed, update UI appropriately
-                            Log.w(TAG, "Google sign in failed", e)
-                        }
+                if (it.resultCode == AppCompatActivity.RESULT_OK) {
+                    val task = GoogleSignIn.getSignedInAccountFromIntent(it.data)
+                    try {
+                        // Google Sign In was successful, authenticate with Firebase
+                        val account = task.getResult(ApiException::class.java)!!
+                        Log.d(TAG, "firebaseAuthWithGoogle:" + account.id)
+                        GoogleAuth.firebaseAuthWithGoogle(
+                            account.idToken.toString(), defaultOnAuthCompleteListener
+                        )
+                    } catch (e: ApiException) {
+                        // Google Sign In failed, update UI appropriately
+                        Log.w(TAG, "Google sign in failed", e)
                     }
+                }
             }
         googleSignInClient = GoogleSignIn.getClient(
             requireContext(),

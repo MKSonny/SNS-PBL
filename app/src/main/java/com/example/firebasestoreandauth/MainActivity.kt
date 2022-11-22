@@ -38,8 +38,6 @@ class MainActivity : AppCompatActivity() {
         appbarc = AppBarConfiguration(setOf(R.id.profileFragment, R.id.friendsFragment, R.id.postFragment))
         //setupActionBarWithNavController(nhf.navController, appBarc)
 
-        val col = Firebase.firestore.collection("users").document().id
-        println("123111 ${col}")
         //Firebase 초기화
         auth = Firebase.auth
         firestore = Firebase.firestore

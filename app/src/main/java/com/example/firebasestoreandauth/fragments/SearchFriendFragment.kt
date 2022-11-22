@@ -65,7 +65,7 @@ class SearchFriendFragment : Fragment() {
         }
 
         (activity as AppCompatActivity).setSupportActionBar(toolbar)
-        toolbar.title = "친구 찾기"
+        toolbar.title = ""
         setupMenu()
 
         viewModel.addObserver(viewLifecycleOwner) { adapter.notifyDataSetChanged() }
