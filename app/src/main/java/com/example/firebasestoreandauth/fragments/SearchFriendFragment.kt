@@ -192,7 +192,7 @@ class SearchResultAdapter(val viewModel: SearchFriendFragment.SearchResultViewMo
             }
 
             if (user.profileImage == null || user.profileImage == User.INVALID_USER
-                || (user.profileImage ?: "").isEmpty()
+                || (user.profileImage ?: "").isEmpty()||user.profileImage =="null"
             ) return
             image.clipToOutline = true
             val stRef = Firebase.storage
