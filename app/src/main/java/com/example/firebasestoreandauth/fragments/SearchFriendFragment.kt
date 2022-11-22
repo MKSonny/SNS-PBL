@@ -73,8 +73,8 @@ class SearchFriendFragment : Fragment() {
         binding.searchButton.setOnClickListener {
             val keyword = binding.keyword.text.toString()
             searchFriendWithKeyword(keyword)
-
         }
+        getSomeUser()
 
         getReferenceOfMine()?.addSnapshotListener { snapshot, e ->
             val TAG = "SnapshotListener"
@@ -118,6 +118,26 @@ class SearchFriendFragment : Fragment() {
         val db = Firebase.firestore
         db.collection("Users")
             .whereEqualTo("nickname", keyword)
+            .get()
+            .addOnCompleteListener { it ->
+                if (it.isSuccessful) {
+                    val documentRef = it.result.documents
+                    queryResult.clear()
+                    documentRef.map {
+                        queryResult.add(it.toUser())
+                        val viewModel: SearchResultViewModel by viewModels()
+                        viewModel.setQueryResult(queryResult)
+                    }
+                } else {
+                    println(it.exception)
+                }
+            }
+    }
+
+    private fun getSomeUser() {
+        val db = Firebase.firestore
+        db.collection("Users")
+            .limit(10)
             .get()
             .addOnCompleteListener { it ->
                 if (it.isSuccessful) {
