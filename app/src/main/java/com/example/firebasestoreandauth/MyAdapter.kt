@@ -72,6 +72,7 @@ class MyAdapter(private val db: FirebaseFirestore, private val navigate: NavCont
                     "likes" to 0,
                     //"img" to "gs://sns-pbl.appspot.com/wine.jpg",
                     //"profile_img" to "gs://sns-pbl.appspot.com/상상부기 2.png",
+                    //"time" to FieldValue.serverTimestamp(),
                     "testing" to tempComments,
                     "whoPosted" to "odcYUEo7Mhbhmbc13Xzm",
                     "post_id" to forPostId.id

@@ -13,6 +13,7 @@ import com.example.firebasestoreandauth.auth.LoginActivity
 import com.example.firebasestoreandauth.databinding.ActivityMainBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -38,7 +39,6 @@ class MainActivity : AppCompatActivity() {
         val appBarc = AppBarConfiguration(setOf(R.id.profileFragment, R.id.friendsFragment, R.id.postFragment))
         //setupActionBarWithNavController(nhf.navController, appBarc)
 
-
         //Firebase 초기화
         auth = Firebase.auth
         firestore = Firebase.firestore
@@ -56,6 +56,8 @@ class MainActivity : AppCompatActivity() {
         return navController.navigateUp(appbarc)
                 || super.onSupportNavigateUp()
     }
+
+
 
     fun hideBottomNav(state: Boolean) {
         if (state) binding.bottomNavigationView.visibility =

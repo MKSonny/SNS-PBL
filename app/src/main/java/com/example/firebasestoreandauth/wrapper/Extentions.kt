@@ -3,8 +3,8 @@
 package com.example.firebasestoreandauth.wrapper
 
 import android.util.Log
+import com.example.firebasestoreandauth.DTO.Item
 import com.example.firebasestoreandauth.DTO.User
-import com.example.firebasestoreandauth.Item
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.DocumentReference
