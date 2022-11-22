@@ -1,22 +1,13 @@
 package com.example.firebasestoreandauth
 
-import android.content.Intent
-import android.graphics.BitmapFactory
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.firebasestoreandauth.DTO.User
 import com.example.firebasestoreandauth.databinding.CommentLayoutBinding
-import com.example.firebasestoreandauth.databinding.FriendsLayoutBinding
 import com.example.firebasestoreandauth.databinding.PostLayoutBinding
-import com.example.firebasestoreandauth.test.SearchFriendActivity
-import com.example.firebasestoreandauth.wrapper.getReferenceOfMine
-import com.example.firebasestoreandauth.wrapper.toUser
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.FirebaseFirestore
@@ -52,8 +43,6 @@ class PostFragment : Fragment(R.layout.post_layout) {
                         val comments = document["testing"] as ArrayList<Map<String,String>>
 
                         viewModel.addItem(Item(profile_img, uid, imgUrl, likes, time, whoPosted, comments))
-                        //viewModel.addItem(Item(uid, imgUrl, likes, time, whoPosted, comments))
-                        //adapter.notifyItemInserted(viewModel.itemNotified)
                     }
                     DocumentChange.Type.REMOVED -> {
 
@@ -94,67 +83,6 @@ class PostFragment : Fragment(R.layout.post_layout) {
     }
 }
 
-class ProfileFragment : Fragment(R.layout.profile_layout) {
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-    }
-}
-
-class FriendsFragment : Fragment(R.layout.friends_layout) {
-    var snapshotListener: ListenerRegistration? = null
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        val binding = FriendsLayoutBinding.bind(view)
-        val friendModel: FriendViewModel by viewModels()
-        val listAdapter = FriendListAdapter(friendModel)
-        val requestAdapter = RequestReceivedAdapter(friendModel)
-
-        binding.recyclerFriendList.adapter = listAdapter
-        binding.recyclerFriendList.layoutManager = LinearLayoutManager(context)
-        binding.recyclerFriendList.setHasFixedSize(true)
-
-        binding.recyclerReceivedList.adapter = requestAdapter
-        binding.recyclerReceivedList.layoutManager = LinearLayoutManager(context)
-        binding.recyclerReceivedList.setHasFixedSize(true)
-
-        friendModel.friend.observe(viewLifecycleOwner) {
-            listAdapter.notifyDataSetChanged()
-        }
-        friendModel.requestReceived.observe(viewLifecycleOwner) {
-            requestAdapter.notifyDataSetChanged()
-        }
-
-        snapshotListener = getReferenceOfMine()?.addSnapshotListener { snapshot, e ->
-            val TAG = "SnapshotListener"
-            if (e != null) {
-                Log.w(TAG, "Listen failed.", e)
-                return@addSnapshotListener
-            }
-            if (snapshot != null && snapshot.exists()) {
-                val user = snapshot.toUser()
-                if (user.UID == User.INVALID_USER) return@addSnapshotListener
-                Log.d(TAG, "Current data: ${user}")
-                friendModel.friend.setList(user.friends!!)
-                friendModel.requestReceived.setList(user.requestReceived!!.toList())
-            } else {
-                Log.d(TAG, "Current data: null")
-            }
-        }
-
-        binding.startFindFriendButton.setOnClickListener {
-            val intent = Intent(activity, SearchFriendActivity::class.java)
-            startActivity(intent)
-        }
-
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        snapshotListener?.remove()
-    }
-}
-
 class CommentFragment : Fragment(R.layout.comment_layout) {
 
     lateinit var binding: CommentLayoutBinding
@@ -164,13 +92,13 @@ class CommentFragment : Fragment(R.layout.comment_layout) {
         super.onCreate(savedInstanceState)
 
         val mainActivity = activity as MainActivity
-        mainActivity.HideBottomNav(true)
+        mainActivity.hideBottomNav(true)
     }
 
     override fun onDestroy() {
         super.onDestroy()
         val mainActivity = activity as MainActivity
-        mainActivity.HideBottomNav(false)
+        mainActivity.hideBottomNav(false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

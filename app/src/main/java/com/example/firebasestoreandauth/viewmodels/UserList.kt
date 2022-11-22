@@ -1,10 +1,11 @@
-package com.example.firebasestoreandauth
+package com.example.firebasestoreandauth.viewmodels
 
 import androidx.lifecycle.*
+import com.example.firebasestoreandauth.DTO.User
 
 class UserList {
-    private val list = MutableLiveData<List<String>>()
-    fun observe(owner: LifecycleOwner, observer: Observer<List<String>>) {
+    private val list = MutableLiveData<List<User>>()
+    fun observe(owner: LifecycleOwner, observer: Observer<List<User>>) {
         list.observe(owner, observer)
     }
 
@@ -12,14 +13,14 @@ class UserList {
         list.value = listOf()
     }
 
-    fun setList(list: List<String>) {
+    fun setList(list: List<User>) {
         this.list.value = list
     }
 
-    fun getItem(idx: Int): String {
+    fun getItem(idx: Int): User {
         return (
                 if (idx > list.value!!.size)
-                    ""
+                   User(uid = User.INVALID_USER,"","")
                 else
                     list.value!![idx])
     }

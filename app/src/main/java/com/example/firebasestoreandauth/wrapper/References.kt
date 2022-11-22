@@ -1,6 +1,7 @@
 package com.example.firebasestoreandauth.wrapper
 
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -14,11 +15,19 @@ fun getImageReference(fileName: String): StorageReference? {
     return storage.getReferenceFromUrl(fileName)
 }
 
-fun getUserDocumentReference(uid: String): DocumentReference? {
+fun getUserDocumentWith(uid: String): DocumentReference? {
     val firestore = Firebase.firestore
     if (uid.isEmpty()) return null
     val userCollection = firestore.collection("Users")
     return userCollection.document(uid)
+}
+
+fun isThisNicknameInUse(nickname: String): Boolean {
+    val firestore = Firebase.firestore
+    if (nickname.isEmpty()) return false
+    val userCollection = firestore.collection("Users")
+    val query = userCollection.whereEqualTo("nickname", nickname)
+    return query.get().result.isEmpty
 }
 
 /**
@@ -27,6 +36,11 @@ fun getUserDocumentReference(uid: String): DocumentReference? {
 fun getReferenceOfMine(): DocumentReference? {
     val auth = Firebase.auth
     if (auth.currentUser != null)
-        return auth.uid?.let { getUserDocumentReference(it) }
+        return auth.uid?.let { getUserDocumentWith(it) }
     return null
+}
+
+fun getUserCollection(): CollectionReference {
+    val firestore = Firebase.firestore
+    return firestore.collection("Users")
 }

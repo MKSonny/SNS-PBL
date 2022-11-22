@@ -34,7 +34,7 @@ class AddPersonalInfoActivity : AppCompatActivity() {
         val db = Firebase.firestore
         val uid = Firebase.auth.currentUser!!.uid
         db.collection("Users").document(uid).set(
-            User(UID=uid, NickName = nickName, BirthDay = date, profileImage = "")
+            User(uid=uid, nickname = nickName, BirthDay = date, profileImage = "")
         )
             .addOnCompleteListener {
                 if(it.isSuccessful)
