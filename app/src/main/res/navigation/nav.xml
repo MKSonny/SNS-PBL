@@ -47,5 +47,13 @@
     <fragment
         android:id="@+id/profileFragment"
         android:name="com.example.firebasestoreandauth.ProfileFragment"
-        android:label="ProfileFragment" />
+        android:label="ProfileFragment" >
+        <action
+            android:id="@+id/action_profileFragment_to_postingFragment"
+            app:destination="@id/postingFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/postingFragment"
+        android:name="com.example.firebasestoreandauth.PostingFragment"
+        android:label="PostingFragment" />
 </navigation>

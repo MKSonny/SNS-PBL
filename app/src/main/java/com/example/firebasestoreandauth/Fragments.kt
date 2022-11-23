@@ -10,7 +10,7 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
-import android.util.Log
+import android.text.TextUtils.replace
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -21,22 +21,19 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.firebasestoreandauth.DTO.User
 import com.example.firebasestoreandauth.auth.LoginActivity
 import com.example.firebasestoreandauth.databinding.*
-import com.example.firebasestoreandauth.viewmodels.FriendListAdapter
-import com.example.firebasestoreandauth.viewmodels.FriendViewModel
-import com.example.firebasestoreandauth.viewmodels.RequestReceivedAdapter
-import com.example.firebasestoreandauth.wrapper.ProfileViewModel
-import com.example.firebasestoreandauth.wrapper.getReferenceOfMine
 import com.example.firebasestoreandauth.wrapper.toItem
-import com.example.firebasestoreandauth.wrapper.toUser
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.ktx.auth
+import com.example.firebasestoreandauth.databinding.CommentLayoutBinding
+import com.example.firebasestoreandauth.databinding.PostLayoutBinding
+import com.example.firebasestoreandauth.wrapper.ProfileViewModel
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -47,6 +44,7 @@ import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
 import java.util.*
+import kotlin.collections.ArrayList
 
 class PostFragment : Fragment(R.layout.post_layout) {
     val db: FirebaseFirestore = Firebase.firestore
@@ -134,15 +132,18 @@ class PostFragment : Fragment(R.layout.post_layout) {
     }
 }
 
-class PostingFragment : Fragment(R.layout.posting_layout) {
+
+// 뷰모델 이미지url, 랜덤 아이디 가져오기
+class PostingFragment : Fragment(R.layout.posting_layout){
+
     private var _binding: PostingLayoutBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var viewModel: ProfileViewModel
+    lateinit var viewModel : ProfileViewModel
 
     lateinit var storage: FirebaseStorage
     private val db: FirebaseFirestore = Firebase.firestore
-    val docPostRef = db.collection("post").document("${Firebase.auth.currentUser?.uid}")
+    val docPostRef = db.collection("post")
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -157,31 +158,33 @@ class PostingFragment : Fragment(R.layout.posting_layout) {
         super.onViewCreated(view, savedInstanceState)
         val binding = PostingLayoutBinding.bind(view)
 
+        viewModel = ViewModelProvider(requireActivity()).get(ProfileViewModel::class.java)
+        val imgUrl = viewModel.getPos()
+        binding.postImage.setImageURI(imgUrl)
+
         binding.posting.setOnClickListener {
 
             val comment = binding.comments.text.toString()
             val like = 0
-            val post_id = "${Firebase.auth.currentUser?.uid}"
-            val imgUrl = viewModel.getPos()
-
+            val whoPosted = "${Firebase.auth.currentUser?.uid}"
 
             val tampComments = java.util.ArrayList<Map<String, String>>()
             tampComments.add(
                 mapOf("${Firebase.auth.currentUser?.uid}" to comment)
             )
 
-
             val itemMap = hashMapOf(
-                "imgUrl" to imgUrl,
+                "imgUrl" to imgUrl.toString(),
                 "like" to like,
-                "post_id" to post_id,
+                "whoPosted" to whoPosted,
                 "Timestamp" to FieldValue.serverTimestamp(),
                 "comments" to tampComments
             )
 
-            docPostRef.set(itemMap)
+            docPostRef.add(itemMap)
                 .addOnSuccessListener {
-                    imgUrl?.let {
+
+                    imgUrl?.let{
 
                         val imageFile = getRealPathFromURI(it)
                         val imageName = getRealPathFromNAME(it)
@@ -239,46 +242,44 @@ class PostingFragment : Fragment(R.layout.posting_layout) {
         super.onDestroyView()
         _binding = null
     }
-
-
 }
 
-
+// 게시물 보여주기
 class ProfileFragment : Fragment(R.layout.profile_layout) {
     private var _binding: ProfileLayoutBinding? = null
     private val binding get() = _binding!!
 
     lateinit var storage: FirebaseStorage
     private val db: FirebaseFirestore = Firebase.firestore
-    private var fileAbsolutePath: String? = null
-    val docUserRef = db.collection("user").document("${Firebase.auth.currentUser?.uid}")
+    val docUserRef = db.collection("Users").document("${Firebase.auth.currentUser?.uid}")
     val docPostRef = db.collection("post").document("${Firebase.auth.currentUser?.uid}")
-    val REQUEST_IMAGE_CAPTURE = 1
 
-    private lateinit var viewModel: ProfileViewModel
+    val colUserRef = db.collection("Users")
+    val colPostRef = db.collection("post")
+
+    lateinit var viewModel : ProfileViewModel
 
     companion object {
-        const val REQUEST_CODE = 1
         const val REQ_GALLERY = 1
         const val REQ_PERMISSION_CAMERA = 1
-        const val REQ_CAMERA = 1
     }
 
-    // 갤러리에서 이미지 선택결과를 받고 파일 업로드
+    // 갤러리에서 이미지 선택결과를 받고 뷰모델에 저장
     private val imageResult = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == AppCompatActivity.RESULT_OK) {
             val imageURI = result.data?.data
 
-            //viewModel = ViewModelProvider(requireActivity())[ProfileViewModel::class.java]
-
             viewModel.setPos(imageURI)
 
         }
+
+        findNavController().navigate(R.id.action_profileFragment_to_postingFragment)
+
     }
 
-    // 기본 사진앱에서 이미지 선택결과를 받고 파일 업로드
+    // 기본 사진앱에서 이미지 선택결과를 받고 뷰모델에 저장ㄹㅇ
     private val photoResult = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -288,6 +289,8 @@ class ProfileFragment : Fragment(R.layout.profile_layout) {
             viewModel.setPos(imageURI)
 
         }
+
+        findNavController().navigate(R.id.action_profileFragment_to_postingFragment)
     }
 
     // 갤러리에서 이미지 선택결과를 받고 프로필화면으로 전환
@@ -315,58 +318,49 @@ class ProfileFragment : Fragment(R.layout.profile_layout) {
         super.onViewCreated(view, savedInstanceState)
         val binding = ProfileLayoutBinding.bind(view)
 
+        viewModel = ViewModelProvider(requireActivity()).get(ProfileViewModel::class.java)
+
         storage = Firebase.storage
         val storageRef = storage.reference // reference to root
-        val imageRef1 = storageRef.child("${Firebase.auth.currentUser?.uid}/hansung2.png")
+        val imageRef1 = storageRef.child("상상부기 2.png")
 
-        binding.settingButton.setOnClickListener {
-            Log.w("SettingButton", "버튼 클릭")
-            val builder = AlertDialog.Builder(requireContext())
-            builder.setTitle("로그아웃")
-                .setMessage("로그아웃하시겠어요?")
-                .setPositiveButton("로그아웃") { dialog, id ->
-                    Firebase.auth.signOut()
-                    startActivity(Intent(requireContext(), LoginActivity::class.java))
+
+        // 유저 프로필 이미지에서 url 가져와서 띄우기
+        docUserRef.get()
+            .addOnSuccessListener { // it: DocumentSnapshot
+                viewModel.setPro(it["profileImage"].toString())
+                val imageRef2 = storage.getReferenceFromUrl(viewModel.getPro().toString())
+                displayImageRef(imageRef2, binding.profile)
+            }.addOnFailureListener {
+            }
+
+        //게시물 6개 출력
+        colPostRef.whereEqualTo("whoPosted", "${Firebase.auth.currentUser?.uid}").get()
+            .addOnSuccessListener { documents ->
+                var size = 1
+                for (doc in documents){
+                    viewModel.setPro(doc["imgUrl"].toString())
+                    val postRef1 = storage.getReferenceFromUrl(viewModel.getPro().toString())
+                    if ( size == 1)
+                        displayImageRef(postRef1, binding.imageView)
+                    else if (size == 2)
+                        displayImageRef(postRef1, binding.imageView2)
+                    else if (size == 3)
+                        displayImageRef(postRef1, binding.imageView3)
+                    else if (size == 4)
+                        displayImageRef(postRef1, binding.imageView4)
+                    else if (size == 5)
+                        displayImageRef(postRef1, binding.imageView5)
+                    else if (size == 6){
+                        displayImageRef(postRef1, binding.imageView6)
+                        break
+                    }
+                    size++
                 }
-                .setNegativeButton("취소") { _, _ ->
-                }
-            builder.create().show()
-
-        }
-
-        // 초기 프로필
-        displayImageRef(imageRef1, binding.profile)
-
-        /*// 나중에 자기 포스트에서 이미지 받아오기
-        val postRef1 = storage.getReferenceFromUrl(
-            "gs://android-sns-5a992.appspot.com/${Firebase.auth.currentUser?.uid}/post1.png"
-        )
-        val postRef2 = storage.getReferenceFromUrl(
-            "gs://android-sns-5a992.appspot.com/${Firebase.auth.currentUser?.uid}/post2.png"
-        )
-        val postRef3 = storage.getReferenceFromUrl(
-            "gs://android-sns-5a992.appspot.com/${Firebase.auth.currentUser?.uid}/post3.png"
-        )
-        val postRef4 = storage.getReferenceFromUrl(
-            "gs://android-sns-5a992.appspot.com/${Firebase.auth.currentUser?.uid}/post4.png"
-        )
-        val postRef5 = storage.getReferenceFromUrl(
-            "gs://android-sns-5a992.appspot.com/${Firebase.auth.currentUser?.uid}/post5.png"
-        )
-        val postRef6 = storage.getReferenceFromUrl(
-            "gs://android-sns-5a992.appspot.com/${Firebase.auth.currentUser?.uid}/post6.png"
-        )
-
-        displayImageRef(postRef1, binding.imageView)
-        displayImageRef(postRef2, binding.imageView2)
-        displayImageRef(postRef3, binding.imageView3)
-        displayImageRef(postRef4, binding.imageView4)
-        displayImageRef(postRef5, binding.imageView5)
-        displayImageRef(postRef6, binding.imageView6)*/
-
+            }.addOnFailureListener {
+            }
         // 개시물수, 친구수 출력
         queryItem()
-
 
         // 업로드 버튼
         binding.buttonUpload.setOnClickListener {
@@ -375,13 +369,10 @@ class ProfileFragment : Fragment(R.layout.profile_layout) {
                 setTitle("사진촬영 및 갤러리 선택")
                 setPositiveButton("Gallery") { _, _ -> selectGallery() }
                 setNegativeButton("Photo") { _, _ -> selectPhoto() }
+
             }.show()
 
-            /*supportFragmentManager.commit { // this: FragmentTransaction
-                setReorderingAllowed(true)
-                replace(R.id.posting_fragment, PostingFragment::class.java, null)
-                addToBackStack(null)
-            }*/
+            //findNavController().navigate(R.id.action_profileFragment_to_postingFragment)
 
         }
         // 프로필 변경 버튼
@@ -389,6 +380,28 @@ class ProfileFragment : Fragment(R.layout.profile_layout) {
             selectGalleryProfile()
         }
 
+    }
+
+
+    // 게시물수, 친구수 출력
+    private fun queryItem() { // 1번문제
+        docUserRef.get()
+            .addOnSuccessListener { // it: DocumentSnapshot
+                val friend = it["friends"] as ArrayList<*>
+                binding.friendNumber.setText(friend.size.toString())
+            }.addOnFailureListener {
+            }
+
+
+        colPostRef.whereEqualTo("whoPosted", "${Firebase.auth.currentUser?.uid}").get()
+            .addOnSuccessListener { documents ->
+                var size = 0
+                for (doc in documents) {
+                    size++
+                }
+                binding.postNumber.setText(size.toString())
+            }.addOnFailureListener {
+            }
     }
 
 
@@ -416,7 +429,6 @@ class ProfileFragment : Fragment(R.layout.profile_layout) {
             photoResult.launch(intent)
         }
     }
-
 
     //갤러리 호출
     private fun selectGallery() {
@@ -481,23 +493,6 @@ class ProfileFragment : Fragment(R.layout.profile_layout) {
             profileResult.launch(intent)
         }
     }
-
-
-    // 게시물수, 친구수 출력
-    private fun queryItem() {
-        docUserRef.get()
-            .addOnSuccessListener { // it: DocumentSnapshot
-                binding.friendNumber.setText(it["index"].toString())
-            }.addOnFailureListener {
-            }
-
-        docPostRef.get()
-            .addOnSuccessListener { // it: DocumentSnapshot
-                binding.postNumber.setText(it["index"].toString())
-            }.addOnFailureListener {
-            }
-    }
-
 
     // 스토리지에서 이미지 가져와서 표시
     private fun displayImageRef(imageRef: StorageReference?, view: ImageView) {
