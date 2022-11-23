@@ -3,13 +3,14 @@ package com.example.firebasestoreandauth
 
 import android.Manifest
 import android.content.ContentUris
+import android.content.ContentValues
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
-import android.text.TextUtils.replace
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,7 +21,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -41,7 +41,6 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
-import java.util.*
 import kotlin.collections.ArrayList
 
 class PostFragment : Fragment(R.layout.post_layout) {
@@ -136,8 +135,8 @@ class PostingFragment : Fragment(R.layout.posting_layout){
     private val binding get() = _binding!!
 
     lateinit var viewModel : ProfileViewModel
-
     lateinit var storage: FirebaseStorage
+
     private val db: FirebaseFirestore = Firebase.firestore
     val docPostRef = db.collection("post")
 
@@ -153,6 +152,8 @@ class PostingFragment : Fragment(R.layout.posting_layout){
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val binding = PostingLayoutBinding.bind(view)
+
+        storage = Firebase.storage
 
         viewModel = ViewModelProvider(requireActivity()).get(ProfileViewModel::class.java)
         val imgUrl = viewModel.getPos()
@@ -170,26 +171,113 @@ class PostingFragment : Fragment(R.layout.posting_layout){
             )
 
             val itemMap = hashMapOf(
-                "imgUrl" to imgUrl.toString(),
                 "like" to like,
                 "whoPosted" to whoPosted,
                 "Timestamp" to FieldValue.serverTimestamp(),
                 "comments" to tampComments
             )
 
+            val imageFile = viewModel.getFile()
+            val imageName = viewModel.getName()
+
             docPostRef.add(itemMap)
                 .addOnSuccessListener {
-                    imgUrl?.let{
-                        val imageFile = getRealPathFromURI(it)
-                        val imageName = getRealPathFromNAME(it)
-                        uploadFile(imageFile, imageName)
-                    }
-                    Snackbar.make(binding.root, "Upload completed.", Snackbar.LENGTH_SHORT).show()
+                    uploadFile(imageFile, imageName)
+                    val col = it.id
+                    val idMap = hashMapOf(
+                        "imgUrl" to "gs://sns-pbl.appspot.com/${viewModel.getName()}",
+                        "post_id" to col
+                    )
+                    docPostRef.document(it.id).update(idMap as Map<String, Any>)
+                    findNavController().navigate(R.id.action_postingFragment_to_profileFragment)
                 }.addOnFailureListener {
                     Snackbar.make(binding.root, "Upload fail.", Snackbar.LENGTH_SHORT).show()
                 }
         }
 
+    }
+
+    private fun uploadFile(file_id: Long?, fileName: String?) {
+        file_id ?: return
+        val imageRef = storage.reference.child("${fileName}")
+        val contentUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, file_id)
+        imageRef.putFile(contentUri).addOnCompleteListener {
+            if (it.isSuccessful) {
+            }
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+}
+
+// 게시물 보여주기
+class ProfileFragment : Fragment(R.layout.profile_layout) {
+    private var _binding: ProfileLayoutBinding? = null
+    private val binding get() = _binding!!
+
+    lateinit var storage: FirebaseStorage
+    private val db: FirebaseFirestore = Firebase.firestore
+    val docUserRef = db.collection("Users").document("${Firebase.auth.currentUser?.uid}")
+    val colPostRef = db.collection("post")
+
+    lateinit var viewModel : ProfileViewModel
+    lateinit var filePath: String
+
+    companion object {
+        const val REQ_GALLERY = 1
+        const val REQ_PERMISSION_CAMERA = 1
+    }
+
+    // 갤러리에서 이미지 선택결과를 받고 뷰모델에 저장
+    private val imageResult = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ){ result ->
+        if(result.resultCode == AppCompatActivity.RESULT_OK){
+            val imageURI = result.data?.data
+
+            imageURI?.let{
+                val imageFile = getRealPathFromURI(it)
+                val imageName = getRealPathFromNAME(it)
+                viewModel.setFile(imageFile)
+                viewModel.setName(imageName)
+            }
+            viewModel.setPos(imageURI)
+
+        }
+
+        findNavController().navigate(R.id.action_profileFragment_to_postingFragment)
+
+    }
+
+    // 기본 사진앱에서 이미지 선택결과를 받고 뷰모델에 저장
+    private val photoResult = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ){ result ->
+        if(result.resultCode == AppCompatActivity.RESULT_OK){
+
+            /*val option = BitmapFactory.Options()
+            option.inSampleSize = 10
+            val bitmap = BitmapFactory.decodeFile(result.toString(), option)
+            viewModel.setbit(bitmap)*/
+
+            val imageURI = result.data?.data
+            imageURI?.let{
+
+                val imageFile = getRealPathFromURI(it)
+                val imageName = getRealPathFromNAME(it)
+                viewModel.setFile(imageFile)
+                viewModel.setName(imageName)
+
+            }
+
+            viewModel.setPos(imageURI)
+
+        }
+
+        findNavController().navigate(R.id.action_profileFragment_to_postingFragment)
     }
 
     // 개시물 id 가져오기
@@ -218,74 +306,6 @@ class PostingFragment : Fragment(R.layout.posting_layout){
         return result
     }
 
-    // 스토리지에 이미지 업로드
-    private fun uploadFile(file_id: Long?, fileName: String?) {
-        file_id ?: return
-        val imageRef = storage.reference.child("${Firebase.auth.currentUser?.uid}/${fileName}")
-        val contentUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, file_id)
-        imageRef.putFile(contentUri).addOnCompleteListener {
-            if (it.isSuccessful) {
-                // upload success
-                Snackbar.make(binding.root, "Upload completed.", Snackbar.LENGTH_SHORT).show()
-            }
-        }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
-}
-
-// 게시물 보여주기
-class ProfileFragment : Fragment(R.layout.profile_layout) {
-    private var _binding: ProfileLayoutBinding? = null
-    private val binding get() = _binding!!
-
-    lateinit var storage: FirebaseStorage
-    private val db: FirebaseFirestore = Firebase.firestore
-    val docUserRef = db.collection("Users").document("${Firebase.auth.currentUser?.uid}")
-    val docPostRef = db.collection("post").document("${Firebase.auth.currentUser?.uid}")
-
-    val colUserRef = db.collection("Users")
-    val colPostRef = db.collection("post")
-
-    lateinit var viewModel : ProfileViewModel
-
-    companion object {
-        const val REQ_GALLERY = 1
-        const val REQ_PERMISSION_CAMERA = 1
-    }
-
-    // 갤러리에서 이미지 선택결과를 받고 뷰모델에 저장
-    private val imageResult = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ){ result ->
-        if(result.resultCode == AppCompatActivity.RESULT_OK){
-            val imageURI = result.data?.data
-
-            viewModel.setPos(imageURI)
-
-        }
-
-        findNavController().navigate(R.id.action_profileFragment_to_postingFragment)
-
-    }
-
-    // 기본 사진앱에서 이미지 선택결과를 받고 뷰모델에 저장ㄹㅇ
-    private val photoResult = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ){ result ->
-        if(result.resultCode == AppCompatActivity.RESULT_OK){
-            val imageURI = result.data?.data
-
-            viewModel.setPos(imageURI)
-
-        }
-
-        findNavController().navigate(R.id.action_profileFragment_to_postingFragment)
-    }
-
     // 갤러리에서 이미지 선택결과를 받고 프로필화면으로 전환
     private val profileResult = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -294,6 +314,14 @@ class ProfileFragment : Fragment(R.layout.profile_layout) {
             val imageURI = result.data?.data
             imageURI?.let{
                 binding.profile.setImageURI(imageURI)
+                val imageFile = getRealPathFromURI(it)
+                val imageName = getRealPathFromNAME(it)
+                uploadFile(imageFile, imageName)
+
+                val idMap = hashMapOf(
+                    "profileImage" to "gs://sns-pbl.appspot.com/${imageName}"
+                )
+                docUserRef.update(idMap as Map<String, Any>)
             }
         }
     }
@@ -314,8 +342,6 @@ class ProfileFragment : Fragment(R.layout.profile_layout) {
         viewModel = ViewModelProvider(requireActivity()).get(ProfileViewModel::class.java)
 
         storage = Firebase.storage
-        val storageRef = storage.reference // reference to root
-        val imageRef1 = storageRef.child("상상부기 2.png")
 
         // 유저 프로필 이미지에서 url 가져와서 띄우기
         docUserRef.get()
@@ -364,15 +390,23 @@ class ProfileFragment : Fragment(R.layout.profile_layout) {
                 setNegativeButton("Photo") { _, _ -> selectPhoto() }
 
             }.show()
-
-            //findNavController().navigate(R.id.action_profileFragment_to_postingFragment)
-
         }
         // 프로필 변경 버튼
         binding.buttonProfile.setOnClickListener {
             selectGalleryProfile()
         }
 
+    }
+
+
+    private fun uploadFile(file_id: Long?, fileName: String?) {
+        file_id ?: return
+        val imageRef = storage.reference.child("${fileName}")
+        val contentUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, file_id)
+        imageRef.putFile(contentUri).addOnCompleteListener {
+            if (it.isSuccessful) {
+            }
+        }
     }
 
     // 게시물수, 친구수 출력
