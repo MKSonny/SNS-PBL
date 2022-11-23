@@ -1,66 +1,43 @@
 package com.example.firebasestoreandauth
 
 
-import android.graphics.BitmapFactory
-import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
-import android.view.Gravity
-import android.view.View
-import android.widget.Toast
-import androidx.core.widget.addTextChangedListener
-
 import android.Manifest
 import android.content.ContentUris
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
-import android.text.TextUtils.replace
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.firebasestoreandauth.DTO.User
-import com.example.firebasestoreandauth.auth.LoginActivity
 import com.example.firebasestoreandauth.databinding.*
+import com.example.firebasestoreandauth.wrapper.ProfileViewModel
 import com.example.firebasestoreandauth.wrapper.toItem
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.ktx.auth
-import com.example.firebasestoreandauth.databinding.CommentLayoutBinding
-import com.example.firebasestoreandauth.databinding.PostLayoutBinding
-
-import com.example.firebasestoreandauth.wrapper.getReferenceOfMine
-import com.example.firebasestoreandauth.wrapper.toItem
-
-import com.example.firebasestoreandauth.wrapper.ProfileViewModel
-
-import com.google.firebase.firestore.DocumentChange
-import com.google.firebase.firestore.FieldValue
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ListenerRegistration
-import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.*
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
 import java.util.*
-import kotlin.collections.ArrayList
 
 class PostFragment : Fragment(R.layout.post_layout) {
     val db: FirebaseFirestore = Firebase.firestore
@@ -88,44 +65,48 @@ class PostFragment : Fragment(R.layout.post_layout) {
         //db.collection("SonUsers").document("UXEKfhpQLYnVFXCTFl9P")
         //getReferenceOfMine()?.get()?.addOnSuccessListener {
         db.collection("SonUsers").document("UXEKfhpQLYnVFXCTFl9P").get().addOnSuccessListener {
-        val friends = it["friends"] as ArrayList<String>
+            val friends = it["friends"] as ArrayList<String>
             friends.add("UXEKfhpQLYnVFXCTFl9P") // 자기 게시물도 볼 수 있도록
-        db.collection("PostInfo").orderBy("time", Query.Direction.DESCENDING).get().addOnSuccessListener {
-            for (doc in it) {
-                val post = doc.toItem()
-                for (friend in friends) {
-                    if (post.whoPosted == friend) {
-                        viewModel.addItem(post)
-                    }
-                }
-                nowRefresh = true
-            }
-
-            nowRefresh = true
-        }
-        snapshotListener = db.collection("PostInfo").addSnapshotListener { snapshot, error ->
-            if (nowRefresh) {
-                for (doc in snapshot!!.documentChanges) {
-                    when (doc.type) {
-                        DocumentChange.Type.ADDED -> {
-                            cnt++
-                            if (cnt > 0) {
-                                Toast.makeText(context, "${cnt}개의 새로운 포스트", Toast.LENGTH_LONG).show()
-                            }
-                            val document = doc.document
-                            val post = document.toItem()
-                            println("####$$$####" + post.postId)
-                            //11-22 여기 추가해야 됨
-                            if (post.postId == User.INVALID_USER) {
-                                continue
-                            }
-                            for (friend in friends) {
-                                if (post.whoPosted == friend)
-                                    viewModel.addItem(post)
+            db.collection("PostInfo").orderBy("time", Query.Direction.DESCENDING).get()
+                .addOnSuccessListener {
+                    for (doc in it) {
+                        val post = doc.toItem()
+                        for (friend in friends) {
+                            if (post.whoPosted == friend) {
+                                viewModel.addItem(post)
                             }
                         }
-                        DocumentChange.Type.REMOVED -> {
+                        nowRefresh = true
+                    }
 
+                    nowRefresh = true
+                }
+            snapshotListener = db.collection("PostInfo").addSnapshotListener { snapshot, error ->
+                if (nowRefresh) {
+                    for (doc in snapshot!!.documentChanges) {
+                        when (doc.type) {
+                            DocumentChange.Type.ADDED -> {
+                                cnt++
+                                if (cnt > 0) {
+                                    Toast.makeText(context, "${cnt}개의 새로운 포스트", Toast.LENGTH_LONG)
+                                        .show()
+                                }
+                                val document = doc.document
+                                val post = document.toItem()
+                                println("####$$$####" + post.postId)
+                                //11-22 여기 추가해야 됨
+                                if (post.postId == User.INVALID_USER) {
+                                    continue
+                                }
+                                for (friend in friends) {
+                                    if (post.whoPosted == friend)
+                                        viewModel.addItem(post)
+                                }
+                            }
+                            DocumentChange.Type.REMOVED -> {
+
+                            }
+                            else -> {}
                         }
                     }
                 }
@@ -166,12 +147,12 @@ class PostFragment : Fragment(R.layout.post_layout) {
 
 
 // 뷰모델 이미지url, 랜덤 아이디 가져오기
-class PostingFragment : Fragment(R.layout.posting_layout){
+class PostingFragment : Fragment(R.layout.posting_layout) {
 
     private var _binding: PostingLayoutBinding? = null
     private val binding get() = _binding!!
 
-    lateinit var viewModel : ProfileViewModel
+    lateinit var viewModel: ProfileViewModel
 
     lateinit var storage: FirebaseStorage
     private val db: FirebaseFirestore = Firebase.firestore
@@ -216,7 +197,7 @@ class PostingFragment : Fragment(R.layout.posting_layout){
             docPostRef.add(itemMap)
                 .addOnSuccessListener {
 
-                    imgUrl?.let{
+                    imgUrl?.let {
 
                         val imageFile = getRealPathFromURI(it)
                         val imageName = getRealPathFromNAME(it)
@@ -289,7 +270,7 @@ class ProfileFragment : Fragment(R.layout.profile_layout) {
     val colUserRef = db.collection("Users")
     val colPostRef = db.collection("post")
 
-    lateinit var viewModel : ProfileViewModel
+    lateinit var viewModel: ProfileViewModel
 
     companion object {
         const val REQ_GALLERY = 1
@@ -370,10 +351,10 @@ class ProfileFragment : Fragment(R.layout.profile_layout) {
         colPostRef.whereEqualTo("whoPosted", "${Firebase.auth.currentUser?.uid}").get()
             .addOnSuccessListener { documents ->
                 var size = 1
-                for (doc in documents){
+                for (doc in documents) {
                     viewModel.setPro(doc["imgUrl"].toString())
                     val postRef1 = storage.getReferenceFromUrl(viewModel.getPro().toString())
-                    if ( size == 1)
+                    if (size == 1)
                         displayImageRef(postRef1, binding.imageView)
                     else if (size == 2)
                         displayImageRef(postRef1, binding.imageView2)
@@ -383,7 +364,7 @@ class ProfileFragment : Fragment(R.layout.profile_layout) {
                         displayImageRef(postRef1, binding.imageView4)
                     else if (size == 5)
                         displayImageRef(postRef1, binding.imageView5)
-                    else if (size == 6){
+                    else if (size == 6) {
                         displayImageRef(postRef1, binding.imageView6)
                         break
                     }
@@ -569,7 +550,7 @@ class CommentFragment : Fragment(R.layout.comment_layout) {
         //AppBarConfiguration(setOf(R.id.commentFragment))
         val binding = CommentLayoutBinding.bind(view)
 
-        binding.commentEdit.addTextChangedListener(object : TextWatcher{
+        binding.commentEdit.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
 
             }
@@ -581,9 +562,7 @@ class CommentFragment : Fragment(R.layout.comment_layout) {
                 if (s.isEmpty()) {
                     println("empty")
                     binding.button.isEnabled = false
-                }
-
-                else {
+                } else {
                     println("working")
                     binding.button.isEnabled = true
                 }
@@ -611,7 +590,7 @@ class CommentFragment : Fragment(R.layout.comment_layout) {
         val clickedPost = viewModel.items.get(viewModel.getPos())
 
         val adapter = CommentAdapter(db, comments)
-       //binding.button.isEnabled = false
+        //binding.button.isEnabled = false
 
         binding.button.setOnClickListener {
             val comment = binding.commentEdit.text.toString()
