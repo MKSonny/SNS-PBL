@@ -48,9 +48,10 @@ class FriendsFragment : Fragment(R.layout.friends_layout) {
         val requestAdapter = RequestReceivedAdapter(friendModel)
         val toolbar = binding.friendToolbar
 
-        (activity as AppCompatActivity).setSupportActionBar(toolbar)
+         (activity as AppCompatActivity).setSupportActionBar(toolbar)
         setupMenu()
-        toolbar.title = "친구 목록"//추후 수정해야 할 수 있음 https://dreamaz.tistory.com/102
+        toolbar.title = ""//추후 수정해야 할 수 있음 https://dreamaz.tistory.com/102
+
 
         friendModel.apply {
             friend.observe(viewLifecycleOwner) {

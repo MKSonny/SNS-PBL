@@ -35,9 +35,8 @@ class MainActivity : AppCompatActivity() {
         val nhf = supportFragmentManager.findFragmentById(R.id.my_nav_host) as NavHostFragment
         val navController = nhf.navController
         binding.bottomNavigationView.setupWithNavController(navController)
-        val appBarc = AppBarConfiguration(setOf(R.id.profileFragment, R.id.friendsFragment, R.id.postFragment))
+        appbarc = AppBarConfiguration(setOf(R.id.profileFragment, R.id.friendsFragment, R.id.postFragment))
         //setupActionBarWithNavController(nhf.navController, appBarc)
-
 
         //Firebase 초기화
         auth = Firebase.auth

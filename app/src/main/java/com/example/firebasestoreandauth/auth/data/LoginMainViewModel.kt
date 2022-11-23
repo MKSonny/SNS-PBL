@@ -1,5 +1,6 @@
 package com.example.firebasestoreandauth.auth
 
+import android.net.Uri
 import android.util.Patterns
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -17,11 +18,12 @@ class LoginMainViewModel : ViewModel() {
 
     val nickname = MutableLiveData<String>("")
 
-    val birthday = MutableLiveData<String>("")
+    val uri = MutableLiveData<Uri?>()
 
 
-    fun setBirthday(birthday: String) {
-        this.birthday.value= birthday
+    fun setURI(URI: Uri?) {
+        if(URI != null)
+        this.uri.value=URI
     }
 
     fun loginDataChanged(username: String, password: String) {
