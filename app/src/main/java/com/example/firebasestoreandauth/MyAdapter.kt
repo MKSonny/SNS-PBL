@@ -3,46 +3,40 @@ package com.example.firebasestoreandauth
 import android.graphics.BitmapFactory
 import android.view.LayoutInflater
 import android.view.ViewGroup
-
-import androidx.fragment.app.FragmentManager
 import androidx.navigation.NavController
 import androidx.recyclerview.widget.RecyclerView
 import com.example.firebasestoreandauth.databinding.ItemLayoutBinding
-import com.google.firebase.Timestamp
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
-import kotlin.time.Duration.Companion.nanoseconds
 
 
 class MyAdapter(private val db: FirebaseFirestore, private val navigate: NavController, private val viewModel: MyViewModel) : RecyclerView.Adapter<MyAdapter.ViewHolder>() {
 
-    enum class TimeValue(val value: Int,val maximum : Int, val msg : String) {
-        SEC(60,60,"분 전"),
-        MIN(60,24,"시간 전"),
-        HOUR(24,30,"일 전"),
-        DAY(30,12,"달 전"),
-        MONTH(12,Int.MAX_VALUE,"년 전")
+    private object TIME_MAXIMUM {
+        const val SEC = 60
+        const val MIN = 60
+        const val HOUR = 24
+        const val DAY = 30
+        const val MONTH = 12
     }
 
-    //var curTime = System.currentTimeMillis()
-
-    fun timeDiff(timestamp: Timestamp): String? {
+    fun formatTimeString(regTime: Long): String? {
         val curTime = System.currentTimeMillis()
-        curTime.nanoseconds
-        var diffTime = (curTime - timestamp.nanoseconds) / 1000
+        var diffTime = (curTime - regTime) / 1000
         var msg: String? = null
-        if(diffTime < TimeValue.SEC.value )
-            msg= "방금 전"
-        else {
-            for (i in TimeValue.values()) {
-                diffTime /= i.value
-                if (diffTime < i.maximum) {
-                    msg=i.msg
-                    break
-                }
-            }
+        if (diffTime < TIME_MAXIMUM.SEC) {
+            msg = "방금 전"
+        } else if (TIME_MAXIMUM.SEC.let { diffTime /= it; diffTime } < TIME_MAXIMUM.MIN) {
+            msg = diffTime.toString() + "분 전"
+        } else if (TIME_MAXIMUM.MIN.let { diffTime /= it; diffTime } < TIME_MAXIMUM.HOUR) {
+            msg = diffTime.toString() + "시간 전"
+        } else if (TIME_MAXIMUM.HOUR.let { diffTime /= it; diffTime } < TIME_MAXIMUM.DAY) {
+            msg = diffTime.toString() + "일 전"
+        } else if (TIME_MAXIMUM.DAY.let { diffTime /= it; diffTime } < TIME_MAXIMUM.MONTH) {
+            msg = diffTime.toString() + "달 전"
+        } else {
+            msg = diffTime.toString() + "년 전"
         }
         return msg
     }
@@ -57,6 +51,12 @@ class MyAdapter(private val db: FirebaseFirestore, private val navigate: NavCont
             tempComments.add(
                 mapOf("only" to "friends")
             )
+
+            if (item.time.nanoseconds == 0)
+                binding.time.text = "타임스탬프 오류"
+            else
+                binding.time.text = formatTimeString( item.time.toDate().time)
+
             val tempItemMap = hashMapOf(
                 "comments" to tempComments,
                 "likes" to 0,
@@ -72,6 +72,7 @@ class MyAdapter(private val db: FirebaseFirestore, private val navigate: NavCont
                     "likes" to 0,
                     //"img" to "gs://sns-pbl.appspot.com/wine.jpg",
                     //"profile_img" to "gs://sns-pbl.appspot.com/상상부기 2.png",
+                    //"time" to FieldValue.serverTimestamp(),
                     "testing" to tempComments,
                     "whoPosted" to "odcYUEo7Mhbhmbc13Xzm",
                     "post_id" to forPostId.id
@@ -101,15 +102,23 @@ class MyAdapter(private val db: FirebaseFirestore, private val navigate: NavCont
             // 좋아요 수를 표시
             binding.showLikes.text = "좋아요 " + likes + "개"
 
+            if (viewModel.items[pos].liked){
+                binding.likeBtn.setBackgroundResource(R.drawable.full_heart)
+                binding.likeBtn.isSelected = true
+                //viewModel.items[pos].liked = false
+            }
+
             binding.likeBtn.setOnClickListener {
                 if (it.isSelected) {
                     likes -= 1
                     it.setBackgroundResource(R.drawable.icons8__96)
+                    viewModel.items[pos].liked = false
                 }
                 else {
                     likes += 1
-                    viewModel.items[pos].likes = likes
                     it.setBackgroundResource(R.drawable.full_heart)
+                    viewModel.items[pos].liked = true
+                    viewModel.items[pos].likes = likes
                 }
                 it.isSelected = !it.isSelected
                 db.collection("PostInfo").document(postId).update("likes", likes)
