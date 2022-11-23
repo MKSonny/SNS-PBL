@@ -3,6 +3,10 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="web_client_id">1036885295823-61lvn3bovonr50d0ck6vi6bie5ihfm3k.apps.googleusercontent.com</string>
+    <string name="profile_change">프로필 변경</string>
+    <string name="post_number">10</string>
+    <string name="post">게시물</string>
+    <string name="friend">친구</string>
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password</string>

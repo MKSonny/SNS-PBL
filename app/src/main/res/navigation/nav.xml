@@ -13,11 +13,11 @@
             android:id="@+id/action_postFragment_to_friendsFragment3"
             app:destination="@id/friendsFragment" />
         <action
-            android:id="@+id/action_postFragment_to_profileFragment3"
-            app:destination="@id/profileFragment" />
-        <action
             android:id="@+id/action_postFragment_to_commentFragment"
             app:destination="@id/commentFragment" />
+        <action
+            android:id="@+id/action_postFragment_to_profileFragment2"
+            app:destination="@id/profileFragment" />
 
     </fragment>
     <fragment
@@ -28,11 +28,7 @@
             android:id="@+id/action_friendsFragment_to_searchFriendActivity"
             app:destination="@id/searchFriendActivity" />
     </fragment>
-    <fragment
-        android:id="@+id/profileFragment"
-        android:name="com.example.firebasestoreandauth.fragments.ProfileFragment"
-        android:label="ProfileFragment" />
-        <action
+    <action
             android:id="@+id/action_friendsFragment_to_postFragment"
             app:destination="@id/postFragment" />
     <fragment
@@ -48,4 +44,16 @@
         android:name="com.example.firebasestoreandauth.test.SearchFriendFragment"
         android:label="fragment_search_friend"
         tools:layout="@layout/fragment_search_friend" />
+    <fragment
+        android:id="@+id/profileFragment"
+        android:name="com.example.firebasestoreandauth.ProfileFragment"
+        android:label="ProfileFragment" >
+        <action
+            android:id="@+id/action_profileFragment_to_postingFragment"
+            app:destination="@id/postingFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/postingFragment"
+        android:name="com.example.firebasestoreandauth.PostingFragment"
+        android:label="PostingFragment" />
 </navigation>

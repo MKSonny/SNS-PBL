@@ -19,6 +19,16 @@
         app:navGraph="@navigation/nav"
         tools:layout="@layout/post_layout" />
 
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/posting_fragment"
+        android:name="com.example.firebasestoreandauth.PostingFragment"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        app:defaultNavHost="true"
+        app:navGraph="@navigation/nav"
+        tools:layout="@layout/posting_layout" />
+
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigationView"
         android:layout_width="match_parent"
