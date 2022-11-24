@@ -16,7 +16,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.example.firebasestoreandauth.auth.LoginMainViewModel
-import com.example.firebasestoreandauth.databinding.FragmentAuthSetBirthDayBinding
+import com.example.firebasestoreandauth.databinding.FragmentAuthSetProfileImageBinding
 import com.example.firebasestoreandauth.dto.User
 import com.example.firebasestoreandauth.utils.extentions.toFirebase
 import com.example.firebasestoreandauth.utils.filterPermission
@@ -28,8 +28,8 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
 import java.io.ByteArrayOutputStream
 
-class SetBirthdayFragment : Fragment() {
-    private var _binding: FragmentAuthSetBirthDayBinding? = null
+class SetProfileImageFragment : Fragment() {
+    private var _binding: FragmentAuthSetProfileImageBinding? = null
     private val binding get() = _binding!!
     private val viewModel: LoginMainViewModel by activityViewModels()
     private lateinit var requestPermLauncher: ActivityResultLauncher<Array<String>>
@@ -63,7 +63,7 @@ class SetBirthdayFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        _binding = FragmentAuthSetBirthDayBinding.inflate(inflater, container, false)
+        _binding = FragmentAuthSetProfileImageBinding.inflate(inflater, container, false)
         requestPermLauncher =
             registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { map ->
                 val retry = map.filter { !it.value }.keys.toTypedArray()
