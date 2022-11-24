@@ -21,7 +21,7 @@
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/posting_fragment"
-        android:name="com.example.firebasestoreandauth.PostingFragment"
+        android:name="com.example.firebasestoreandauth.fragments.PostingFragment"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
