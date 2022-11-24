@@ -1,12 +1,9 @@
 package com.example.firebasestoreandauth.fragments.auth.detail
 
-import android.Manifest
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.LayoutInflater
@@ -16,13 +13,14 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat.checkSelfPermission
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.example.firebasestoreandauth.auth.LoginMainViewModel
 import com.example.firebasestoreandauth.databinding.FragmentAuthSetBirthDayBinding
 import com.example.firebasestoreandauth.dto.User
 import com.example.firebasestoreandauth.utils.extentions.toFirebase
+import com.example.firebasestoreandauth.utils.filterPermission
+import com.example.firebasestoreandauth.utils.providePermissions
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.auth.ktx.auth
@@ -60,18 +58,6 @@ class SetBirthdayFragment : Fragment() {
         }
     }
 
-    // 갤러리에서 이미지 선택결과를 받고 프로필화면으로 전환
-    private val profileResult = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode == AppCompatActivity.RESULT_OK) {
-            val imageURI = result.data?.data
-            imageURI?.let {
-                binding.selectedImage.setImageURI(imageURI)
-            }
-        }
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -86,6 +72,7 @@ class SetBirthdayFragment : Fragment() {
                     retryCount
                 }
             }
+        retryCount = 0
         return binding.root
     }
 
@@ -134,7 +121,7 @@ class SetBirthdayFragment : Fragment() {
 
     // 기본 사진앱 호출
     private fun selectPhoto() {
-        val perms = filterPermission(providePermissions())
+        val perms = filterPermission(requireContext(), providePermissions())
         if (perms.isNotEmpty()) {
             requestPermLauncher.launch(perms)
         } else {
@@ -145,7 +132,7 @@ class SetBirthdayFragment : Fragment() {
 
     //갤러리 호출
     private fun selectGallery() {
-        val perms = filterPermission(providePermissions())
+        val perms = filterPermission(requireContext(), providePermissions())
         if (perms.isNotEmpty()) {
             requestPermLauncher.launch(perms)
         } else {
@@ -159,29 +146,4 @@ class SetBirthdayFragment : Fragment() {
         }
     }
 
-    private fun providePermissions(): Array<String> {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            arrayOf(
-                Manifest.permission.READ_MEDIA_IMAGES,
-                Manifest.permission.CAMERA
-            )
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.CAMERA)
-        } else {
-            arrayOf(
-                Manifest.permission.READ_EXTERNAL_STORAGE,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.CAMERA
-            )
-        }
-    }
-
-    private fun filterPermission(perms: Array<String>): Array<String> {
-        return perms.filter {
-            (checkSelfPermission(
-                requireContext(),
-                it
-            ) != PackageManager.PERMISSION_GRANTED)
-        }.toTypedArray()
-    }
 }

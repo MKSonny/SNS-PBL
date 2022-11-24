@@ -12,6 +12,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -23,6 +24,8 @@ import androidx.navigation.fragment.findNavController
 import com.example.firebasestoreandauth.R
 import com.example.firebasestoreandauth.databinding.FragmentProfileMainBinding
 import com.example.firebasestoreandauth.utils.ProfileViewModel
+import com.example.firebasestoreandauth.utils.filterPermission
+import com.example.firebasestoreandauth.utils.providePermissions
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
@@ -35,8 +38,9 @@ import com.google.firebase.storage.ktx.storage
 class ProfileFragment : Fragment(R.layout.fragment_profile_main) {
     private var _binding: FragmentProfileMainBinding? = null
     private val binding get() = _binding!!
-
+    private lateinit var requestPermLauncher: ActivityResultLauncher<Array<String>>
     lateinit var storage: FirebaseStorage
+    var retryCount = 0
     private val db: FirebaseFirestore = Firebase.firestore
     val docUserRef = db.collection("Users").document("${Firebase.auth.currentUser?.uid}")
     val colPostRef = db.collection("post")
@@ -55,6 +59,15 @@ class ProfileFragment : Fragment(R.layout.fragment_profile_main) {
         savedInstanceState: Bundle?
     ): View? {
         _binding = FragmentProfileMainBinding.inflate(inflater, container, false)
+        requestPermLauncher =
+            registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { map ->
+                val retry = map.filter { !it.value }.keys.toTypedArray()
+                if (retry.isNotEmpty() && retryCount < 2) {
+                    requestPermLauncher.launch(retry)
+                    retryCount
+                }
+            }
+        retryCount = 0
         return binding.root
     }
 
@@ -254,49 +267,21 @@ class ProfileFragment : Fragment(R.layout.fragment_profile_main) {
 
     // 기본 사진앱 호출
     private fun selectPhoto() {
-        val cameraPermission =
-            ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.CAMERA)
-        val storagePermission =
-            ContextCompat.checkSelfPermission(
-                requireActivity(),
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
-            )
-
-
-        if (cameraPermission == PackageManager.PERMISSION_DENIED || storagePermission == PackageManager.PERMISSION_DENIED
-        ) {
-            ActivityCompat.requestPermissions(
-                requireActivity(),
-                arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                REQ_PERMISSION_CAMERA
-            )
+        val perms = filterPermission(requireActivity(), providePermissions())
+        if (perms.isNotEmpty()) {
+            requestPermLauncher.launch(perms)
         } else {
             val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-
             photoResult.launch(intent)
         }
     }
 
     //갤러리 호출
     private fun selectGallery() {
-        val writePermission = ContextCompat.checkSelfPermission(
-            requireActivity(),
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
-        )
-        val readPermission = ContextCompat.checkSelfPermission(
-            requireActivity(),
-            Manifest.permission.READ_EXTERNAL_STORAGE
-        )
+        val perms = filterPermission(requireActivity(), providePermissions())
 
-        if (writePermission == PackageManager.PERMISSION_DENIED || readPermission == PackageManager.PERMISSION_DENIED) {
-            ActivityCompat.requestPermissions(
-                requireActivity(),
-                arrayOf(
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                    Manifest.permission.READ_EXTERNAL_STORAGE
-                ),
-                REQ_GALLERY
-            )
+        if (perms.isNotEmpty()) {
+            requestPermLauncher.launch(perms)
         } else {
             val intent = Intent(Intent.ACTION_PICK)
 
@@ -347,7 +332,6 @@ class ProfileFragment : Fragment(R.layout.fragment_profile_main) {
             val bmp = BitmapFactory.decodeByteArray(it, 0, it.size)
             view.setImageBitmap(bmp)
         }?.addOnFailureListener {
-            // Failed to download the image
         }
     }
 
