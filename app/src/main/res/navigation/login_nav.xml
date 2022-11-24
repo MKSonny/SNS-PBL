@@ -7,8 +7,8 @@
 
     <fragment
         android:id="@+id/loginMainFragment"
-        android:name="com.example.firebasestoreandauth.auth.ui.LoginMainFragment"
-        android:label="LoginMainFragment" >
+        android:name="com.example.firebasestoreandauth.fragments.auth.LoginMainFragment"
+        android:label="LoginMainFragment">
         <action
             android:id="@+id/action_loginMainFragment_to_emailLoginFragment"
             app:destination="@id/emailLoginFragment" />
@@ -18,9 +18,9 @@
     </fragment>
     <fragment
         android:id="@+id/emailLoginFragment"
-        android:name="com.example.firebasestoreandauth.auth.ui.email.LoginFragment"
+        android:name="com.example.firebasestoreandauth.fragments.auth.email.LoginFragment"
         android:label="fragment_email_login"
-        tools:layout="@layout/fragment_email_login" >
+        tools:layout="@layout/fragment_auth_email_login">
         <action
             android:id="@+id/action_emailLoginFragment_to_emailSignUpFragment"
             app:destination="@id/emailSignUpFragment" />
@@ -30,23 +30,23 @@
     </fragment>
     <fragment
         android:id="@+id/emailSignUpFragment"
-        android:name="com.example.firebasestoreandauth.auth.ui.email.SignUpFragment"
-        android:label="EmailSignUpFragment" >
+        android:name="com.example.firebasestoreandauth.fragments.auth.email.SignUpFragment"
+        android:label="EmailSignUpFragment">
         <action
             android:id="@+id/action_emailSignUpFragment_to_setNickNameFragment"
             app:destination="@id/setNickNameFragment" />
     </fragment>
     <fragment
         android:id="@+id/setNickNameFragment"
-        android:name="com.example.firebasestoreandauth.auth.ui.detail.SetNickNameFragment"
+        android:name="com.example.firebasestoreandauth.fragments.auth.detail.SetNickNameFragment"
         android:label="fragment_set_nick_name"
-        tools:layout="@layout/fragment_set_nick_name" >
+        tools:layout="@layout/fragment_auth_set_nick_name">
         <action
             android:id="@+id/action_setNickNameFragment_to_setBirthdayFragment"
             app:destination="@id/setBirthdayFragment" />
     </fragment>
     <fragment
         android:id="@+id/setBirthdayFragment"
-        android:name="com.example.firebasestoreandauth.auth.ui.detail.SetBirthdayFragment"
+        android:name="com.example.firebasestoreandauth.fragments.auth.detail.SetBirthdayFragment"
         android:label="SetBirthdayFragment" />
 </navigation>

@@ -1,7 +1,9 @@
 package com.example.firebasestoreandauth.viewmodels
 
-import androidx.lifecycle.*
-import com.example.firebasestoreandauth.DTO.User
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
+import com.example.firebasestoreandauth.dto.User
 
 class UserList {
     private val list = MutableLiveData<List<User>>()
@@ -20,7 +22,7 @@ class UserList {
     fun getItem(idx: Int): User {
         return (
                 if (idx > list.value!!.size)
-                   User(uid = User.INVALID_USER,"","")
+                    User(uid = User.INVALID_USER, "", "")
                 else
                     list.value!![idx])
     }
