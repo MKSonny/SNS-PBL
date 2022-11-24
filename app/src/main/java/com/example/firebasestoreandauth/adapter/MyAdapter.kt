@@ -60,7 +60,7 @@ class MyAdapter(
             )
 
             if (item.time.nanoseconds == 0)
-                binding.time.text = "타임스탬프 오류"
+                binding.time.text = "" //binding.time.text = "타임스탬프 오류"
             else
                 binding.time.text = formatTimeString(item.time.toDate().time)
 
@@ -93,17 +93,19 @@ class MyAdapter(
 //            var profileRef: String
 //            var liked = false
             // 프로필 사진 옆 유저 아이디 표시
-            db.collection("SonUsers").document(whoPosted)
+            db.collection("Users").document(whoPosted)
                 .get()
                 .addOnSuccessListener {
-                    binding.userId.setText(it["nickName"].toString())
-                    binding.uid.setText(it["nickName"].toString())
-                    val profileImageRef = storage.getReferenceFromUrl(it["profileImage"].toString())
-
-                    profileImageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener {
-                        val bmp = BitmapFactory.decodeByteArray(it, 0, it.size)
-                        binding.profileImg.setImageBitmap(bmp)
-                    }.addOnFailureListener {}
+                    binding.userId.setText(it["nickname"].toString())
+                    binding.uid.setText(it["nickname"].toString())
+                    val imageURL = it["profileImage"].toString()
+                    if (imageURL.startsWith("gs:")) {
+                        val profileImageRef = storage.getReferenceFromUrl(imageURL)
+                        profileImageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener {
+                            val bmp = BitmapFactory.decodeByteArray(it, 0, it.size)
+                            binding.profileImg.setImageBitmap(bmp)
+                        }.addOnFailureListener {}
+                    }
                 }
 
             // 좋아요 수를 표시

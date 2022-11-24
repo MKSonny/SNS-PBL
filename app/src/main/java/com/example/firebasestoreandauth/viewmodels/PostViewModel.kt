@@ -6,7 +6,7 @@ import com.example.firebasestoreandauth.dto.Item
 
 
 enum class ItemNotify {
-    ADD, UPDATE, DELETE
+    ADD, UPDATE, DELETE, RESET
 }
 
 class PostViewModel : ViewModel() {
@@ -72,6 +72,13 @@ class PostViewModel : ViewModel() {
     init {
         //addItem(Item("son", "gs://sns-pbl.appspot.com/상상부기 2.png"))
         //addItem(Item("j", "s"))
+    }
+
+    fun clearAll() {
+        itemNotifiedType = ItemNotify.ADD
+        items.clear()
+        itemLiveData.value = items
+
     }
 
     fun addItem(item: Item) {
