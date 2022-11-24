@@ -2,7 +2,9 @@ package com.example.firebasestoreandauth
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.Gravity
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
@@ -13,6 +15,7 @@ import com.example.firebasestoreandauth.auth.LoginActivity
 import com.example.firebasestoreandauth.databinding.ActivityMainBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -30,14 +33,12 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
         //Navigation 초기화
         val nhf = supportFragmentManager.findFragmentById(R.id.my_nav_host) as NavHostFragment
         val navController = nhf.navController
         binding.bottomNavigationView.setupWithNavController(navController)
-        val appBarc = AppBarConfiguration(setOf(R.id.profileFragment, R.id.friendsFragment, R.id.postFragment))
+        appbarc = AppBarConfiguration(setOf(R.id.profileFragment, R.id.friendsFragment, R.id.postFragment))
         //setupActionBarWithNavController(nhf.navController, appBarc)
-
 
         //Firebase 초기화
         auth = Firebase.auth
@@ -56,6 +57,8 @@ class MainActivity : AppCompatActivity() {
         return navController.navigateUp(appbarc)
                 || super.onSupportNavigateUp()
     }
+
+
 
     fun hideBottomNav(state: Boolean) {
         if (state) binding.bottomNavigationView.visibility =

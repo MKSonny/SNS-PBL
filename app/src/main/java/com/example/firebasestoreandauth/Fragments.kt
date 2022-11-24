@@ -11,10 +11,13 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -26,16 +29,11 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.firebasestoreandauth.DTO.User
 import com.example.firebasestoreandauth.databinding.*
+import com.example.firebasestoreandauth.wrapper.ProfileViewModel
 import com.example.firebasestoreandauth.wrapper.toItem
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.ktx.auth
-import com.example.firebasestoreandauth.databinding.CommentLayoutBinding
-import com.example.firebasestoreandauth.databinding.PostLayoutBinding
-import com.example.firebasestoreandauth.wrapper.ProfileViewModel
-import com.google.firebase.firestore.DocumentChange
-import com.google.firebase.firestore.FieldValue
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.firestore.*
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
@@ -47,7 +45,7 @@ class PostFragment : Fragment(R.layout.post_layout) {
     val db: FirebaseFirestore = Firebase.firestore
     private var snapshotListener: ListenerRegistration? = null
     lateinit var adapter: MyAdapter
-
+    var cnt = 0
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -59,45 +57,63 @@ class PostFragment : Fragment(R.layout.post_layout) {
         var friends = ArrayList<String>()
         // 로그인 후 나의 문서 코드를 document 안에 수정합니다.
 
-        var nowRefresh = false
-    db.collection("SonUsers").document("UXEKfhpQLYnVFXCTFl9P").get().addOnSuccessListener {
-        val friends = it["friends"] as ArrayList<String>
-        db.collection("PostInfo").get().addOnSuccessListener {
-            for (doc in it) {
-                val post = doc.toItem()
-                for (friend in friends) {
-                    if (post.whoPosted == friend)
-                        viewModel.addItem(post)
-                }
-                adapter.notifyItemInserted(viewModel.itemNotified)
-            }
-            nowRefresh = true
-        }
-        snapshotListener = db.collection("PostInfo").addSnapshotListener { snapshot, error ->
-            if (nowRefresh) {
-                for (doc in snapshot!!.documentChanges) {
-                    when (doc.type) {
-                        DocumentChange.Type.ADDED -> {
-                            val document = doc.document
-                            val post = document.toItem()
-                            println("####$$$####" + post.postId)
-                            if (post.postId == User.INVALID_USER) {
-                                continue
-                            }
-                            for (friend in friends) {
-                                if (post.whoPosted == friend)
-                                    viewModel.addItem(post)
-                            }
-                        }
-                        DocumentChange.Type.REMOVED -> {
 
+        //}
+        //for (it in friends)
+        println("adfadfadfadfadf444#$$" + friends.size)
+
+        var nowRefresh = false
+
+        //db.collection("SonUsers").document("UXEKfhpQLYnVFXCTFl9P")
+        //getReferenceOfMine()?.get()?.addOnSuccessListener {
+        db.collection("SonUsers").document("UXEKfhpQLYnVFXCTFl9P").get().addOnSuccessListener {
+            val friends = it["friends"] as ArrayList<String>
+            friends.add("UXEKfhpQLYnVFXCTFl9P") // 자기 게시물도 볼 수 있도록
+            db.collection("PostInfo").orderBy("time", Query.Direction.DESCENDING).get()
+                .addOnSuccessListener {
+                    for (doc in it) {
+                        val post = doc.toItem()
+                        for (friend in friends) {
+                            if (post.whoPosted == friend) {
+                                viewModel.addItem(post)
+                            }
                         }
-                        else -> {}
+                        nowRefresh = true
+                    }
+
+                    nowRefresh = true
+                }
+            snapshotListener = db.collection("PostInfo").addSnapshotListener { snapshot, error ->
+                if (nowRefresh) {
+                    for (doc in snapshot!!.documentChanges) {
+                        when (doc.type) {
+                            DocumentChange.Type.ADDED -> {
+                                cnt++
+                                if (cnt > 0) {
+                                    Toast.makeText(context, "${cnt}개의 새로운 포스트", Toast.LENGTH_LONG)
+                                        .show()
+                                }
+                                val document = doc.document
+                                val post = document.toItem()
+                                println("####$$$####" + post.postId)
+                                //11-22 여기 추가해야 됨
+                                if (post.postId == User.INVALID_USER) {
+                                    continue
+                                }
+                                for (friend in friends) {
+                                    if (post.whoPosted == friend)
+                                        viewModel.addItem(post)
+                                }
+                            }
+                            DocumentChange.Type.REMOVED -> {
+
+                            }
+                            else -> {}
+                        }
                     }
                 }
             }
         }
-    }
     }
 
     override fun onDestroy() {
@@ -112,6 +128,8 @@ class PostFragment : Fragment(R.layout.post_layout) {
         val binding = PostLayoutBinding.bind(view)
         val viewModel = ViewModelProvider(requireActivity()).get(MyViewModel::class.java)
         val db: FirebaseFirestore = Firebase.firestore
+
+
 
         binding.refresh.setOnRefreshListener {
             if (viewModel.itemsSize > viewModel.itemNotified) {
@@ -129,12 +147,15 @@ class PostFragment : Fragment(R.layout.post_layout) {
     }
 }
 
+
 // 뷰모델 이미지url, 랜덤 아이디 가져오기
-class PostingFragment : Fragment(R.layout.posting_layout){
+class PostingFragment : Fragment(R.layout.posting_layout) {
+
     private var _binding: PostingLayoutBinding? = null
     private val binding get() = _binding!!
 
     lateinit var viewModel : ProfileViewModel
+
     lateinit var storage: FirebaseStorage
 
     private val db: FirebaseFirestore = Firebase.firestore
@@ -190,11 +211,11 @@ class PostingFragment : Fragment(R.layout.posting_layout){
                     )
                     docPostRef.document(it.id).update(idMap as Map<String, Any>)
                     findNavController().navigate(R.id.action_postingFragment_to_profileFragment)
+
                 }.addOnFailureListener {
                     Snackbar.make(binding.root, "Upload fail.", Snackbar.LENGTH_SHORT).show()
                 }
         }
-
     }
 
     private fun uploadFile(file_id: Long?, fileName: String?) {
@@ -234,8 +255,8 @@ class ProfileFragment : Fragment(R.layout.profile_layout) {
     // 갤러리에서 이미지 선택결과를 받고 뷰모델에 저장
     private val imageResult = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
-    ){ result ->
-        if(result.resultCode == AppCompatActivity.RESULT_OK){
+    ) { result ->
+        if (result.resultCode == AppCompatActivity.RESULT_OK) {
             val imageURI = result.data?.data
 
             imageURI?.let{
@@ -262,7 +283,6 @@ class ProfileFragment : Fragment(R.layout.profile_layout) {
             option.inSampleSize = 10
             val bitmap = BitmapFactory.decodeFile(result.toString(), option)
             viewModel.setbit(bitmap)*/
-
             val imageURI = result.data?.data
             imageURI?.let{
 
@@ -309,10 +329,10 @@ class ProfileFragment : Fragment(R.layout.profile_layout) {
     // 갤러리에서 이미지 선택결과를 받고 프로필화면으로 전환
     private val profileResult = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
-    ){ result ->
-        if(result.resultCode == AppCompatActivity.RESULT_OK){
+    ) { result ->
+        if (result.resultCode == AppCompatActivity.RESULT_OK) {
             val imageURI = result.data?.data
-            imageURI?.let{
+            imageURI?.let {
                 binding.profile.setImageURI(imageURI)
                 val imageFile = getRealPathFromURI(it)
                 val imageName = getRealPathFromNAME(it)
@@ -343,6 +363,7 @@ class ProfileFragment : Fragment(R.layout.profile_layout) {
 
         storage = Firebase.storage
 
+
         // 유저 프로필 이미지에서 url 가져와서 띄우기
         docUserRef.get()
             .addOnSuccessListener { // it: DocumentSnapshot
@@ -356,10 +377,10 @@ class ProfileFragment : Fragment(R.layout.profile_layout) {
         colPostRef.whereEqualTo("whoPosted", "${Firebase.auth.currentUser?.uid}").get()
             .addOnSuccessListener { documents ->
                 var size = 1
-                for (doc in documents){
+                for (doc in documents) {
                     viewModel.setPro(doc["imgUrl"].toString())
                     val postRef1 = storage.getReferenceFromUrl(viewModel.getPro().toString())
-                    if ( size == 1)
+                    if (size == 1)
                         displayImageRef(postRef1, binding.imageView)
                     else if (size == 2)
                         displayImageRef(postRef1, binding.imageView2)
@@ -369,7 +390,7 @@ class ProfileFragment : Fragment(R.layout.profile_layout) {
                         displayImageRef(postRef1, binding.imageView4)
                     else if (size == 5)
                         displayImageRef(postRef1, binding.imageView5)
-                    else if (size == 6){
+                    else if (size == 6) {
                         displayImageRef(postRef1, binding.imageView6)
                         break
                     }
@@ -377,7 +398,6 @@ class ProfileFragment : Fragment(R.layout.profile_layout) {
                 }
             }.addOnFailureListener {
             }
-
         // 개시물수, 친구수 출력
         queryItem()
 
@@ -398,7 +418,6 @@ class ProfileFragment : Fragment(R.layout.profile_layout) {
 
     }
 
-
     private fun uploadFile(file_id: Long?, fileName: String?) {
         file_id ?: return
         val imageRef = storage.reference.child("${fileName}")
@@ -408,7 +427,6 @@ class ProfileFragment : Fragment(R.layout.profile_layout) {
             }
         }
     }
-
     // 게시물수, 친구수 출력
     private fun queryItem() { // 1번문제
         docUserRef.get()
@@ -430,16 +448,25 @@ class ProfileFragment : Fragment(R.layout.profile_layout) {
             }
     }
 
+
     // 기본 사진앱 호출
-    private fun selectPhoto(){
-        val cameraPermission = ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.CAMERA)
+    private fun selectPhoto() {
+        val cameraPermission =
+            ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.CAMERA)
         val storagePermission =
-            ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            ContextCompat.checkSelfPermission(
+                requireActivity(),
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            )
 
 
         if (cameraPermission == PackageManager.PERMISSION_DENIED || storagePermission == PackageManager.PERMISSION_DENIED
         ) {
-            ActivityCompat.requestPermissions(requireActivity(), arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE), REQ_PERMISSION_CAMERA)
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                REQ_PERMISSION_CAMERA
+            )
         } else {
             val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
 
@@ -448,13 +475,26 @@ class ProfileFragment : Fragment(R.layout.profile_layout) {
     }
 
     //갤러리 호출
-    private fun selectGallery(){
-        val writePermission = ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
-        val readPermission = ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.READ_EXTERNAL_STORAGE)
+    private fun selectGallery() {
+        val writePermission = ContextCompat.checkSelfPermission(
+            requireActivity(),
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        )
+        val readPermission = ContextCompat.checkSelfPermission(
+            requireActivity(),
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        )
 
-        if(writePermission == PackageManager.PERMISSION_DENIED || readPermission == PackageManager.PERMISSION_DENIED){
-            ActivityCompat.requestPermissions(requireActivity(), arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE), REQ_GALLERY)
-        }else{
+        if (writePermission == PackageManager.PERMISSION_DENIED || readPermission == PackageManager.PERMISSION_DENIED) {
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                arrayOf(
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.READ_EXTERNAL_STORAGE
+                ),
+                REQ_GALLERY
+            )
+        } else {
             val intent = Intent(Intent.ACTION_PICK)
 
             intent.setDataAndType(
@@ -467,13 +507,26 @@ class ProfileFragment : Fragment(R.layout.profile_layout) {
     }
 
     //갤러리 호출 후 프로필사진 변경
-    private fun selectGalleryProfile(){
-        val writePermission = ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
-        val readPermission = ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.READ_EXTERNAL_STORAGE)
+    private fun selectGalleryProfile() {
+        val writePermission = ContextCompat.checkSelfPermission(
+            requireActivity(),
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        )
+        val readPermission = ContextCompat.checkSelfPermission(
+            requireActivity(),
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        )
 
-        if(writePermission == PackageManager.PERMISSION_DENIED || readPermission == PackageManager.PERMISSION_DENIED){
-            ActivityCompat.requestPermissions(requireActivity(), arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE), REQ_GALLERY)
-        }else{
+        if (writePermission == PackageManager.PERMISSION_DENIED || readPermission == PackageManager.PERMISSION_DENIED) {
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                arrayOf(
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.READ_EXTERNAL_STORAGE
+                ),
+                REQ_GALLERY
+            )
+        } else {
             val intent = Intent(Intent.ACTION_PICK)
 
             intent.setDataAndType(
@@ -513,6 +566,8 @@ class CommentFragment : Fragment(R.layout.comment_layout) {
 
         val mainActivity = activity as MainActivity
         mainActivity.hideBottomNav(true)
+
+
     }
 
     override fun onDestroy() {
@@ -525,6 +580,28 @@ class CommentFragment : Fragment(R.layout.comment_layout) {
         super.onViewCreated(view, savedInstanceState)
         //AppBarConfiguration(setOf(R.id.commentFragment))
         val binding = CommentLayoutBinding.bind(view)
+
+        binding.commentEdit.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+            }
+
+            override fun afterTextChanged(s: Editable) {
+                if (s.isEmpty()) {
+                    println("empty")
+                    binding.button.isEnabled = false
+                } else {
+                    println("working")
+                    binding.button.isEnabled = true
+                }
+            }
+        })
+
+        binding.button.isEnabled = false
+
         val viewModel = ViewModelProvider(requireActivity()).get(MyViewModel::class.java)
         //val viewModel = MyViewModel()
         //binding.textView.text = "working"
@@ -541,7 +618,10 @@ class CommentFragment : Fragment(R.layout.comment_layout) {
         println("########yellow##########" + viewModel.items.get(viewModel.getPos()).postId)
         val comments = viewModel.getComment(viewModel.getPos())
 
+        val clickedPost = viewModel.items.get(viewModel.getPos())
+
         val adapter = CommentAdapter(db, comments)
+        //binding.button.isEnabled = false
 
         binding.button.setOnClickListener {
             val comment = binding.commentEdit.text.toString()
@@ -558,8 +638,20 @@ class CommentFragment : Fragment(R.layout.comment_layout) {
             adapter.notifyItemInserted(comments.size - 1)
         }
         //var string: String = "not working"
+
+
         val postId = viewModel.items.get(viewModel.getPos()).postId
         binding.commentRecy.adapter = adapter
         binding.commentRecy.layoutManager = LinearLayoutManager(context)
+
+        db.collection("SonUsers").document("UXEKfhpQLYnVFXCTFl9P").get().addOnSuccessListener {
+            val temp = it["profileImage"].toString()
+            val profileImageRef = storage.getReferenceFromUrl(temp)
+            profileImageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener {
+                val bmp = BitmapFactory.decodeByteArray(it, 0, it.size)
+                binding.profileImg.setImageBitmap(bmp)
+            }.addOnFailureListener {}
+        }
+
     }
 }

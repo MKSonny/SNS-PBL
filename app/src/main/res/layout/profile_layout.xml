@@ -103,31 +103,17 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <ImageButton
-        android:id="@+id/buttonUpload"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        android:background="@color/white"
-        android:minWidth="48dp"
-        android:minHeight="48dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_setting_plusbutton"
-        tools:ignore="SpeakableTextPresentCheck" />
-
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/profile"
         android:layout_width="140dp"
         android:layout_height="140dp"
         android:layout_marginStart="24dp"
-        android:layout_marginTop="48dp"
+        android:layout_marginTop="16dp"
         app:civ_border_color="#00FFFF"
         app:civ_border_overlay="true"
         app:civ_border_width="2dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/profile_toolbar"
         app:srcCompat="@drawable/ic_launcher_foreground" />
 
     <Button
@@ -161,6 +147,46 @@
         app:layout_constraintEnd_toStartOf="@+id/friend"
         app:layout_constraintStart_toEndOf="@+id/profile"
         app:layout_constraintTop_toBottomOf="@+id/postNumber" />
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/profile_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:minHeight="?attr/actionBarSize"
+        android:theme="?attr/actionBarTheme"
+        android:visibility="visible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageButton
+        android:id="@+id/buttonUpload"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:background="@color/white"
+        android:minWidth="48dp"
+        android:minHeight="48dp"
+        app:layout_constraintBottom_toBottomOf="@+id/profile_toolbar"
+        app:layout_constraintEnd_toEndOf="@+id/profile_toolbar"
+        app:layout_constraintTop_toTopOf="@+id/profile_toolbar"
+        app:srcCompat="@drawable/ic_setting_plusbutton"
+        tools:ignore="SpeakableTextPresentCheck" />
+
+    <ImageButton
+        android:id="@+id/setting_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:background="@color/white"
+        android:scaleX="1.7"
+        android:scaleY="1.7"
+        android:src="@drawable/ic_baseline_settings_24"
+        android:text="Button"
+        app:layout_constraintBottom_toBottomOf="@+id/profile_toolbar"
+        app:layout_constraintStart_toStartOf="@+id/profile_toolbar"
+        app:layout_constraintTop_toTopOf="@+id/profile_toolbar" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
