@@ -18,9 +18,11 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
+import com.example.firebasestoreandauth.BuildConfig
 import com.example.firebasestoreandauth.R
 import com.example.firebasestoreandauth.databinding.FragmentProfileMainBinding
 import com.example.firebasestoreandauth.dto.User
@@ -37,6 +39,8 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
+import java.io.File
+import java.util.*
 
 // 게시물 보여주기
 class ProfileFragment : Fragment(R.layout.fragment_profile_main) {
@@ -46,11 +50,11 @@ class ProfileFragment : Fragment(R.layout.fragment_profile_main) {
     lateinit var storage: FirebaseStorage
     var retryCount = 0
     private val db: FirebaseFirestore = Firebase.firestore
-    val docUserRef = db.collection("Users").document("${Firebase.auth.currentUser?.uid}")
     val colPostRef = db.collection("post")
 
     lateinit var viewModel: ProfileViewModel
     lateinit var filePath: String
+    var tmpUri: Uri? = null
 
     companion object {
         const val REQ_GALLERY = 1
@@ -106,25 +110,30 @@ class ProfileFragment : Fragment(R.layout.fragment_profile_main) {
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == AppCompatActivity.RESULT_OK) {
+//            val bitmap = (result.data?.extras?.get("data")) as Bitmap
+//            viewModel.setbit(bitmap)
 
-            /*val option = BitmapFactory.Options()
-            option.inSampleSize = 10
-            val bitmap = BitmapFactory.decodeFile(result.toString(), option)
-            viewModel.setbit(bitmap)*/
+//            /*val option = BitmapFactory.Options()
+//            option.inSampleSize = 10
+//            val bitmap = BitmapFactory.decodeFile(result.toString(), option)
+//            viewModel.setbit(bitmap)*/
+            if (tmpUri != null) {
+                val stream = requireActivity().contentResolver.openInputStream(tmpUri!!)
+                val bitmap = BitmapFactory.decodeStream(stream)
+                if (bitmap.byteCount > 0) {
+                    viewModel.setbit(bitmap)
+                    tmpUri = null
+                }
+            }
             val imageURI = result.data?.data
             imageURI?.let {
-
                 val imageFile = getRealPathFromURI(it)
                 val imageName = getRealPathFromNAME(it)
                 viewModel.setFile(imageFile)
                 viewModel.setName(imageName)
-
             }
-
             viewModel.setPos(imageURI)
-
         }
-
         findNavController().navigate(R.id.action_profileFragment_to_postingFragment)
     }
 
@@ -293,7 +302,17 @@ class ProfileFragment : Fragment(R.layout.fragment_profile_main) {
         if (perms.isNotEmpty()) {
             requestPermLauncher.launch(perms)
         } else {
+//            val path = File.createTempFile(UUID.randomUUID().toString(), null, requireActivity().applicationContext.cacheDir)
+            val fileTmp = File.createTempFile(
+                "tmp",
+                UUID.randomUUID().toString(),
+                requireActivity().getCacheDir()
+            )
+            fileTmp.deleteOnExit()
+            tmpUri =
+                FileProvider.getUriForFile(requireActivity(), BuildConfig.APPLICATION_ID, fileTmp)
             val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, tmpUri)
             photoResult.launch(intent)
         }
     }
@@ -356,6 +375,4 @@ class ProfileFragment : Fragment(R.layout.fragment_profile_main) {
         }?.addOnFailureListener {
         }
     }
-
-
 }

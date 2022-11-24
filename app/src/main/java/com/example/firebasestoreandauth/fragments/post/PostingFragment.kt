@@ -51,7 +51,13 @@ class PostingFragment : Fragment(R.layout.fragment_profile_posting) {
 
         viewModel = ViewModelProvider(requireActivity()).get(ProfileViewModel::class.java)
         val imgUrl = viewModel.getPos()
-        binding.postImage.setImageURI(imgUrl)
+        if (imgUrl != null)
+            binding.postImage.setImageURI(imgUrl)
+        else {
+            if (viewModel.bitmap != null)
+                binding.postImage.setImageBitmap(viewModel.bitmap)
+            viewModel.bitmap = null
+        }
 
         binding.posting.setOnClickListener {
 
