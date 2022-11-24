@@ -62,5 +62,4 @@ class MainActivity : AppCompatActivity() {
         if (state) binding.bottomNavigationView.visibility =
             View.GONE else binding.bottomNavigationView.visibility = View.VISIBLE
     }
-
 }

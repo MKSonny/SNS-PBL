@@ -23,8 +23,12 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.example.firebasestoreandauth.R
 import com.example.firebasestoreandauth.databinding.FragmentProfileMainBinding
+import com.example.firebasestoreandauth.dto.User
 import com.example.firebasestoreandauth.utils.ProfileViewModel
+import com.example.firebasestoreandauth.utils.extentions.signOut
+import com.example.firebasestoreandauth.utils.extentions.toUser
 import com.example.firebasestoreandauth.utils.filterPermission
+import com.example.firebasestoreandauth.utils.getReferenceOfMine
 import com.example.firebasestoreandauth.utils.providePermissions
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -165,7 +169,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile_main) {
                 val idMap = hashMapOf(
                     "profileImage" to "gs://sns-pbl.appspot.com/${imageName}"
                 )
-                docUserRef.update(idMap as Map<String, Any>)
+                getReferenceOfMine()?.update(idMap as Map<String, Any>)
             }
         }
     }
@@ -181,58 +185,73 @@ class ProfileFragment : Fragment(R.layout.fragment_profile_main) {
 
 
         // 유저 프로필 이미지에서 url 가져와서 띄우기
-        docUserRef.get()
-            .addOnSuccessListener { // it: DocumentSnapshot
+        getReferenceOfMine()?.apply {
+            get().addOnSuccessListener { // it: DocumentSnapshot
                 viewModel.setPro(it["profileImage"].toString())
-                val imageRef2 = storage.getReferenceFromUrl(viewModel.getPro().toString())
-                displayImageRef(imageRef2, binding.profile)
-            }.addOnFailureListener {
-            }
-
-        //게시물 6개 출력
-        colPostRef.whereEqualTo("whoPosted", "${Firebase.auth.currentUser?.uid}").get()
-            .addOnSuccessListener { documents ->
-                var size = 1
-                for (doc in documents) {
-                    viewModel.setPro(doc["imgUrl"].toString())
-                    val postRef1 = storage.getReferenceFromUrl(viewModel.getPro().toString())
-                    if (size == 1)
-                        displayImageRef(postRef1, binding.imageView)
-                    else if (size == 2)
-                        displayImageRef(postRef1, binding.imageView2)
-                    else if (size == 3)
-                        displayImageRef(postRef1, binding.imageView3)
-                    else if (size == 4)
-                        displayImageRef(postRef1, binding.imageView4)
-                    else if (size == 5)
-                        displayImageRef(postRef1, binding.imageView5)
-                    else if (size == 6) {
-                        displayImageRef(postRef1, binding.imageView6)
-                        break
-                    }
-                    size++
+                val ref = viewModel.getPro().toString()
+                if (ref.startsWith("gs:")) {
+//                    val imageRef2 = storage.getReferenceFromUrl(ref)
+                    val url = storage.getReferenceFromUrl(ref)
+                    displayImageRef(url, binding.profile)
                 }
             }.addOnFailureListener {
             }
-        // 개시물수, 친구수 출력
-        queryItem()
 
-        // 업로드 버튼
-        binding.buttonUpload.setOnClickListener {
-            //selectGallery()
-            AlertDialog.Builder(requireActivity()).apply {
-                setTitle("사진촬영 및 갤러리 선택")
-                setPositiveButton("Gallery") { _, _ -> selectGallery() }
-                setNegativeButton("Photo") { _, _ -> selectPhoto() }
 
-            }.show()
+            //게시물 6개 출력
+            colPostRef.whereEqualTo("whoPosted", "${Firebase.auth.currentUser?.uid}").get()
+                .addOnSuccessListener { documents ->
+                    var size = 1
+                    for (doc in documents) {
+                        viewModel.setPro(doc["imgUrl"].toString())
+                        val postRef1 = storage.getReferenceFromUrl(viewModel.getPro().toString())
+                        if (size == 1)
+                            displayImageRef(postRef1, binding.imageView)
+                        else if (size == 2)
+                            displayImageRef(postRef1, binding.imageView2)
+                        else if (size == 3)
+                            displayImageRef(postRef1, binding.imageView3)
+                        else if (size == 4)
+                            displayImageRef(postRef1, binding.imageView4)
+                        else if (size == 5)
+                            displayImageRef(postRef1, binding.imageView5)
+                        else if (size == 6) {
+                            displayImageRef(postRef1, binding.imageView6)
+                            break
+                        }
+                        size++
+                    }
+                }.addOnFailureListener {
+                }
+            // 개시물수, 친구수 출력
+            queryItem()
+            binding.settingButton.setOnClickListener {
+                AlertDialog.Builder(requireActivity()).apply {
+                    setTitle("로그아웃하시겠습니까?")
+                    setPositiveButton("예") { _, _ -> signOut() }
+                    setNegativeButton("아니오") { _, _ -> }
+
+                }.show()
+
+            }
+
+            // 업로드 버튼
+            binding.buttonUpload.setOnClickListener {
+                //selectGallery()
+                AlertDialog.Builder(requireActivity()).apply {
+                    setTitle("사진촬영 및 갤러리 선택")
+                    setPositiveButton("Gallery") { _, _ -> selectGallery() }
+                    setNegativeButton("Photo") { _, _ -> selectPhoto() }
+
+                }.show()
+            }
+            // 프로필 변경 버튼
+            binding.buttonProfile.setOnClickListener {
+                selectGalleryProfile()
+            }
         }
-        // 프로필 변경 버튼
-        binding.buttonProfile.setOnClickListener {
-            selectGalleryProfile()
-        }
-
     }
+
 
     private fun uploadFile(file_id: Long?, fileName: String?) {
         file_id ?: return
@@ -247,21 +266,24 @@ class ProfileFragment : Fragment(R.layout.fragment_profile_main) {
 
     // 게시물수, 친구수 출력
     private fun queryItem() { // 1번문제
-        docUserRef.get()
-            .addOnSuccessListener { // it: DocumentSnapshot
-                val friend = it["friends"] as ArrayList<*>
-                binding.friendNumber.setText(friend.size.toString())
-            }.addOnFailureListener { }
+        getReferenceOfMine()?.apply {
+            get().addOnSuccessListener { // it: DocumentSnapshot
+                val user = it.toUser()
+                if (user.uid == null || user.uid == User.INVALID_USER || user.uid!!.isEmpty())
+                    return@addOnSuccessListener
+                val friend = (user.friends ?: listOf())
+                binding.friendNumber.text = friend.size.toString()
 
-
-        colPostRef.whereEqualTo("whoPosted", "${Firebase.auth.currentUser?.uid}").get()
-            .addOnSuccessListener { documents ->
-                var size = 0
-                for (doc in documents) {
-                    size++
-                }
-                binding.postNumber.setText(size.toString())
+                colPostRef.whereEqualTo("whoPosted", "${user.uid}").get()
+                    .addOnSuccessListener { documents ->
+                        var size = 0
+                        for (doc in documents) {
+                            size++
+                        }
+                        binding.postNumber.setText(size.toString())
+                    }.addOnFailureListener { }
             }.addOnFailureListener { }
+        }
     }
 
 
