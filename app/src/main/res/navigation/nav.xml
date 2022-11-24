@@ -6,9 +6,9 @@
     app:startDestination="@id/postFragment">
     <fragment
         android:id="@+id/postFragment"
-        android:name="com.example.firebasestoreandauth.PostFragment"
+        android:name="com.example.firebasestoreandauth.fragments.post.PostFragment"
         android:label="post_layout"
-        tools:layout="@layout/post_layout" >
+        tools:layout="@layout/fragment_post_main">
         <action
             android:id="@+id/action_postFragment_to_friendsFragment3"
             app:destination="@id/friendsFragment" />
@@ -22,40 +22,40 @@
     </fragment>
     <fragment
         android:id="@+id/friendsFragment"
-        android:name="com.example.firebasestoreandauth.fragments.FriendsFragment"
-        android:label="FriendsFragment" >
+        android:name="com.example.firebasestoreandauth.fragments.friend.FriendsFragment"
+        android:label="FriendsFragment">
         <action
             android:id="@+id/action_friendsFragment_to_searchFriendActivity"
             app:destination="@id/searchFriendActivity" />
     </fragment>
     <action
-            android:id="@+id/action_friendsFragment_to_postFragment"
-            app:destination="@id/postFragment" />
+        android:id="@+id/action_friendsFragment_to_postFragment"
+        app:destination="@id/postFragment" />
     <fragment
         android:id="@+id/commentFragment"
-        android:name="com.example.firebasestoreandauth.CommentFragment"
-        android:label="CommentFragment" >
+        android:name="com.example.firebasestoreandauth.fragments.post.CommentFragment"
+        android:label="CommentFragment">
         <action
             android:id="@+id/action_commentFragment_to_postFragment2"
             app:destination="@id/postFragment" />
     </fragment>
     <fragment
         android:id="@+id/searchFriendActivity"
-        android:name="com.example.firebasestoreandauth.test.SearchFriendFragment"
+        android:name="com.example.firebasestoreandauth.fragments.friend.SearchFriendFragment"
         android:label="fragment_search_friend"
-        tools:layout="@layout/fragment_search_friend" />
+        tools:layout="@layout/fragment_friend_search" />
     <fragment
         android:id="@+id/profileFragment"
-        android:name="com.example.firebasestoreandauth.ProfileFragment"
-        android:label="ProfileFragment" >
+        android:name="com.example.firebasestoreandauth.fragments.profile.ProfileFragment"
+        android:label="ProfileFragment">
         <action
             android:id="@+id/action_profileFragment_to_postingFragment"
             app:destination="@id/postingFragment" />
     </fragment>
     <fragment
         android:id="@+id/postingFragment"
-        android:name="com.example.firebasestoreandauth.PostingFragment"
-        android:label="PostingFragment" >
+        android:name="com.example.firebasestoreandauth.fragments.post.PostingFragment"
+        android:label="PostingFragment">
         <action
             android:id="@+id/action_postingFragment_to_profileFragment"
             app:destination="@id/profileFragment" />

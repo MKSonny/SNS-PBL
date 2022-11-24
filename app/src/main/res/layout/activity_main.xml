@@ -4,10 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity"
     android:orientation="vertical"
     android:weightSum="1"
-    >
+    tools:context=".MainActivity">
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/my_nav_host"
@@ -17,25 +16,25 @@
         android:layout_weight="1"
         app:defaultNavHost="true"
         app:navGraph="@navigation/nav"
-        tools:layout="@layout/post_layout" />
+        tools:layout="@layout/fragment_post_main" />
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/posting_fragment"
-        android:name="com.example.firebasestoreandauth.PostingFragment"
+        android:name="com.example.firebasestoreandauth.fragments.post.PostingFragment"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
         app:defaultNavHost="true"
         app:navGraph="@navigation/nav"
-        tools:layout="@layout/posting_layout" />
+        tools:layout="@layout/fragment_profile_posting" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigationView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        app:itemIconSize="35dp"
         app:itemIconTint="@drawable/bottom_nav_custom"
         app:itemTextColor="@drawable/bottom_nav_custom"
-        app:itemIconSize="35dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
