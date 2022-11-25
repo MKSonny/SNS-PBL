@@ -111,6 +111,7 @@ class CommentFragment : Fragment(R.layout.fragment_post_comment) {
                 )
             //viewModel.setComments(comments)
             adapter.notifyItemInserted(comments.size - 1)
+            binding.commentEdit.text.clear()
         }
         //var string: String = "not working"
 

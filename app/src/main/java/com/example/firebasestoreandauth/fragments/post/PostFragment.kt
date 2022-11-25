@@ -104,15 +104,15 @@ class PostFragment : Fragment(R.layout.fragment_post_main) {
 
                                         }
                                         DocumentChange.Type.MODIFIED -> {
-//                                            val added = doc.document.id
-//                                            val heart = viewModel.items
-//                                            for (post in heart) {
-//                                                if (post.postId == added) {
-//                                                    post.likes =
-//                                                }
-//                                            }
-                                            //println("########allalalal")
-                                            //adapter?.notifyDataSetChanged()
+                                            val added = doc.document.id
+                                            val heart = viewModel.items
+                                            for (post in heart) {
+                                                if (post.postId == added) {
+                                                    post.likes = doc.document["likes"] as Number
+                                                    //println("&&&&&&&&&&&"+pos)
+                                                    adapter.notifyDataSetChanged()
+                                                }
+                                            }
                                         }
                                         DocumentChange.Type.REMOVED -> {
 
