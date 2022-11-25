@@ -70,11 +70,14 @@ class PostingFragment : Fragment(R.layout.fragment_profile_posting) {
                 mapOf("${Firebase.auth.currentUser?.uid}" to comment)
             )
 
+            val forPostId = db.collection("PostInfo").document()
             val itemMap = hashMapOf(
-                "like" to like,
+                "likes" to like,
                 "whoPosted" to whoPosted,
                 "time" to FieldValue.serverTimestamp(),
                 "testing" to tampComments,
+                "img" to "gs://sns-pbl.appspot.com/${viewModel.getName()}",
+                "post_id" to forPostId.id
             )
 
             val imageFile = viewModel.getFile()
@@ -83,12 +86,6 @@ class PostingFragment : Fragment(R.layout.fragment_profile_posting) {
             docPostRef.add(itemMap)
                 .addOnSuccessListener {
                     uploadFile(imageFile, imageName)
-                    val col = it.id
-                    val idMap = hashMapOf(
-                        "img" to "gs://sns-pbl.appspot.com/${viewModel.getName()}",
-                        "post_id" to col
-                    )
-                    docPostRef.document(it.id).update(idMap as Map<String, Any>)
                     findNavController().navigate(R.id.action_postingFragment_to_profileFragment)
 
                 }.addOnFailureListener {
