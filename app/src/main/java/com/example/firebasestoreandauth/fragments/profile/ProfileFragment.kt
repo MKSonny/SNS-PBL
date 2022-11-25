@@ -209,59 +209,61 @@ class ProfileFragment : Fragment(R.layout.fragment_profile_main) {
             }
 
 
-        //게시물 6개 출력
-        colPostRef.whereEqualTo("whoPosted", "${Firebase.auth.currentUser?.uid}").get()
-            .addOnSuccessListener { documents ->
-                var size = 1
-                for (doc in documents) {
-                    viewModel.setPro(doc["img"].toString())
-                    try {
-                        val postRef1 = storage.getReferenceFromUrl(viewModel.getPro().toString())
-                        if (size == 1)
-                            displayImageRef(postRef1, binding.imageView)
-                        else if (size == 2)
-                            displayImageRef(postRef1, binding.imageView2)
-                        else if (size == 3)
-                            displayImageRef(postRef1, binding.imageView3)
-                        else if (size == 4)
-                            displayImageRef(postRef1, binding.imageView4)
-                        else if (size == 5)
-                            displayImageRef(postRef1, binding.imageView5)
-                        else if (size == 6) {
-                            displayImageRef(postRef1, binding.imageView6)
-                            break
+            //게시물 6개 출력
+            colPostRef.whereEqualTo("whoPosted", "${Firebase.auth.currentUser?.uid}").get()
+                .addOnSuccessListener { documents ->
+                    var size = 1
+                    for (doc in documents) {
+                        viewModel.setPro(doc["img"].toString())
+                        try {
+                            val postRef1 =
+                                storage.getReferenceFromUrl(viewModel.getPro().toString())
+                            if (size == 1)
+                                displayImageRef(postRef1, binding.imageView)
+                            else if (size == 2)
+                                displayImageRef(postRef1, binding.imageView2)
+                            else if (size == 3)
+                                displayImageRef(postRef1, binding.imageView3)
+                            else if (size == 4)
+                                displayImageRef(postRef1, binding.imageView4)
+                            else if (size == 5)
+                                displayImageRef(postRef1, binding.imageView5)
+                            else if (size == 6) {
+                                displayImageRef(postRef1, binding.imageView6)
+                                break
+                            }
+                            size++
+                        } catch (e: Exception) {
+                            println()
                         }
-                        size++
-                    } catch (e: Exception) {
-                        println()
+                    }
+                    // 개시물수, 친구수 출력
+                    queryItem()
+                    binding.settingButton.setOnClickListener {
+                        AlertDialog.Builder(requireActivity()).apply {
+                            setTitle("로그아웃하시겠습니까?")
+                            setPositiveButton("예") { _, _ -> signOut() }
+                            setNegativeButton("아니오") { _, _ -> }
+
+                        }.show()
+
+                    }
+
+                    // 업로드 버튼
+                    binding.buttonUpload.setOnClickListener {
+                        //selectGallery()
+                        AlertDialog.Builder(requireActivity()).apply {
+                            setTitle("사진촬영 및 갤러리 선택")
+                            setPositiveButton("Gallery") { _, _ -> selectGallery() }
+                            setNegativeButton("Photo") { _, _ -> selectPhoto() }
+
+                        }.show()
+                    }
+                    // 프로필 변경 버튼
+                    binding.buttonProfile.setOnClickListener {
+                        selectGalleryProfile()
                     }
                 }
-            // 개시물수, 친구수 출력
-            queryItem()
-            binding.settingButton.setOnClickListener {
-                AlertDialog.Builder(requireActivity()).apply {
-                    setTitle("로그아웃하시겠습니까?")
-                    setPositiveButton("예") { _, _ -> signOut() }
-                    setNegativeButton("아니오") { _, _ -> }
-
-                }.show()
-
-            }
-
-            // 업로드 버튼
-            binding.buttonUpload.setOnClickListener {
-                //selectGallery()
-                AlertDialog.Builder(requireActivity()).apply {
-                    setTitle("사진촬영 및 갤러리 선택")
-                    setPositiveButton("Gallery") { _, _ -> selectGallery() }
-                    setNegativeButton("Photo") { _, _ -> selectPhoto() }
-
-                }.show()
-            }
-            // 프로필 변경 버튼
-            binding.buttonProfile.setOnClickListener {
-                selectGalleryProfile()
-            }
         }
     }
 
