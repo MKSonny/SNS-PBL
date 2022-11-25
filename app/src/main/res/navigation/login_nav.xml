@@ -47,6 +47,6 @@
     </fragment>
     <fragment
         android:id="@+id/setBirthdayFragment"
-        android:name="com.example.firebasestoreandauth.fragments.auth.detail.SetBirthdayFragment"
+        android:name="com.example.firebasestoreandauth.fragments.auth.detail.SetProfileImageFragment"
         android:label="SetBirthdayFragment" />
 </navigation>

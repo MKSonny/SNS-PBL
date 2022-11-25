@@ -12,17 +12,26 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
+import com.example.firebasestoreandauth.BuildConfig
 import com.example.firebasestoreandauth.R
 import com.example.firebasestoreandauth.databinding.FragmentProfileMainBinding
+import com.example.firebasestoreandauth.dto.User
 import com.example.firebasestoreandauth.utils.ProfileViewModel
+import com.example.firebasestoreandauth.utils.extentions.signOut
+import com.example.firebasestoreandauth.utils.extentions.toUser
+import com.example.firebasestoreandauth.utils.filterPermission
+import com.example.firebasestoreandauth.utils.getReferenceOfMine
+import com.example.firebasestoreandauth.utils.providePermissions
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
@@ -30,19 +39,24 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
+import java.io.File
+import java.util.*
 
 // 게시물 보여주기
 class ProfileFragment : Fragment(R.layout.fragment_profile_main) {
     private var _binding: FragmentProfileMainBinding? = null
     private val binding get() = _binding!!
-
+    private lateinit var requestPermLauncher: ActivityResultLauncher<Array<String>>
     lateinit var storage: FirebaseStorage
+    var retryCount = 0
     private val db: FirebaseFirestore = Firebase.firestore
+
     val docUserRef = db.collection("Users").document("${Firebase.auth.currentUser?.uid}")
     val colPostRef = db.collection("PostInfo")
 
     lateinit var viewModel: ProfileViewModel
     lateinit var filePath: String
+    var tmpUri: Uri? = null
 
     companion object {
         const val REQ_GALLERY = 1
@@ -55,6 +69,15 @@ class ProfileFragment : Fragment(R.layout.fragment_profile_main) {
         savedInstanceState: Bundle?
     ): View? {
         _binding = FragmentProfileMainBinding.inflate(inflater, container, false)
+        requestPermLauncher =
+            registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { map ->
+                val retry = map.filter { !it.value }.keys.toTypedArray()
+                if (retry.isNotEmpty() && retryCount < 2) {
+                    requestPermLauncher.launch(retry)
+                    retryCount
+                }
+            }
+        retryCount = 0
         return binding.root
     }
 
@@ -89,25 +112,30 @@ class ProfileFragment : Fragment(R.layout.fragment_profile_main) {
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == AppCompatActivity.RESULT_OK) {
+//            val bitmap = (result.data?.extras?.get("data")) as Bitmap
+//            viewModel.setbit(bitmap)
 
-            /*val option = BitmapFactory.Options()
-            option.inSampleSize = 10
-            val bitmap = BitmapFactory.decodeFile(result.toString(), option)
-            viewModel.setbit(bitmap)*/
+//            /*val option = BitmapFactory.Options()
+//            option.inSampleSize = 10
+//            val bitmap = BitmapFactory.decodeFile(result.toString(), option)
+//            viewModel.setbit(bitmap)*/
+            if (tmpUri != null) {
+                val stream = requireActivity().contentResolver.openInputStream(tmpUri!!)
+                val bitmap = BitmapFactory.decodeStream(stream)
+                if (bitmap.byteCount > 0) {
+                    viewModel.setbit(bitmap)
+                    tmpUri = null
+                }
+            }
             val imageURI = result.data?.data
             imageURI?.let {
-
                 val imageFile = getRealPathFromURI(it)
                 val imageName = getRealPathFromNAME(it)
                 viewModel.setFile(imageFile)
                 viewModel.setName(imageName)
-
             }
-
             viewModel.setPos(imageURI)
-
         }
-
         findNavController().navigate(R.id.action_profileFragment_to_postingFragment)
     }
 
@@ -152,7 +180,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile_main) {
                 val idMap = hashMapOf(
                     "profileImage" to "gs://sns-pbl.appspot.com/${imageName}"
                 )
-                docUserRef.update(idMap as Map<String, Any>)
+                getReferenceOfMine()?.update(idMap as Map<String, Any>)
             }
         }
     }
@@ -168,13 +196,18 @@ class ProfileFragment : Fragment(R.layout.fragment_profile_main) {
 
 
         // 유저 프로필 이미지에서 url 가져와서 띄우기
-        docUserRef.get()
-            .addOnSuccessListener { // it: DocumentSnapshot
+        getReferenceOfMine()?.apply {
+            get().addOnSuccessListener { // it: DocumentSnapshot
                 viewModel.setPro(it["profileImage"].toString())
-                val imageRef2 = storage.getReferenceFromUrl(viewModel.getPro().toString())
-                displayImageRef(imageRef2, binding.profile)
+                val ref = viewModel.getPro().toString()
+                if (ref.startsWith("gs:")) {
+//                    val imageRef2 = storage.getReferenceFromUrl(ref)
+                    val url = storage.getReferenceFromUrl(ref)
+                    displayImageRef(url, binding.profile)
+                }
             }.addOnFailureListener {
             }
+
 
         //게시물 6개 출력
         colPostRef.whereEqualTo("whoPosted", "${Firebase.auth.currentUser?.uid}").get()
@@ -203,27 +236,35 @@ class ProfileFragment : Fragment(R.layout.fragment_profile_main) {
                         println()
                     }
                 }
-            }.addOnFailureListener {
+            // 개시물수, 친구수 출력
+            queryItem()
+            binding.settingButton.setOnClickListener {
+                AlertDialog.Builder(requireActivity()).apply {
+                    setTitle("로그아웃하시겠습니까?")
+                    setPositiveButton("예") { _, _ -> signOut() }
+                    setNegativeButton("아니오") { _, _ -> }
+
+                }.show()
+
             }
-        // 개시물수, 친구수 출력
-        queryItem()
 
-        // 업로드 버튼
-        binding.buttonUpload.setOnClickListener {
-            //selectGallery()
-            AlertDialog.Builder(requireActivity()).apply {
-                setTitle("사진촬영 및 갤러리 선택")
-                setPositiveButton("Gallery") { _, _ -> selectGallery() }
-                setNegativeButton("Photo") { _, _ -> selectPhoto() }
+            // 업로드 버튼
+            binding.buttonUpload.setOnClickListener {
+                //selectGallery()
+                AlertDialog.Builder(requireActivity()).apply {
+                    setTitle("사진촬영 및 갤러리 선택")
+                    setPositiveButton("Gallery") { _, _ -> selectGallery() }
+                    setNegativeButton("Photo") { _, _ -> selectPhoto() }
 
-            }.show()
+                }.show()
+            }
+            // 프로필 변경 버튼
+            binding.buttonProfile.setOnClickListener {
+                selectGalleryProfile()
+            }
         }
-        // 프로필 변경 버튼
-        binding.buttonProfile.setOnClickListener {
-            selectGalleryProfile()
-        }
-
     }
+
 
     private fun uploadFile(file_id: Long?, fileName: String?) {
         file_id ?: return
@@ -238,69 +279,54 @@ class ProfileFragment : Fragment(R.layout.fragment_profile_main) {
 
     // 게시물수, 친구수 출력
     private fun queryItem() { // 1번문제
-        docUserRef.get()
-            .addOnSuccessListener { // it: DocumentSnapshot
-                val friend = it["friends"] as ArrayList<*>
-                binding.friendNumber.setText(friend.size.toString())
-            }.addOnFailureListener { }
+        getReferenceOfMine()?.apply {
+            get().addOnSuccessListener { // it: DocumentSnapshot
+                val user = it.toUser()
+                if (user.uid == null || user.uid == User.INVALID_USER || user.uid!!.isEmpty())
+                    return@addOnSuccessListener
+                val friend = (user.friends ?: listOf())
+                binding.friendNumber.text = friend.size.toString()
 
-
-        colPostRef.whereEqualTo("whoPosted", "${Firebase.auth.currentUser?.uid}").get()
-            .addOnSuccessListener { documents ->
-                var size = 0
-                for (doc in documents) {
-                    size++
-                }
-                binding.postNumber.setText(size.toString())
+                colPostRef.whereEqualTo("whoPosted", "${user.uid}").get()
+                    .addOnSuccessListener { documents ->
+                        var size = 0
+                        for (doc in documents) {
+                            size++
+                        }
+                        binding.postNumber.setText(size.toString())
+                    }.addOnFailureListener { }
             }.addOnFailureListener { }
+        }
     }
 
 
     // 기본 사진앱 호출
     private fun selectPhoto() {
-        val cameraPermission =
-            ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.CAMERA)
-        val storagePermission =
-            ContextCompat.checkSelfPermission(
-                requireActivity(),
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
-            )
-
-
-        if (cameraPermission == PackageManager.PERMISSION_DENIED || storagePermission == PackageManager.PERMISSION_DENIED
-        ) {
-            ActivityCompat.requestPermissions(
-                requireActivity(),
-                arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                REQ_PERMISSION_CAMERA
-            )
+        val perms = filterPermission(requireActivity(), providePermissions())
+        if (perms.isNotEmpty()) {
+            requestPermLauncher.launch(perms)
         } else {
+//            val path = File.createTempFile(UUID.randomUUID().toString(), null, requireActivity().applicationContext.cacheDir)
+            val fileTmp = File.createTempFile(
+                "tmp",
+                UUID.randomUUID().toString(),
+                requireActivity().getCacheDir()
+            )
+            fileTmp.deleteOnExit()
+            tmpUri =
+                FileProvider.getUriForFile(requireActivity(), BuildConfig.APPLICATION_ID, fileTmp)
             val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, tmpUri)
             photoResult.launch(intent)
         }
     }
 
     //갤러리 호출
     private fun selectGallery() {
-        val writePermission = ContextCompat.checkSelfPermission(
-            requireActivity(),
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
-        )
-        val readPermission = ContextCompat.checkSelfPermission(
-            requireActivity(),
-            Manifest.permission.READ_EXTERNAL_STORAGE
-        )
+        val perms = filterPermission(requireActivity(), providePermissions())
 
-        if (writePermission == PackageManager.PERMISSION_DENIED || readPermission == PackageManager.PERMISSION_DENIED) {
-            ActivityCompat.requestPermissions(
-                requireActivity(),
-                arrayOf(
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                    Manifest.permission.READ_EXTERNAL_STORAGE
-                ),
-                REQ_GALLERY
-            )
+        if (perms.isNotEmpty()) {
+            requestPermLauncher.launch(perms)
         } else {
             val intent = Intent(Intent.ACTION_PICK)
 
@@ -351,9 +377,6 @@ class ProfileFragment : Fragment(R.layout.fragment_profile_main) {
             val bmp = BitmapFactory.decodeByteArray(it, 0, it.size)
             view.setImageBitmap(bmp)
         }?.addOnFailureListener {
-            // Failed to download the image
         }
     }
-
-
 }
