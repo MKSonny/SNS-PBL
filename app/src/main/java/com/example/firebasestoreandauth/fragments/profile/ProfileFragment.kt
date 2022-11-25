@@ -39,7 +39,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile_main) {
     lateinit var storage: FirebaseStorage
     private val db: FirebaseFirestore = Firebase.firestore
     val docUserRef = db.collection("Users").document("${Firebase.auth.currentUser?.uid}")
-    val colPostRef = db.collection("post")
+    val colPostRef = db.collection("PostInfo")
 
     lateinit var viewModel: ProfileViewModel
     lateinit var filePath: String
@@ -181,23 +181,27 @@ class ProfileFragment : Fragment(R.layout.fragment_profile_main) {
             .addOnSuccessListener { documents ->
                 var size = 1
                 for (doc in documents) {
-                    viewModel.setPro(doc["imgUrl"].toString())
-                    val postRef1 = storage.getReferenceFromUrl(viewModel.getPro().toString())
-                    if (size == 1)
-                        displayImageRef(postRef1, binding.imageView)
-                    else if (size == 2)
-                        displayImageRef(postRef1, binding.imageView2)
-                    else if (size == 3)
-                        displayImageRef(postRef1, binding.imageView3)
-                    else if (size == 4)
-                        displayImageRef(postRef1, binding.imageView4)
-                    else if (size == 5)
-                        displayImageRef(postRef1, binding.imageView5)
-                    else if (size == 6) {
-                        displayImageRef(postRef1, binding.imageView6)
-                        break
+                    viewModel.setPro(doc["img"].toString())
+                    try {
+                        val postRef1 = storage.getReferenceFromUrl(viewModel.getPro().toString())
+                        if (size == 1)
+                            displayImageRef(postRef1, binding.imageView)
+                        else if (size == 2)
+                            displayImageRef(postRef1, binding.imageView2)
+                        else if (size == 3)
+                            displayImageRef(postRef1, binding.imageView3)
+                        else if (size == 4)
+                            displayImageRef(postRef1, binding.imageView4)
+                        else if (size == 5)
+                            displayImageRef(postRef1, binding.imageView5)
+                        else if (size == 6) {
+                            displayImageRef(postRef1, binding.imageView6)
+                            break
+                        }
+                        size++
+                    } catch (e: Exception) {
+                        println()
                     }
-                    size++
                 }
             }.addOnFailureListener {
             }
