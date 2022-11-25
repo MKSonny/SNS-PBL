@@ -66,10 +66,9 @@ class PostFragment : Fragment(R.layout.fragment_post_main) {
                             for (friend in friends) {
                                 if (post.whoPosted == friend) {
                                     viewModel.addItem(post)
-                                    adapter.notifyItemInserted(viewModel.itemNotified)
-                                    println("**************"+viewModel.itemNotified)
                                 }
                             }
+                            adapter.notifyItemInserted(viewModel.itemNotified)
                             nowRefresh = true
                         }
 
@@ -91,17 +90,17 @@ class PostFragment : Fragment(R.layout.fragment_post_main) {
                                                 if (post.whoPosted == friend) {
                                                     viewModel.addItem(post)
                                                     //adapter?.notifyItemInserted(viewModel.itemNotified)
-                                                    //cnt++
+                                                    cnt++
                                                 }
                                             }
-//                                            if (cnt > 0) {
-//                                                Toast.makeText(
-//                                                    context,
-//                                                    "${cnt}개의 새로운 포스트",
-//                                                    Toast.LENGTH_LONG
-//                                                )
-//                                                    .show()
-//                                            }
+                                            if (cnt > 0) {
+                                                Toast.makeText(
+                                                    context,
+                                                    "${cnt}개의 새로운 포스트",
+                                                    Toast.LENGTH_LONG
+                                                )
+                                                    .show()
+                                            }
 
                                         }
                                         DocumentChange.Type.MODIFIED -> {
@@ -201,7 +200,6 @@ class PostFragment : Fragment(R.layout.fragment_post_main) {
                 println("#####$$$#####"+viewModel.itemNotified)
                 adapter.notifyItemInserted(viewModel.itemsSize)
             }
-            //adapter?.notifyDataSetChanged()
             binding.refresh.isRefreshing = false
         }
         binding.recyclerView.adapter = adapter

@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.firebasestoreandauth.R
 import com.example.firebasestoreandauth.databinding.ItemPostBinding
 import com.example.firebasestoreandauth.viewmodels.PostViewModel
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
@@ -81,8 +82,9 @@ class MyAdapter(
                     //"profile_img" to "gs://sns-pbl.appspot.com/상상부기 2.png",
                     //"time" to FieldValue.serverTimestamp(),
                     "testing" to tempComments,
-                    "whoPosted" to "odcYUEo7Mhbhmbc13Xzm",
-                    "post_id" to forPostId.id
+                    "whoPosted" to "s0y0vHd5QgeUKVLlT1S1SEer91t1",
+                    "post_id" to forPostId.id,
+                    "time" to Timestamp(0, 0)
                 )
                 forPostId.set(tempItemMap2)
             }
