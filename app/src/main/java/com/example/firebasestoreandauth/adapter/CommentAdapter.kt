@@ -21,17 +21,23 @@ class CommentAdapter(
         RecyclerView.ViewHolder(binding.root) {
 
         fun setContents(pos: Int) {
-            db.collection("SonUsers")
+            db.collection("Users")
                 .document(comments[pos].keys.toString().replace("[", "").replace("]", ""))
                 .get().addOnSuccessListener {
 
-                    binding.commentId.setText(it["nickName"].toString())
+                    binding.commentId.setText(it["nickname"].toString())
                     val profile_img = it["profileImage"].toString()
-                    val profileImageRef = storage.getReferenceFromUrl(profile_img)
-                    profileImageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener {
-                        val bmp = BitmapFactory.decodeByteArray(it, 0, it.size)
-                        binding.profileImg.setImageBitmap(bmp)
-                    }.addOnFailureListener {}
+
+                    try {
+                        if(profile_img.startsWith("gs")){
+                        val profileImageRef = storage.getReferenceFromUrl(profile_img)
+
+                        profileImageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener {
+                            val bmp = BitmapFactory.decodeByteArray(it, 0, it.size)
+                            binding.profileImg.setImageBitmap(bmp)
+                        }.addOnFailureListener {} }
+                    } catch (e:Exception) {}
+
                 }
             //binding.commentId.text = comments[pos].keys.toString().replace("[","").replace("]","")
             binding.commentText.text =
