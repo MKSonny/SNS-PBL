@@ -27,7 +27,7 @@ class PostingFragment : Fragment(R.layout.fragment_profile_posting) {
     lateinit var viewModel: ProfileViewModel
     lateinit var storage: FirebaseStorage
     private val db: FirebaseFirestore = Firebase.firestore
-    val docPostRef = db.collection("post")
+    val docPostRef = db.collection("PostInfo")
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -67,8 +67,8 @@ class PostingFragment : Fragment(R.layout.fragment_profile_posting) {
             val itemMap = hashMapOf(
                 "like" to like,
                 "whoPosted" to whoPosted,
-                "Timestamp" to FieldValue.serverTimestamp(),
-                "comments" to tampComments
+                "time" to FieldValue.serverTimestamp(),
+                "testing" to tampComments,
             )
 
             val imageFile = viewModel.getFile()
@@ -79,7 +79,7 @@ class PostingFragment : Fragment(R.layout.fragment_profile_posting) {
                     uploadFile(imageFile, imageName)
                     val col = it.id
                     val idMap = hashMapOf(
-                        "imgUrl" to "gs://sns-pbl.appspot.com/${viewModel.getName()}",
+                        "img" to "gs://sns-pbl.appspot.com/${viewModel.getName()}",
                         "post_id" to col
                     )
                     docPostRef.document(it.id).update(idMap as Map<String, Any>)
