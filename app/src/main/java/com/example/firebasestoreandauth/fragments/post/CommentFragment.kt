@@ -14,7 +14,9 @@ import com.example.firebasestoreandauth.MainActivity
 import com.example.firebasestoreandauth.R
 import com.example.firebasestoreandauth.adapter.CommentAdapter
 import com.example.firebasestoreandauth.databinding.FragmentPostCommentBinding
+import com.example.firebasestoreandauth.utils.getReferenceOfMine
 import com.example.firebasestoreandauth.viewmodels.PostViewModel
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -24,6 +26,8 @@ import com.google.firebase.storage.ktx.storage
 class CommentFragment : Fragment(R.layout.fragment_post_comment) {
 
     lateinit var binding: FragmentPostCommentBinding
+    val myId = Firebase.auth.uid ?: "null"
+    lateinit var myNickName: String
 
     // 댓글 입력창이 나올 때는 바텀넵뷰를 숨긴다. 11-13
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -88,9 +92,15 @@ class CommentFragment : Fragment(R.layout.fragment_post_comment) {
         val adapter = CommentAdapter(db, comments)
         //binding.button.isEnabled = false
 
+//        getReferenceOfMine()?.addSnapshotListener { snapshot, err ->
+//            snapshot?.let {
+//                myNickName = it["nickname"] as String
+//            }
+//        }
+
         binding.button.setOnClickListener {
             val comment = binding.commentEdit.text.toString()
-            val newCommentMap = mapOf("UXEKfhpQLYnVFXCTFl9P" to comment)
+            val newCommentMap = mapOf(myId to comment)
             comments.add(newCommentMap)
             // 여기 .document에 내 uid가 들어가야 된다.
             db.collection("PostInfo").document(viewModel.notifyClickedPostInfo())
@@ -101,22 +111,22 @@ class CommentFragment : Fragment(R.layout.fragment_post_comment) {
                 )
             //viewModel.setComments(comments)
             adapter.notifyItemInserted(comments.size - 1)
+            binding.commentEdit.text.clear()
         }
         //var string: String = "not working"
-
 
         val postId = viewModel.items.get(viewModel.getPos()).postId
         binding.commentRecy.adapter = adapter
         binding.commentRecy.layoutManager = LinearLayoutManager(context)
-
-        db.collection("SonUsers").document("UXEKfhpQLYnVFXCTFl9P").get().addOnSuccessListener {
-            val temp = it["profileImage"].toString()
-            val profileImageRef = storage.getReferenceFromUrl(temp)
-            profileImageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener {
-                val bmp = BitmapFactory.decodeByteArray(it, 0, it.size)
-                binding.profileImg.setImageBitmap(bmp)
-            }.addOnFailureListener {}
+        if (myId != null) {
+            db.collection("Users").document(myId).get().addOnSuccessListener {
+                val temp = it["profileImage"].toString()
+                val profileImageRef = storage.getReferenceFromUrl(temp)
+                profileImageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener {
+                    val bmp = BitmapFactory.decodeByteArray(it, 0, it.size)
+                    binding.profileImg.setImageBitmap(bmp)
+                }.addOnFailureListener {}
+            }
         }
-
     }
 }

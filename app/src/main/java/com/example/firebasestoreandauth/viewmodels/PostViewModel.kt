@@ -40,6 +40,10 @@ class PostViewModel : ViewModel() {
         return curUser
     }
 
+    fun allItems(): ArrayList<Item> {
+        return items
+    }
+
     fun addComments(pos: Int, map: Map<String, String>) {
         items[pos].comments.add(map)
     }
