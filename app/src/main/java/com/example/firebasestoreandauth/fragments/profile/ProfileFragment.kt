@@ -50,7 +50,9 @@ class ProfileFragment : Fragment(R.layout.fragment_profile_main) {
     lateinit var storage: FirebaseStorage
     var retryCount = 0
     private val db: FirebaseFirestore = Firebase.firestore
-    val colPostRef = db.collection("post")
+
+    val docUserRef = db.collection("Users").document("${Firebase.auth.currentUser?.uid}")
+    val colPostRef = db.collection("PostInfo")
 
     lateinit var viewModel: ProfileViewModel
     lateinit var filePath: String
@@ -207,12 +209,13 @@ class ProfileFragment : Fragment(R.layout.fragment_profile_main) {
             }
 
 
-            //게시물 6개 출력
-            colPostRef.whereEqualTo("whoPosted", "${Firebase.auth.currentUser?.uid}").get()
-                .addOnSuccessListener { documents ->
-                    var size = 1
-                    for (doc in documents) {
-                        viewModel.setPro(doc["imgUrl"].toString())
+        //게시물 6개 출력
+        colPostRef.whereEqualTo("whoPosted", "${Firebase.auth.currentUser?.uid}").get()
+            .addOnSuccessListener { documents ->
+                var size = 1
+                for (doc in documents) {
+                    viewModel.setPro(doc["img"].toString())
+                    try {
                         val postRef1 = storage.getReferenceFromUrl(viewModel.getPro().toString())
                         if (size == 1)
                             displayImageRef(postRef1, binding.imageView)
@@ -229,8 +232,9 @@ class ProfileFragment : Fragment(R.layout.fragment_profile_main) {
                             break
                         }
                         size++
+                    } catch (e: Exception) {
+                        println()
                     }
-                }.addOnFailureListener {
                 }
             // 개시물수, 친구수 출력
             queryItem()

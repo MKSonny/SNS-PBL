@@ -52,7 +52,6 @@ class PostFragment : Fragment(R.layout.fragment_post_main) {
                     viewModel.clearAll()
                     snapshotListener =
                         db.collection("PostInfo").addSnapshotListener { snapshot, error ->
-                            if (nowRefresh) {
                                 for (doc in snapshot!!.documentChanges) {
                                     when (doc.type) {
                                         DocumentChange.Type.ADDED -> {
@@ -75,31 +74,32 @@ class PostFragment : Fragment(R.layout.fragment_post_main) {
                                                 )
                                                     .show()
                                             }
+
                                         }
                                         DocumentChange.Type.REMOVED -> {
 
                                         }
                                         else -> {}
                                     }
+                                    adapter?.notifyDataSetChanged()
                                 }
-                            }
                         }
                 }
             }
-        db.collection("PostInfo").orderBy("time", Query.Direction.DESCENDING).get()
-            .addOnSuccessListener {
-                for (doc in it) {
-                    val post = doc.toItem()
-                    for (friend in friends) {
-                        if (post.whoPosted == friend) {
-                            viewModel.addItem(post)
-                            adapter?.notifyItemInserted(viewModel.itemNotified)
-                        }
-                    }
-                    nowRefresh = true
-                }
-                nowRefresh = true
-            }
+//        db.collection("PostInfo").orderBy("time", Query.Direction.DESCENDING).get()
+//            .addOnSuccessListener {
+//                for (doc in it) {
+//                    val post = doc.toItem()
+//                    for (friend in friends) {
+//                        if (post.whoPosted == friend) {
+//                            viewModel.addItem(post)
+//                            adapter?.notifyItemInserted(viewModel.itemNotified)
+//                        }
+//                    }
+//                    nowRefresh = true
+//                }
+//                nowRefresh = true
+//            }
 //        getReferenceOfMine()?.get()?.addOnSuccessListener {
 //            val me = it.toUser()
 //            if (me.uid == User.INVALID_USER)
