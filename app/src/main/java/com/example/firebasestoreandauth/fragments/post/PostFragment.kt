@@ -87,12 +87,6 @@ class PostFragment : Fragment(R.layout.fragment_post_main) {
                                             if (post.postId == User.INVALID_USER) {
                                                 continue
                                             }
-                                            Toast.makeText(
-                                                context,
-                                                "DocumentChange.Type.ADDED",
-                                                Toast.LENGTH_LONG
-                                            )
-                                                .show()
                                             for (friend in friends) {
                                                 if (post.whoPosted == friend) {
                                                     //viewModel.addItem(post)
