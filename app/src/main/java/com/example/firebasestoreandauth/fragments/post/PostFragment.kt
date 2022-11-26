@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
@@ -35,6 +36,7 @@ class PostFragment : Fragment(R.layout.fragment_post_main) {
     private var snapshotListener: ListenerRegistration? = null
     private var myReference: ListenerRegistration? = null
     private lateinit var adapter: MyAdapter
+    private val viewModel: PostViewModel by activityViewModels()
     private var cnt = 0
 
 
@@ -43,7 +45,6 @@ class PostFragment : Fragment(R.layout.fragment_post_main) {
         var nowRefresh = false
         val friends = mutableSetOf<String>()
         val db = Firebase.firestore
-        val viewModel = ViewModelProvider(requireActivity()).get(PostViewModel::class.java)
 
         val navigate = findNavController()
         adapter = MyAdapter(Firebase.firestore, navigate, viewModel)
@@ -117,58 +118,14 @@ class PostFragment : Fragment(R.layout.fragment_post_main) {
                                             }
                                         }
                                         DocumentChange.Type.REMOVED -> {
-//                                            val removed = doc.document.id
-//                                            val removedAdapter = viewModel.items
-//                                            for (post in removedAdapter) {
-//                                                if (post.postId == removed) {
-//                                                    removedAdapter.remove(post)
-//                                                    adapter.notifyDataSetChanged()
-//                                                }
-//                                            }
                                         }
                                         else -> {}
                                     }
-                                    //adapter?.notifyDataSetChanged()
                                 }
                             }
                         }
                 }
             }
-//        db.collection("PostInfo").orderBy("time", Query.Direction.DESCENDING).get()
-//            .addOnSuccessListener {
-//                for (doc in it) {
-//                    val post = doc.toItem()
-//                    for (friend in friends) {
-//                        if (post.whoPosted == friend) {
-//                            viewModel.addItem(post)
-//                            adapter?.notifyItemInserted(viewModel.itemNotified)
-//                        }
-//                    }
-//                    nowRefresh = true
-//                }
-//                nowRefresh = true
-//            }
-//        getReferenceOfMine()?.get()?.addOnSuccessListener {
-//            val me = it.toUser()
-//            if (me.uid == User.INVALID_USER)
-//                return@addOnSuccessListener
-//            val friends = me.friends?.toMutableList() ?: mutableListOf("")
-//            friends.add(me.uid.toString()) // 자기 게시물도 볼 수 있도록
-//            db.collection("PostInfo").orderBy("time", Query.Direction.DESCENDING).get()
-//                .addOnSuccessListener {
-//                    for (doc in it) {
-//                        val post = doc.toItem()
-//                        for (friend in friends) {
-//                            if (post.whoPosted == friend) {
-//                                viewModel.addItem(post)
-//                                adapter.notifyItemInserted(viewModel.itemNotified)
-//                            }
-//                        }
-//                        nowRefresh = true
-//                    }
-//                    nowRefresh = true
-//                }
-//        }
 
     }
 
@@ -202,7 +159,6 @@ class PostFragment : Fragment(R.layout.fragment_post_main) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
         super.onViewCreated(view, savedInstanceState)
-        val viewModel = ViewModelProvider(requireActivity()).get(PostViewModel::class.java)
         binding.refresh.setOnRefreshListener {
             if (viewModel.itemsSize > viewModel.itemNotified) {
                 println("#####$$$#####"+viewModel.itemsSize)

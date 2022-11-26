@@ -192,19 +192,4 @@ class MyAdapter(
     }
 
     override fun getItemCount() = viewModel.itemsSize
-    private val differ = AsyncListDiffer(this, FriendListAdapter.differCallback)
-
-    companion object {
-        val differCallback = object : DiffUtil.ItemCallback<Item>() {
-            override fun areItemsTheSame(oldItem: Item, newItem: Item): Boolean {
-                return oldItem.postId == newItem.postId
-            }
-
-            override fun areContentsTheSame(oldItem: Item, newItem: Item): Boolean {
-                return (oldItem.postId == newItem.postId) &&
-            }
-
-        }
-
-    }
 }

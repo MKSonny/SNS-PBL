@@ -86,14 +86,20 @@ class PostViewModel : ViewModel() {
     }
 
     fun addToFirst(item: Item) {
+        val prev = items.filter { it.postId == item.postId }.toList()
+        if (prev.isNotEmpty())
+            return
         itemNotifiedType = ItemNotify.ADD
         itemNotified = itemsSize
-        items.add(0,item)
+        items.add(0, item)
         //items.add(item)
         itemLiveData.value = items
     }
 
     fun addItem(item: Item) {
+        val prev = items.filter { it.postId == item.postId }.toList()
+        if (prev.isNotEmpty())
+            return
         itemNotifiedType = ItemNotify.ADD
         itemNotified = itemsSize
         items.add(item)
