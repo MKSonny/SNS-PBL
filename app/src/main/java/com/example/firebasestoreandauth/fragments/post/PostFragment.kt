@@ -21,6 +21,7 @@ import com.example.firebasestoreandauth.utils.extentions.toUser
 import com.example.firebasestoreandauth.utils.getReferenceOfMine
 import com.example.firebasestoreandauth.viewmodels.ItemNotify
 import com.example.firebasestoreandauth.viewmodels.PostViewModel
+import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
@@ -86,6 +87,12 @@ class PostFragment : Fragment(R.layout.fragment_post_main) {
                                             if (post.postId == User.INVALID_USER) {
                                                 continue
                                             }
+                                            Toast.makeText(
+                                                context,
+                                                "DocumentChange.Type.ADDED",
+                                                Toast.LENGTH_LONG
+                                            )
+                                                .show()
                                             for (friend in friends) {
                                                 if (post.whoPosted == friend) {
                                                     viewModel.addItem(post)
@@ -115,7 +122,14 @@ class PostFragment : Fragment(R.layout.fragment_post_main) {
                                             }
                                         }
                                         DocumentChange.Type.REMOVED -> {
-
+//                                            val removed = doc.document.id
+//                                            val removedAdapter = viewModel.items
+//                                            for (post in removedAdapter) {
+//                                                if (post.postId == removed) {
+//                                                    removedAdapter.remove(post)
+//                                                    adapter.notifyDataSetChanged()
+//                                                }
+//                                            }
                                         }
                                         else -> {}
                                     }

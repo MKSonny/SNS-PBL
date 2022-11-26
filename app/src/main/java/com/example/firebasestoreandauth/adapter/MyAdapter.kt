@@ -82,7 +82,7 @@ class MyAdapter(
                     //"profile_img" to "gs://sns-pbl.appspot.com/상상부기 2.png",
                     //"time" to FieldValue.serverTimestamp(),
                     "testing" to tempComments,
-                    "whoPosted" to "s0y0vHd5QgeUKVLlT1S1SEer91t1",
+                    "whoPosted" to "72o26k0KUHfPpZm7vVjViNVJci22",
                     "post_id" to forPostId.id,
                     "time" to Timestamp(0, 0)
                 )
