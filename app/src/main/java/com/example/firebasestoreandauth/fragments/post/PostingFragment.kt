@@ -71,7 +71,7 @@ class PostingFragment : Fragment(R.layout.fragment_profile_posting) {
             )
 
             val itemMap = hashMapOf(
-                "like" to like,
+                "likes" to like,
                 "whoPosted" to whoPosted,
                 "time" to FieldValue.serverTimestamp(),
                 "testing" to tampComments,
