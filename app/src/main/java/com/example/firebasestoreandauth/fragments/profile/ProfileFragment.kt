@@ -112,29 +112,17 @@ class ProfileFragment : Fragment(R.layout.fragment_profile_main) {
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == AppCompatActivity.RESULT_OK) {
-//            val bitmap = (result.data?.extras?.get("data")) as Bitmap
-//            viewModel.setbit(bitmap)
 
-//            /*val option = BitmapFactory.Options()
-//            option.inSampleSize = 10
-//            val bitmap = BitmapFactory.decodeFile(result.toString(), option)
-//            viewModel.setbit(bitmap)*/
             if (tmpUri != null) {
                 val stream = requireActivity().contentResolver.openInputStream(tmpUri!!)
                 val bitmap = BitmapFactory.decodeStream(stream)
                 if (bitmap.byteCount > 0) {
                     viewModel.setbit(bitmap)
+                    viewModel.setPos(tmpUri)
                     tmpUri = null
                 }
+                viewModel.setcat(1)
             }
-            val imageURI = result.data?.data
-            imageURI?.let {
-                val imageFile = getRealPathFromURI(it)
-                val imageName = getRealPathFromNAME(it)
-                viewModel.setFile(imageFile)
-                viewModel.setName(imageName)
-            }
-            viewModel.setPos(imageURI)
         }
         findNavController().navigate(R.id.action_profileFragment_to_postingFragment)
     }
@@ -319,6 +307,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile_main) {
                 FileProvider.getUriForFile(requireActivity(), BuildConfig.APPLICATION_ID, fileTmp)
             val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
             intent.putExtra(MediaStore.EXTRA_OUTPUT, tmpUri)
+
             photoResult.launch(intent)
         }
     }

@@ -10,6 +10,15 @@ class ProfileViewModel() : ViewModel() {
     var imgFile: Long? = null
     var imgName: String? = null
     var bitmap: Bitmap? = null
+    var category: Int? = null
+
+    fun setcat(cat: Int?) {
+        category = cat
+    }
+
+    fun getcat(): Int? {
+        return category
+    }
 
     fun setPos(ImgUrl: Uri?) {
         postImgUrl = ImgUrl
