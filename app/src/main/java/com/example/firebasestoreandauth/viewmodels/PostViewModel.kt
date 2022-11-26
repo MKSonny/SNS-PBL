@@ -85,6 +85,14 @@ class PostViewModel : ViewModel() {
 
     }
 
+    fun addToFirst(item: Item) {
+        itemNotifiedType = ItemNotify.ADD
+        itemNotified = itemsSize
+        items.add(0,item)
+        //items.add(item)
+        itemLiveData.value = items
+    }
+
     fun addItem(item: Item) {
         itemNotifiedType = ItemNotify.ADD
         itemNotified = itemsSize

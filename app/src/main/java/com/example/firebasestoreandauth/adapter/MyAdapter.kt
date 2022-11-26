@@ -1,6 +1,8 @@
 package com.example.firebasestoreandauth.adapter
 
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.navigation.NavController
@@ -101,13 +103,18 @@ class MyAdapter(
                     binding.userId.setText(it["nickname"].toString())
                     binding.uid.setText(it["nickname"].toString())
                     val imageURL = it["profileImage"].toString()
-                    if (imageURL.startsWith("gs:")) {
-                        val profileImageRef = storage.getReferenceFromUrl(imageURL)
-                        profileImageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener {
-                            val bmp = BitmapFactory.decodeByteArray(it, 0, it.size)
-                            binding.profileImg.setImageBitmap(bmp)
-                        }.addOnFailureListener {}
+                    try {
+                        if (imageURL.startsWith("gs:")) {
+                            val profileImageRef = storage.getReferenceFromUrl(imageURL)
+                            profileImageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener {
+                                val bmp = BitmapFactory.decodeByteArray(it, 0, it.size)
+                                binding.profileImg.setImageBitmap(bmp)
+                            }.addOnFailureListener {}
+                        }
+                    } catch (e:Exception) {
+
                     }
+
                 }
 
             // 좋아요 수를 표시

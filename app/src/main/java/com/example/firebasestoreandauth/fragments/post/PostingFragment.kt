@@ -83,14 +83,21 @@ class PostingFragment : Fragment(R.layout.fragment_profile_posting) {
             val imageFile = viewModel.getFile()
             val imageName = viewModel.getName()
 
-            docPostRef.add(itemMap)
-                .addOnSuccessListener {
-                    uploadFile(imageFile, imageName)
-                    findNavController().navigate(R.id.action_postingFragment_to_profileFragment)
+            forPostId.set(itemMap).addOnSuccessListener {
+                uploadFile(imageFile, imageName)
+                findNavController().navigate(R.id.action_postingFragment_to_profileFragment)
+            }.addOnFailureListener {
+                Snackbar.make(binding.root, "Upload fail.", Snackbar.LENGTH_SHORT).show()
+            }
 
-                }.addOnFailureListener {
-                    Snackbar.make(binding.root, "Upload fail.", Snackbar.LENGTH_SHORT).show()
-                }
+//            docPostRef.add(itemMap)
+//                .addOnSuccessListener {
+//                    uploadFile(imageFile, imageName)
+//                    findNavController().navigate(R.id.action_postingFragment_to_profileFragment)
+//
+//                }.addOnFailureListener {
+//                    Snackbar.make(binding.root, "Upload fail.", Snackbar.LENGTH_SHORT).show()
+//                }
         }
     }
 
