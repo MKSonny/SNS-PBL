@@ -1,6 +1,9 @@
 package com.example.firebasestoreandauth.fragments.post
 
+import android.annotation.SuppressLint
 import android.content.ContentUris
+import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.LayoutInflater
@@ -20,6 +23,8 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.ktx.storage
+import java.io.ByteArrayOutputStream
+import java.util.*
 
 class PostingFragment : Fragment(R.layout.fragment_profile_posting) {
     private var _binding: FragmentProfilePostingBinding? = null
@@ -27,7 +32,6 @@ class PostingFragment : Fragment(R.layout.fragment_profile_posting) {
     lateinit var viewModel: ProfileViewModel
     lateinit var storage: FirebaseStorage
     private val db: FirebaseFirestore = Firebase.firestore
-    val docPostRef = db.collection("PostInfo")
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -43,6 +47,7 @@ class PostingFragment : Fragment(R.layout.fragment_profile_posting) {
         _binding = null
     }
 
+    @SuppressLint("WrongThread")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val binding = FragmentProfilePostingBinding.bind(view)
@@ -51,13 +56,11 @@ class PostingFragment : Fragment(R.layout.fragment_profile_posting) {
 
         viewModel = ViewModelProvider(requireActivity()).get(ProfileViewModel::class.java)
         val imgUrl = viewModel.getPos()
-        if (imgUrl != null)
-            binding.postImage.setImageURI(imgUrl)
-        else {
-            if (viewModel.bitmap != null)
-                binding.postImage.setImageBitmap(viewModel.bitmap)
-            viewModel.bitmap = null
-        }
+        val bitmap = viewModel.getbit()
+        binding.postImage.setImageURI(imgUrl)
+
+        val now = System.currentTimeMillis()
+        val date = Date(now)
 
         binding.posting.setOnClickListener {
 
@@ -76,28 +79,33 @@ class PostingFragment : Fragment(R.layout.fragment_profile_posting) {
                 "whoPosted" to whoPosted,
                 "time" to FieldValue.serverTimestamp(),
                 "testing" to tampComments,
-                "img" to "gs://sns-pbl.appspot.com/${viewModel.getName()}",
+                "img" to "gs://sns-pbl.appspot.com/${date}",
                 "post_id" to forPostId.id
             )
 
             val imageFile = viewModel.getFile()
-            val imageName = viewModel.getName()
+
 
             forPostId.set(itemMap).addOnSuccessListener {
-                uploadFile(imageFile, imageName)
+                if (viewModel.getcat() == 1 && bitmap != null){
+                    val cameraRef = storage.reference.child("${date}")
+                    val baos = ByteArrayOutputStream()
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+                    val data = baos.toByteArray()
+                    val uploadTask = cameraRef.putBytes(data)
+                    uploadTask.addOnFailureListener {
+                    }.addOnSuccessListener { taskSnapshot ->
+                    }
+                    viewModel.setcat(0)
+                }
+                else{
+                    uploadFile(imageFile, date.toString())
+                }
                 findNavController().navigate(R.id.action_postingFragment_to_profileFragment)
             }.addOnFailureListener {
                 Snackbar.make(binding.root, "Upload fail.", Snackbar.LENGTH_SHORT).show()
             }
 
-//            docPostRef.add(itemMap)
-//                .addOnSuccessListener {
-//                    uploadFile(imageFile, imageName)
-//                    findNavController().navigate(R.id.action_postingFragment_to_profileFragment)
-//
-//                }.addOnFailureListener {
-//                    Snackbar.make(binding.root, "Upload fail.", Snackbar.LENGTH_SHORT).show()
-//                }
         }
     }
 
