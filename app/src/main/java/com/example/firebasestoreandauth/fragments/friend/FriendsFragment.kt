@@ -7,7 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -37,8 +37,35 @@ import com.google.firebase.ktx.Firebase
  */
 class FriendsFragment : Fragment(R.layout.fragment_friends_main) {
     var snapshotListener: ListenerRegistration? = null
+    private val friendModel: FriendViewModel by activityViewModels()
     private var _binding: FragmentFriendsMainBinding? = null
+    private var listAdapter: FriendListAdapter? = null
+    private var requestAdapter: RequestReceivedAdapter? = null
     val binding get() = _binding!!
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        listAdapter = FriendListAdapter(friendModel)
+        requestAdapter = RequestReceivedAdapter(friendModel)
+        snapshotListener =
+            getReferenceOfMine()?.addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, e ->
+                val TAG = "SnapshotListener"
+                if (e != null) {
+                    Log.w(TAG, "Listen failed.", e)
+                    return@addSnapshotListener
+                }
+                if (snapshot != null && snapshot.exists()) {
+                    //먼저 나에 대한 문서 참조를 가져옴
+                    val user = snapshot.toUser()
+                    if (user.uid == User.INVALID_USER) return@addSnapshotListener
+                    Log.d(TAG, "Current data: ${user}")
+                    updateView(user, friendModel, listAdapter!!, requestAdapter!!)
+                } else {
+                    Log.d(TAG, "Current data: null")
+                }
+
+            }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -55,11 +82,15 @@ class FriendsFragment : Fragment(R.layout.fragment_friends_main) {
         _binding = null
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        snapshotListener?.remove()
+        listAdapter = null
+        requestAdapter = null
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val friendModel: FriendViewModel by viewModels()
-        val listAdapter = FriendListAdapter(friendModel)
-        val requestAdapter = RequestReceivedAdapter(friendModel)
         val toolbar = binding.friendToolbar
 
         (activity as AppCompatActivity).setSupportActionBar(toolbar)
@@ -69,10 +100,11 @@ class FriendsFragment : Fragment(R.layout.fragment_friends_main) {
 
         friendModel.apply {
             friend.observe(viewLifecycleOwner) {
-                listAdapter.notifyDataSetChanged()
+//                listAdapter.notifyDataSetChanged()
+                (binding.recyclerFriendList.adapter as FriendListAdapter).submitList(it)
             }
             requestReceived.observe(viewLifecycleOwner) {
-                requestAdapter.notifyDataSetChanged()
+                requestAdapter!!.notifyDataSetChanged()
             }
         }
 
@@ -89,25 +121,6 @@ class FriendsFragment : Fragment(R.layout.fragment_friends_main) {
         }
 
         Firebase.firestore.clearPersistence()
-        snapshotListener =
-            getReferenceOfMine()?.addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, e ->
-                val TAG = "SnapshotListener"
-                if (e != null) {
-                    Log.w(TAG, "Listen failed.", e)
-                    return@addSnapshotListener
-                }
-                if (snapshot != null && snapshot.exists()) {
-                    //먼저 나에 대한 문서 참조를 가져옴
-                    val user = snapshot.toUser()
-                    if (user.uid == User.INVALID_USER) return@addSnapshotListener
-                    Log.d(TAG, "Current data: ${user}")
-                    updateView(user, friendModel, listAdapter, requestAdapter)
-
-                } else {
-                    Log.d(TAG, "Current data: null")
-                }
-
-            }
     }
 
     private fun updateView(

@@ -3,6 +3,8 @@ package com.example.firebasestoreandauth.adapter
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.appcompat.widget.PopupMenu
+import androidx.recyclerview.widget.AsyncListDiffer
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.firebasestoreandauth.R
@@ -51,10 +53,13 @@ class FriendListAdapter(private val viewModel: FriendViewModel) :
             ) return
             image.clipToOutline = true
             val stRef = Firebase.storage
-            val pathRef = stRef.getReferenceFromUrl(user.profileImage!!)
-            pathRef.getBytes(3 * 1024 * 1024).addOnCompleteListener {
-                if (it.isSuccessful)
-                    Glide.with(image.rootView.context).asBitmap().load(it.result).into(image)
+            try {
+                val pathRef = stRef.getReferenceFromUrl(user.profileImage!!)
+                pathRef.getBytes(3 * 1024 * 1024).addOnCompleteListener {
+                    if (it.isSuccessful)
+                        Glide.with(image.rootView.context).asBitmap().load(it.result).into(image)
+                }
+            } catch (_: Exception) {
             }
         }
 
@@ -73,5 +78,19 @@ class FriendListAdapter(private val viewModel: FriendViewModel) :
 
     override fun getItemCount(): Int {
         return viewModel.friend.getSize()
+    }
+
+    private val differCallback = object : DiffUtil.ItemCallback<User>() {
+        override fun areItemsTheSame(oldItem: User, newItem: User): Boolean {
+            return oldItem.uid.toString() == newItem.uid.toString()
+        }
+
+        override fun areContentsTheSame(oldItem: User, newItem: User): Boolean {
+            return oldItem == newItem
+        }
+    }
+    private val differ = AsyncListDiffer(this, differCallback)
+    fun submitList(list: List<User>) {
+        differ.submitList(list)
     }
 }
