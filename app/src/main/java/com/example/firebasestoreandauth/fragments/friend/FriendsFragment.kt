@@ -45,8 +45,55 @@ class FriendsFragment : Fragment(R.layout.fragment_friends_main) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        listAdapter = FriendListAdapter(friendModel)
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        _binding = FragmentFriendsMainBinding.inflate(inflater, container, false)
+
+        return _binding!!.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        snapshotListener?.remove()
+        _binding = null
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        listAdapter = null
+        requestAdapter = null
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val toolbar = binding.friendToolbar
+        listAdapter = FriendListAdapter()
         requestAdapter = RequestReceivedAdapter(friendModel)
+
+        binding.recyclerFriendList.apply {
+            adapter = listAdapter
+            layoutManager = LinearLayoutManager(context)
+        }
+
+        binding.recyclerReceivedList.apply {
+            adapter = requestAdapter
+            layoutManager = LinearLayoutManager(context)
+        }
+
+        friendModel.apply {
+            friend.observe(viewLifecycleOwner) {
+                (binding.recyclerFriendList.adapter as FriendListAdapter).submitList(it)
+
+            }
+            requestReceived.observe(viewLifecycleOwner) {
+                (binding.recyclerReceivedList.adapter as RequestReceivedAdapter).submitList(it)
+            }
+        }
         snapshotListener =
             getReferenceOfMine()?.addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, e ->
                 val TAG = "SnapshotListener"
@@ -65,62 +112,9 @@ class FriendsFragment : Fragment(R.layout.fragment_friends_main) {
                 }
 
             }
-    }
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        _binding = FragmentFriendsMainBinding.inflate(inflater, container, false)
-
-        return _binding!!.root
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        snapshotListener?.remove()
-        listAdapter = null
-        requestAdapter = null
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        val toolbar = binding.friendToolbar
-
         (activity as AppCompatActivity).setSupportActionBar(toolbar)
         setupMenu()
         toolbar.title = ""//추후 수정해야 할 수 있음 https://dreamaz.tistory.com/102
-
-
-        friendModel.apply {
-            friend.observe(viewLifecycleOwner) {
-//                listAdapter.notifyDataSetChanged()
-                (binding.recyclerFriendList.adapter as FriendListAdapter).submitList(it)
-            }
-            requestReceived.observe(viewLifecycleOwner) {
-                requestAdapter!!.notifyDataSetChanged()
-            }
-        }
-
-        binding.recyclerFriendList.apply {
-            adapter = listAdapter
-            layoutManager = LinearLayoutManager(context)
-            setHasFixedSize(true)
-        }
-
-        binding.recyclerReceivedList.apply {
-            adapter = requestAdapter
-            layoutManager = LinearLayoutManager(context)
-            setHasFixedSize(true)
-        }
-
-        Firebase.firestore.clearPersistence()
     }
 
     private fun updateView(
@@ -154,8 +148,6 @@ class FriendsFragment : Fragment(R.layout.fragment_friends_main) {
         } else {
             friendModel.requestReceived.setList(emptyList())
         }
-        listAdapter.notifyDataSetChanged()
-        requestReceivedAdapter.notifyDataSetChanged()
     }
 
 

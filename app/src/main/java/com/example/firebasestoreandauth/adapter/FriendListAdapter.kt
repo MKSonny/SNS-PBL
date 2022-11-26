@@ -16,51 +16,55 @@ import com.example.firebasestoreandauth.viewmodels.FriendViewModel
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
 
-class FriendListAdapter(private val viewModel: FriendViewModel) :
+class FriendListAdapter() :
     RecyclerView.Adapter<FriendListAdapter.ViewHolder>() {
+    private val differ = AsyncListDiffer(this, differCallback)
+
     inner class ViewHolder(
-        binding: ItemFriendListBinding,
-        private val viewModel: FriendViewModel
+        val binding: ItemFriendListBinding,
     ) :
         RecyclerView.ViewHolder(binding.root) {
-        private val nickname = binding.friendNickname
-        private val image = binding.friendProfileImage
         fun setContent(idx: Int) {
-            val user = viewModel.friend.getItem(idx)
-            nickname.text = user.nickname
-            nickname.setOnLongClickListener {
-                val menu = PopupMenu(it.context, it)
-                menu.inflate(R.menu.popup_friend_item)
-                menu.setOnMenuItemClickListener {
-                    when (it.itemId) {
-                        R.id.delete_friend -> {
-                            user.uid?.let { it1 ->
-                                if (it1 != User.INVALID_USER) getUserDocumentWith(
-                                    it1
-                                )?.deleteFriend()
+            val user = differ.currentList[position]
+            binding.apply {
+                friendNickname.text = user.nickname
+                friendNickname.setOnLongClickListener {
+                    val menu = PopupMenu(it.context, it)
+                    menu.inflate(R.menu.popup_friend_item)
+                    menu.setOnMenuItemClickListener {
+                        when (it.itemId) {
+                            R.id.delete_friend -> {
+                                user.uid?.let { it1 ->
+                                    if (it1 != User.INVALID_USER) getUserDocumentWith(
+                                        it1
+                                    )?.deleteFriend()
+                                }
+                                println("You selected delete")
                             }
-                            println("You selected delete")
                         }
+                        true
                     }
-                    true
+                    menu.show()
+                    println("LongClicked")
+                    return@setOnLongClickListener true
                 }
-                menu.show()
-                println("LongClicked")
-                return@setOnLongClickListener true
-            }
-            if (user.profileImage == null || user.profileImage == User.INVALID_USER
-                || (user.profileImage ?: "").isEmpty() || user.profileImage == "null"
-            ) return
-            image.clipToOutline = true
-            val stRef = Firebase.storage
-            try {
-                val pathRef = stRef.getReferenceFromUrl(user.profileImage!!)
-                pathRef.getBytes(3 * 1024 * 1024).addOnCompleteListener {
-                    if (it.isSuccessful)
-                        Glide.with(image.rootView.context).asBitmap().load(it.result).into(image)
+                if (user.profileImage == null || user.profileImage == User.INVALID_USER
+                    || (user.profileImage ?: "").isEmpty() || user.profileImage == "null"
+                ) return
+                friendProfileImage.clipToOutline = true
+                val stRef = Firebase.storage
+                try {
+                    val pathRef = stRef.getReferenceFromUrl(user.profileImage!!)
+                    pathRef.getBytes(3 * 1024 * 1024).addOnCompleteListener {
+                        if (it.isSuccessful)
+                            Glide.with(friendProfileImage.rootView.context).asBitmap()
+                                .load(it.result)
+                                .into(friendProfileImage)
+                    }
+                } catch (_: Exception) {
                 }
-            } catch (_: Exception) {
             }
+
         }
 
     }
@@ -68,29 +72,39 @@ class FriendListAdapter(private val viewModel: FriendViewModel) :
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
         val binding = ItemFriendListBinding.inflate(layoutInflater, parent, false)
-        return ViewHolder(binding, viewModel)
+        return ViewHolder(binding)
+    }
+
+    override fun getItemCount(): Int {
+        return differ.currentList.size
+    }
+
+    fun submitList(list: List<User>) {
+        val x = mutableListOf<User>().apply {
+            addAll(list)
+        }
+        differ.submitList(x.toList())
+    }
+
+    override fun onBindViewHolder(holder: ViewHolder, position: Int, payloads: MutableList<Any>) {
+        super.onBindViewHolder(holder, position, payloads)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.setContent(position)
     }
 
+    companion object {
+        val differCallback = object : DiffUtil.ItemCallback<User>() {
+            override fun areItemsTheSame(oldItem: User, newItem: User): Boolean {
+                return oldItem.uid.toString() == newItem.uid.toString()
+            }
 
-    override fun getItemCount(): Int {
-        return viewModel.friend.getSize()
-    }
-
-    private val differCallback = object : DiffUtil.ItemCallback<User>() {
-        override fun areItemsTheSame(oldItem: User, newItem: User): Boolean {
-            return oldItem.uid.toString() == newItem.uid.toString()
+            override fun areContentsTheSame(oldItem: User, newItem: User): Boolean {
+                return oldItem == newItem
+            }
         }
 
-        override fun areContentsTheSame(oldItem: User, newItem: User): Boolean {
-            return oldItem == newItem
-        }
     }
-    private val differ = AsyncListDiffer(this, differCallback)
-    fun submitList(list: List<User>) {
-        differ.submitList(list)
-    }
+
 }
