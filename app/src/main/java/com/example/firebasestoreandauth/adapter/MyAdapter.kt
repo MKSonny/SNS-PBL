@@ -6,9 +6,13 @@ import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.navigation.NavController
+import androidx.recyclerview.widget.AsyncListDiffer
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.firebasestoreandauth.R
 import com.example.firebasestoreandauth.databinding.ItemPostBinding
+import com.example.firebasestoreandauth.dto.Item
+import com.example.firebasestoreandauth.dto.User
 import com.example.firebasestoreandauth.viewmodels.PostViewModel
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
@@ -188,4 +192,19 @@ class MyAdapter(
     }
 
     override fun getItemCount() = viewModel.itemsSize
+    private val differ = AsyncListDiffer(this, FriendListAdapter.differCallback)
+
+    companion object {
+        val differCallback = object : DiffUtil.ItemCallback<Item>() {
+            override fun areItemsTheSame(oldItem: Item, newItem: Item): Boolean {
+                return oldItem.postId == newItem.postId
+            }
+
+            override fun areContentsTheSame(oldItem: Item, newItem: Item): Boolean {
+                return (oldItem.postId == newItem.postId) &&
+            }
+
+        }
+
+    }
 }

@@ -45,6 +45,26 @@ class FriendsFragment : Fragment(R.layout.fragment_friends_main) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        listAdapter = FriendListAdapter()
+        requestAdapter = RequestReceivedAdapter()
+        snapshotListener =
+            getReferenceOfMine()?.addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, e ->
+                val TAG = "SnapshotListener"
+                if (e != null) {
+                    Log.w(TAG, "Listen failed.", e)
+                    return@addSnapshotListener
+                }
+                if (snapshot != null && snapshot.exists()) {
+                    //먼저 나에 대한 문서 참조를 가져옴
+                    val user = snapshot.toUser()
+                    if (user.uid == User.INVALID_USER) return@addSnapshotListener
+                    Log.d(TAG, "Current data: ${user}")
+                    updateView(user, friendModel, listAdapter!!, requestAdapter!!)
+                } else {
+                    Log.d(TAG, "Current data: null")
+                }
+
+            }
     }
 
     override fun onCreateView(
@@ -59,7 +79,6 @@ class FriendsFragment : Fragment(R.layout.fragment_friends_main) {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        snapshotListener?.remove()
         _binding = null
     }
 
@@ -67,13 +86,12 @@ class FriendsFragment : Fragment(R.layout.fragment_friends_main) {
         super.onDestroy()
         listAdapter = null
         requestAdapter = null
+        snapshotListener?.remove()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val toolbar = binding.friendToolbar
-        listAdapter = FriendListAdapter()
-        requestAdapter = RequestReceivedAdapter(friendModel)
 
         binding.recyclerFriendList.apply {
             adapter = listAdapter
@@ -94,24 +112,6 @@ class FriendsFragment : Fragment(R.layout.fragment_friends_main) {
                 (binding.recyclerReceivedList.adapter as RequestReceivedAdapter).submitList(it)
             }
         }
-        snapshotListener =
-            getReferenceOfMine()?.addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, e ->
-                val TAG = "SnapshotListener"
-                if (e != null) {
-                    Log.w(TAG, "Listen failed.", e)
-                    return@addSnapshotListener
-                }
-                if (snapshot != null && snapshot.exists()) {
-                    //먼저 나에 대한 문서 참조를 가져옴
-                    val user = snapshot.toUser()
-                    if (user.uid == User.INVALID_USER) return@addSnapshotListener
-                    Log.d(TAG, "Current data: ${user}")
-                    updateView(user, friendModel, listAdapter!!, requestAdapter!!)
-                } else {
-                    Log.d(TAG, "Current data: null")
-                }
-
-            }
         (activity as AppCompatActivity).setSupportActionBar(toolbar)
         setupMenu()
         toolbar.title = ""//추후 수정해야 할 수 있음 https://dreamaz.tistory.com/102

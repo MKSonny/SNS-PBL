@@ -66,8 +66,8 @@ fun DocumentReference.rejectFriendRequest() {
             val otherSent = (other.requestSent ?: listOf())
             if (other.uid == User.INVALID_USER)
                 return@addOnSuccessListener
-            otherSent.filter { it != uid }
-            other.requestSent = otherSent
+
+            other.requestSent = otherSent.filter { it != uid }
             getReferenceOfMine()?.apply {
                 val myDoc = this
                 get().addOnSuccessListener { mySnapshot ->
@@ -75,7 +75,7 @@ fun DocumentReference.rejectFriendRequest() {
                     val received = (me.requestReceived ?: listOf())
                     if (me.uid == User.INVALID_USER)
                         return@addOnSuccessListener
-                    val newReceived = received.filter { it != other.uid }
+                    me.requestReceived = received.filter { it != other.uid }
                     myDoc.set(me)
                     othDoc.set(other)
                 }
