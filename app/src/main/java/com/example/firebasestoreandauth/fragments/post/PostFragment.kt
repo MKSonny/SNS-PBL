@@ -87,15 +87,10 @@ class PostFragment : Fragment(R.layout.fragment_post_main) {
                                             if (post.postId == User.INVALID_USER) {
                                                 continue
                                             }
-                                            Toast.makeText(
-                                                context,
-                                                "DocumentChange.Type.ADDED",
-                                                Toast.LENGTH_LONG
-                                            )
-                                                .show()
                                             for (friend in friends) {
                                                 if (post.whoPosted == friend) {
-                                                    viewModel.addItem(post)
+                                                    //viewModel.addItem(post)
+                                                    viewModel.addToFirst(post)
                                                     //adapter?.notifyItemInserted(viewModel.itemNotified)
                                                     cnt++
                                                 }
@@ -213,6 +208,7 @@ class PostFragment : Fragment(R.layout.fragment_post_main) {
                 println("#####$$$#####"+viewModel.itemsSize)
                 println("#####$$$#####"+viewModel.itemNotified)
                 adapter.notifyItemInserted(viewModel.itemsSize)
+                adapter.notifyDataSetChanged()
             }
             binding.refresh.isRefreshing = false
         }
