@@ -12,7 +12,6 @@ import com.example.firebasestoreandauth.databinding.ItemFriendListBinding
 import com.example.firebasestoreandauth.dto.User
 import com.example.firebasestoreandauth.utils.extentions.deleteFriend
 import com.example.firebasestoreandauth.utils.getUserDocumentWith
-import com.example.firebasestoreandauth.viewmodels.FriendViewModel
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
 
@@ -50,7 +49,10 @@ class FriendListAdapter() :
                 }
                 if (user.profileImage == null || user.profileImage == User.INVALID_USER
                     || (user.profileImage ?: "").isEmpty() || user.profileImage == "null"
-                ) return
+                ) {
+                    friendProfileImage.setImageResource(android.R.color.transparent)
+                    return
+                }
                 friendProfileImage.clipToOutline = true
                 val stRef = Firebase.storage
                 try {
@@ -62,6 +64,7 @@ class FriendListAdapter() :
                                 .into(friendProfileImage)
                     }
                 } catch (_: Exception) {
+                    friendProfileImage.setImageResource(android.R.color.transparent)
                 }
             }
 
