@@ -1,30 +1,23 @@
 package com.example.firebasestoreandauth.fragments.post
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.firebasestoreandauth.R
 import com.example.firebasestoreandauth.adapter.MyAdapter
 import com.example.firebasestoreandauth.databinding.FragmentPostMainBinding
 import com.example.firebasestoreandauth.dto.User
-import com.example.firebasestoreandauth.utils.ProfileViewModel
 import com.example.firebasestoreandauth.utils.extentions.toItem
 import com.example.firebasestoreandauth.utils.extentions.toUser
 import com.example.firebasestoreandauth.utils.getReferenceOfMine
-import com.example.firebasestoreandauth.viewmodels.ItemNotify
 import com.example.firebasestoreandauth.viewmodels.PostViewModel
-import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.firestore.DocumentChange
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
@@ -62,24 +55,25 @@ class PostFragment : Fragment(R.layout.fragment_post_main) {
                     snapshotListener?.remove()
                     //viewModel.clearAll() // -> 실시간성 때문에
 
-                    db.collection("PostInfo").orderBy("time", Query.Direction.DESCENDING).get().addOnSuccessListener {
-                        for (doc in it) {
-                            val post = doc.toItem()
-                            for (friend in friends) {
-                                if (post.whoPosted == friend) {
-                                    viewModel.addItem(post)
+                    db.collection("PostInfo").orderBy("time", Query.Direction.DESCENDING).get()
+                        .addOnSuccessListener {
+                            for (doc in it) {
+                                val post = doc.toItem()
+                                for (friend in friends) {
+                                    if (post.whoPosted == friend) {
+                                        viewModel.addItem(post)
+                                    }
                                 }
+                                adapter.notifyItemInserted(viewModel.itemNotified)
+                                nowRefresh = true
                             }
-                            adapter.notifyItemInserted(viewModel.itemNotified)
+
                             nowRefresh = true
                         }
 
-                        nowRefresh = true
-                    }
-
                     snapshotListener =
                         db.collection("PostInfo").addSnapshotListener { snapshot, error ->
-                            if(nowRefresh) {
+                            if (nowRefresh) {
                                 for (doc in snapshot!!.documentChanges) {
                                     when (doc.type) {
                                         DocumentChange.Type.ADDED -> {
@@ -112,6 +106,8 @@ class PostFragment : Fragment(R.layout.fragment_post_main) {
                                             for (post in heart) {
                                                 if (post.postId == added) {
                                                     post.likes = doc.document["likes"] as Number
+                                                    post.comments =
+                                                        doc.document["testing"] as ArrayList<Map<String, String>>
                                                     //println("&&&&&&&&&&&"+pos)
                                                     adapter.notifyDataSetChanged()
                                                 }
@@ -161,8 +157,8 @@ class PostFragment : Fragment(R.layout.fragment_post_main) {
         super.onViewCreated(view, savedInstanceState)
         binding.refresh.setOnRefreshListener {
             if (viewModel.itemsSize > viewModel.itemNotified) {
-                println("#####$$$#####"+viewModel.itemsSize)
-                println("#####$$$#####"+viewModel.itemNotified)
+                println("#####$$$#####" + viewModel.itemsSize)
+                println("#####$$$#####" + viewModel.itemNotified)
                 adapter.notifyItemInserted(viewModel.itemsSize)
                 adapter.notifyDataSetChanged()
             }
