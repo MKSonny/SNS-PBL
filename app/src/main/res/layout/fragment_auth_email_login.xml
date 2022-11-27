@@ -75,7 +75,7 @@
         android:id="@+id/sign_up_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="아직 회원이 아닌가요? 가입하기"
+        android:text="@string/areYouNotAMember"
         android:textSize="15sp"
         app:layout_constraintBottom_toTopOf="@+id/login"
         app:layout_constraintEnd_toEndOf="@+id/password"
@@ -88,4 +88,17 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.5"
         app:layout_constraintHeight_percent="0.5" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="로그인"
+        android:textSize="35sp"
+        app:layout_constraintBottom_toTopOf="@+id/username"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.551" />
 </androidx.constraintlayout.widget.ConstraintLayout>

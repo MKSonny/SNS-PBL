@@ -19,29 +19,49 @@
         android:id="@+id/message"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="64dp"
         android:text="어서와요"
         android:textSize="50sp"
         app:layout_constraintBottom_toTopOf="@+id/guideline4"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <Button
+    <com.google.android.gms.common.SignInButton
         android:id="@+id/start_with_google_button"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="50sp"
+        android:layout_marginTop="8dp"
         android:text="구글로 시작하기"
-        app:layout_constraintEnd_toEndOf="@+id/login_start_with_email_button"
-        app:layout_constraintStart_toStartOf="@+id/login_start_with_email_button"
+        app:layout_constraintEnd_toStartOf="@+id/guideline8"
+        app:layout_constraintStart_toStartOf="@+id/guideline7"
         app:layout_constraintTop_toBottomOf="@+id/login_start_with_email_button" />
 
     <Button
         android:id="@+id/login_start_with_email_button"
+        android:layout_width="0dp"
+        android:layout_height="50sp"
+        android:layout_marginTop="100dp"
+        android:backgroundTint="#D24848"
+        android:text="이메일로 시작하기"
+        app:icon="@drawable/ic_baseline_email_24"
+        app:layout_constraintEnd_toStartOf="@+id/guideline8"
+        app:layout_constraintStart_toStartOf="@+id/guideline7"
+        app:layout_constraintTop_toBottomOf="@+id/message" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline7"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
-        android:text="이메일로 시작하기"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/message" />
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.25"
+        app:layout_constraintHeight_percent="0.5" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline8"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.75"
+        app:layout_constraintHeight_percent="0.5" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
