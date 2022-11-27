@@ -1,5 +1,6 @@
 package com.example.firebasestoreandauth.fragments.post
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -69,10 +70,22 @@ class PostFragment : Fragment(R.layout.fragment_post_main) {
         return _binding!!.root
     }
 
-    override fun onResume() {
-        super.onResume()
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+//        if (myReference == null)
+//            attachSnapshotListener()
+    }
+
+    override fun onStart() {
+        super.onStart()
         if (myReference == null)
             attachSnapshotListener()
+    }
+
+    override fun onResume() {
+        super.onResume()
+//        if (myReference == null)
+//            attachSnapshotListener()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
