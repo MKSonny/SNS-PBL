@@ -1,8 +1,7 @@
 package com.example.firebasestoreandauth.adapter
 
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Color
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,13 +12,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.firebasestoreandauth.R
 import com.example.firebasestoreandauth.databinding.ItemPostBinding
 import com.example.firebasestoreandauth.dto.Item
-import com.example.firebasestoreandauth.dto.User
 import com.example.firebasestoreandauth.viewmodels.PostViewModel
-import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
-import kotlinx.coroutines.delay
 
 
 class MyAdapter(
@@ -62,30 +58,31 @@ class MyAdapter(
     inner class ViewHolder(private val binding: ItemPostBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun setContents(pos: Int) {
-            var item = differ.currentList[adapterPosition]
+            val item = differ.currentList[adapterPosition]
             //binding.timeStamp.text = timeDiff(item.time)
             val tempComments = ArrayList<Map<String, String>>()
             tempComments.add(
                 mapOf("only" to "friends")
             )
             if (item.time.nanoseconds == 0)
-                binding.time.text = formatTimeString(System.currentTimeMillis())//binding.time.text = "타임스탬프 오류"
+                binding.time.text =
+                    formatTimeString(System.currentTimeMillis())//binding.time.text = "타임스탬프 오류"
             else
                 binding.time.text = formatTimeString(item.time.toDate().time)
             binding.button2.visibility = View.GONE
 
-            binding.button2.setOnClickListener {
-                val forPostId = db.collection("PostInfo").document()
-                val tempItemMap2 = hashMapOf(
-                    "comments" to tempComments,
-                    "likes" to 0,
-                    "testing" to tempComments,
-                    "whoPosted" to "72o26k0KUHfPpZm7vVjViNVJci22",
-                    "post_id" to forPostId.id,
-                    "time" to Timestamp(0, 0)
-                )
-                forPostId.set(tempItemMap2)
-            }
+//            binding.button2.setOnClickListener {
+//                val forPostId = db.collection("PostInfo").document()
+//                val tempItemMap2 = hashMapOf(
+//                    "comments" to tempComments,
+//                    "likes" to 0,
+//                    "testing" to tempComments,
+//                    "whoPosted" to "72o26k0KUHfPpZm7vVjViNVJci22",
+//                    "post_id" to forPostId.id,
+//                    "time" to Timestamp(0, 0)
+//                )
+//                forPostId.set(tempItemMap2)
+//            }
             val postId = item.postId
             val whoPosted = item.whoPosted
             var likes = item.likes.toInt()
@@ -96,8 +93,8 @@ class MyAdapter(
                 .addOnSuccessListener {
                     binding.userId.setText(it["nickname"].toString())
                     binding.uid.setText(it["nickname"].toString())
-                    val imageURL = it["profileImage"].toString()
                     try {
+                        val imageURL = it["profileImage"].toString()
                         if (imageURL.startsWith("gs:")) {
                             val profileImageRef = storage.getReferenceFromUrl(imageURL)
                             profileImageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener {
@@ -105,8 +102,8 @@ class MyAdapter(
                                 binding.profileImg.setImageBitmap(bmp)
                             }.addOnFailureListener {}
                         }
-                    } catch (e:Exception) {
-
+                    } catch (e: Exception) {
+                        Log.w("MyAdapter.kt", "Failed to load image from storage ${e.message}")
                     }
 
                 }
@@ -144,7 +141,7 @@ class MyAdapter(
                 navigate.navigate(R.id.action_postFragment_to_commentFragment)
             }
 
-            var commentsTest = ArrayList<Map<String, String>>()
+            val commentsTest = ArrayList<Map<String, String>>()
             commentsTest.add(mapOf("test" to "hello"))
 
             binding.postTitle.text = item.comments[0][whoPosted]
@@ -187,7 +184,9 @@ class MyAdapter(
             }
 
             override fun areContentsTheSame(oldItem: Item, newItem: Item): Boolean {
-                return oldItem == newItem
+                return (oldItem.postId == newItem.postId) &&
+                        (oldItem.comments == newItem.comments) &&
+                        (oldItem.likes == newItem.likes)
             }
         }
     }

@@ -14,7 +14,6 @@ import com.example.firebasestoreandauth.MainActivity
 import com.example.firebasestoreandauth.R
 import com.example.firebasestoreandauth.adapter.CommentAdapter
 import com.example.firebasestoreandauth.databinding.FragmentPostCommentBinding
-import com.example.firebasestoreandauth.utils.getReferenceOfMine
 import com.example.firebasestoreandauth.viewmodels.PostViewModel
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -120,12 +119,16 @@ class CommentFragment : Fragment(R.layout.fragment_post_comment) {
         binding.commentRecy.layoutManager = LinearLayoutManager(context)
         if (myId != null) {
             db.collection("Users").document(myId).get().addOnSuccessListener {
-                val temp = it["profileImage"].toString()
-                val profileImageRef = storage.getReferenceFromUrl(temp)
-                profileImageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener {
-                    val bmp = BitmapFactory.decodeByteArray(it, 0, it.size)
-                    binding.profileImg.setImageBitmap(bmp)
-                }.addOnFailureListener {}
+                try {
+                    val temp = it["profileImage"].toString()
+                    val profileImageRef = storage.getReferenceFromUrl(temp)
+                    profileImageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener {
+                        val bmp = BitmapFactory.decodeByteArray(it, 0, it.size)
+                        binding.profileImg.setImageBitmap(bmp)
+                    }.addOnFailureListener {}
+                } catch (e: Exception) {
+                    binding.profileImg.setImageResource(android.R.color.transparent)
+                }
             }
         }
     }

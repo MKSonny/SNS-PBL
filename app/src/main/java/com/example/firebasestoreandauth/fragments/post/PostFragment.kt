@@ -153,15 +153,8 @@ class PostFragment : Fragment(R.layout.fragment_post_main) {
 
                                         }
                                         DocumentChange.Type.MODIFIED -> {
-                                            val added = doc.document.id
-                                            val heart = viewModel.items
-                                            for (post in heart) {
-                                                if (post.postId == added) {
-                                                    post.likes = doc.document["likes"] as Number
-                                                    post.comments =
-                                                        doc.document["testing"] as ArrayList<Map<String, String>>
-                                                }
-                                            }
+                                            val modified = doc.document.toItem()
+                                            viewModel.addItem(modified)
                                         }
                                         DocumentChange.Type.REMOVED -> {
                                         }

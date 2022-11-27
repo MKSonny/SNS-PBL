@@ -88,18 +88,23 @@ class PostViewModel : ViewModel() {
             items[idx].likes = item.likes
             return
         }
-            items.removeIf { it.postId == item.postId }
+        items.removeIf { it.postId == item.postId }
         items.add(0, item)
         //items.add(item)
         itemLiveData.value = items
     }
 
+    /**
+     * 중복되는 글이면 업데이트
+     * 새로운 글이면 추가
+     */
     fun addItem(item: Item) {
         val prev = items.filter { it.postId == item.postId }.toList()
         if (prev.isNotEmpty()) {
             val idx = items.indexOfFirst { it.postId == item.postId }
-            items[idx].comments = item.comments
-            items[idx].likes = item.likes
+            item.liked = items[idx].liked
+            items[idx] = item
+            itemLiveData.value = items
             return
         }
         items.add(item)
