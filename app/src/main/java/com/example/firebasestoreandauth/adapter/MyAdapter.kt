@@ -57,11 +57,12 @@ class MyAdapter(
     }
 
     var storage = Firebase.storage
+    private val differ = AsyncListDiffer(this, MyAdapter.differCallback)
 
     inner class ViewHolder(private val binding: ItemPostBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun setContents(pos: Int) {
-            var item = viewModel.items[pos]
+            var item = differ.currentList[adapterPosition]
             //binding.timeStamp.text = timeDiff(item.time)
             val tempComments = ArrayList<Map<String, String>>()
             tempComments.add(
@@ -71,23 +72,13 @@ class MyAdapter(
                 binding.time.text = formatTimeString(System.currentTimeMillis())//binding.time.text = "타임스탬프 오류"
             else
                 binding.time.text = formatTimeString(item.time.toDate().time)
-//            val tempItemMap = hashMapOf(
-//                "comments" to tempComments,
-//                "likes" to 0,
-//                "img" to "gs://sns-pbl.appspot.com/wine.jpg",
-//                "profile_img" to "gs://sns-pbl.appspot.com/상상부기 2.png",
-//                "testing" to tempComments,
-//                "whoPosted" to "UXEKfhpQLYnVFXCTFl9P"
-//            )
             binding.button2.visibility = View.GONE
+
             binding.button2.setOnClickListener {
                 val forPostId = db.collection("PostInfo").document()
                 val tempItemMap2 = hashMapOf(
                     "comments" to tempComments,
                     "likes" to 0,
-                    //"img" to "gs://sns-pbl.appspot.com/wine.jpg",
-                    //"profile_img" to "gs://sns-pbl.appspot.com/상상부기 2.png",
-                    //"time" to FieldValue.serverTimestamp(),
                     "testing" to tempComments,
                     "whoPosted" to "72o26k0KUHfPpZm7vVjViNVJci22",
                     "post_id" to forPostId.id,
@@ -98,9 +89,7 @@ class MyAdapter(
             val postId = item.postId
             val whoPosted = item.whoPosted
             var likes = item.likes.toInt()
-//            println("##$###$$$###timestamp+" + item.time)
-//            var profileRef: String
-//            var liked = false
+
             // 프로필 사진 옆 유저 아이디 표시
             db.collection("Users").document(whoPosted)
                 .get()
@@ -125,19 +114,10 @@ class MyAdapter(
             // 좋아요 수를 표시
             binding.showLikes.text = "좋아요 " + likes + "개"
 
-//            val postsHeartInfo = viewModel.items
-//            for (post in postsHeartInfo) {
-//                if (post.liked && post.postId == viewModel.items[pos].postId) {
-//                    binding.likeBtn.setBackgroundResource(R.drawable.full_heart)
-//                    binding.likeBtn.isSelected = true
-//                }
-//            }
-            if (viewModel.items[pos].liked) {
+            if (item.liked) {
                 binding.likeBtn.setBackgroundResource(R.drawable.full_heart)
                 binding.likeBtn.isSelected = true
-                //viewModel.items[pos].liked = false
-            }
-            else {
+            } else {
                 binding.likeBtn.setBackgroundResource(R.drawable.icons8__96)
                 binding.likeBtn.isSelected = false
             }
@@ -146,12 +126,12 @@ class MyAdapter(
                 if (it.isSelected) {
                     likes -= 1
                     it.setBackgroundResource(R.drawable.icons8__96)
-                    viewModel.items[pos].liked = false
+                    item.liked = false
                 } else {
                     likes += 1
                     it.setBackgroundResource(R.drawable.full_heart)
-                    viewModel.items[pos].liked = true
-                    viewModel.items[pos].likes = likes
+                    item.liked = true
+                    item.likes = likes
                 }
                 it.isSelected = !it.isSelected
                 db.collection("PostInfo").document(postId).update("likes", likes)
@@ -159,10 +139,7 @@ class MyAdapter(
             }
 
             binding.commentBtn.setOnClickListener {
-                //viewModel.setUser(postedUser)
-                //viewModel.setPostId(postedUser)
-                viewModel.setPos(pos)
-                //println("#$#$#$$#setpos" + viewModel.getPos())
+                viewModel.setPos(adapterPosition)
                 viewModel.ClickedPostInfo(item.postId)
                 navigate.navigate(R.id.action_postFragment_to_commentFragment)
             }
@@ -170,14 +147,6 @@ class MyAdapter(
             var commentsTest = ArrayList<Map<String, String>>()
             commentsTest.add(mapOf("test" to "hello"))
 
-//            val itemMap = hashMapOf(
-//                "comments" to commentsTest,
-//                "img" to "gs://sns-pbl.appspot.com/상상부기 2.png",
-//                "likes" to 1 as Number,
-//                "whoPosted" to "testing"
-//            )
-//            binding.uid.text = item.whoPosted + " "
-//            binding.postTitle.text = item.comments[0][whoPosted]
             binding.postTitle.text = item.comments[0][whoPosted]
 
 
@@ -187,7 +156,6 @@ class MyAdapter(
                 val bmp = BitmapFactory.decodeByteArray(it, 0, it.size)
                 binding.postImg.setImageBitmap(bmp)
             }.addOnFailureListener {
-
             }
         }
     }
@@ -203,5 +171,24 @@ class MyAdapter(
         holder.setContents(position)
     }
 
-    override fun getItemCount() = viewModel.itemsSize
+    override fun getItemCount() = differ.currentList.size
+
+    fun submitList(list: List<Item>) {
+        val x = mutableListOf<Item>().apply {
+            addAll(list)
+        }
+        differ.submitList(x.toList())
+    }
+
+    companion object {
+        val differCallback = object : DiffUtil.ItemCallback<Item>() {
+            override fun areItemsTheSame(oldItem: Item, newItem: Item): Boolean {
+                return oldItem.whoPosted == newItem.whoPosted
+            }
+
+            override fun areContentsTheSame(oldItem: Item, newItem: Item): Boolean {
+                return oldItem == newItem
+            }
+        }
+    }
 }
