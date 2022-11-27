@@ -227,6 +227,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile_main) {
                     }
                     // 개시물수, 친구수 출력
                     queryItem()
+
                     binding.settingButton.setOnClickListener {
                         AlertDialog.Builder(requireActivity()).apply {
                             setTitle("로그아웃하시겠습니까?")
@@ -242,8 +243,8 @@ class ProfileFragment : Fragment(R.layout.fragment_profile_main) {
                         //selectGallery()
                         AlertDialog.Builder(requireActivity()).apply {
                             setTitle("사진촬영 및 갤러리 선택")
-                            setPositiveButton("Gallery") { _, _ -> selectGallery() }
-                            setNegativeButton("Photo") { _, _ -> selectPhoto() }
+                            setPositiveButton("갤러리") { _, _ -> selectGallery() }
+                            setNegativeButton("사진 촬영") { _, _ -> selectPhoto() }
 
                         }.show()
                     }
