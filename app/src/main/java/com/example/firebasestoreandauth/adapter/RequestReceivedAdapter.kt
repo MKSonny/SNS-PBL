@@ -2,6 +2,8 @@ package com.example.firebasestoreandauth.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.recyclerview.widget.AsyncListDiffer
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.firebasestoreandauth.databinding.ItemFriendRequestReceivedBinding
@@ -14,11 +16,10 @@ import com.example.firebasestoreandauth.viewmodels.FriendViewModel
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
 
-class RequestReceivedAdapter(private val viewModel: FriendViewModel) :
+class RequestReceivedAdapter() :
     RecyclerView.Adapter<RequestReceivedAdapter.ViewHolder>() {
     inner class ViewHolder(
         private val binding: ItemFriendRequestReceivedBinding,
-        private val viewModel: FriendViewModel
     ) :
         RecyclerView.ViewHolder(binding.root) {
         private val nickname = binding.requestReceivedNickname
@@ -27,7 +28,7 @@ class RequestReceivedAdapter(private val viewModel: FriendViewModel) :
         private val rejectButton = binding.rejectRequestButton
 
         fun setContent(idx: Int) {
-            val user = viewModel.requestReceived.getItem(idx)
+            val user = differ.currentList[idx]
             nickname.text = user.nickname
             acceptButton.setOnClickListener {
                 if ((user.uid ?: "").isNotEmpty()) {
@@ -55,7 +56,7 @@ class RequestReceivedAdapter(private val viewModel: FriendViewModel) :
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
         val binding = ItemFriendRequestReceivedBinding.inflate(layoutInflater, parent, false)
-        return ViewHolder(binding, viewModel)
+        return ViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
@@ -63,6 +64,22 @@ class RequestReceivedAdapter(private val viewModel: FriendViewModel) :
     }
 
     override fun getItemCount(): Int {
-        return viewModel.requestReceived.getSize()
+        return differ.currentList.size
+    }
+
+    private val differCallback = object : DiffUtil.ItemCallback<User>() {
+        override fun areItemsTheSame(oldItem: User, newItem: User): Boolean {
+            return oldItem.uid.toString() == newItem.uid.toString()
+        }
+
+        override fun areContentsTheSame(oldItem: User, newItem: User): Boolean {
+            return oldItem == newItem
+        }
+    }
+
+    private val differ = AsyncListDiffer(this, differCallback)
+
+    fun submitList(list: List<User>) {
+        differ.submitList(list)
     }
 }

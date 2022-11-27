@@ -4,16 +4,22 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.navigation.NavController
+import androidx.recyclerview.widget.AsyncListDiffer
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.firebasestoreandauth.R
 import com.example.firebasestoreandauth.databinding.ItemPostBinding
+import com.example.firebasestoreandauth.dto.Item
+import com.example.firebasestoreandauth.dto.User
 import com.example.firebasestoreandauth.viewmodels.PostViewModel
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
+import kotlinx.coroutines.delay
 
 
 class MyAdapter(
@@ -61,12 +67,10 @@ class MyAdapter(
             tempComments.add(
                 mapOf("only" to "friends")
             )
-
             if (item.time.nanoseconds == 0)
-                binding.time.text = "" //binding.time.text = "타임스탬프 오류"
+                binding.time.text = formatTimeString(System.currentTimeMillis())//binding.time.text = "타임스탬프 오류"
             else
                 binding.time.text = formatTimeString(item.time.toDate().time)
-
 //            val tempItemMap = hashMapOf(
 //                "comments" to tempComments,
 //                "likes" to 0,
@@ -75,6 +79,7 @@ class MyAdapter(
 //                "testing" to tempComments,
 //                "whoPosted" to "UXEKfhpQLYnVFXCTFl9P"
 //            )
+            binding.button2.visibility = View.GONE
             binding.button2.setOnClickListener {
                 val forPostId = db.collection("PostInfo").document()
                 val tempItemMap2 = hashMapOf(
@@ -120,10 +125,21 @@ class MyAdapter(
             // 좋아요 수를 표시
             binding.showLikes.text = "좋아요 " + likes + "개"
 
+//            val postsHeartInfo = viewModel.items
+//            for (post in postsHeartInfo) {
+//                if (post.liked && post.postId == viewModel.items[pos].postId) {
+//                    binding.likeBtn.setBackgroundResource(R.drawable.full_heart)
+//                    binding.likeBtn.isSelected = true
+//                }
+//            }
             if (viewModel.items[pos].liked) {
                 binding.likeBtn.setBackgroundResource(R.drawable.full_heart)
                 binding.likeBtn.isSelected = true
                 //viewModel.items[pos].liked = false
+            }
+            else {
+                binding.likeBtn.setBackgroundResource(R.drawable.icons8__96)
+                binding.likeBtn.isSelected = false
             }
 
             binding.likeBtn.setOnClickListener {
