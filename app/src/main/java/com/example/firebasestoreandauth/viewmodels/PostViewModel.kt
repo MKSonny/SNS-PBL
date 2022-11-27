@@ -61,7 +61,7 @@ class PostViewModel : ViewModel() {
         curPos = pos
     }
 
-    fun getPos(): Int {
+    public fun getPos(): Int {
         return curPos
     }
 

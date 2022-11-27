@@ -124,10 +124,21 @@ class MyAdapter(
             // 좋아요 수를 표시
             binding.showLikes.text = "좋아요 " + likes + "개"
 
+//            val postsHeartInfo = viewModel.items
+//            for (post in postsHeartInfo) {
+//                if (post.liked && post.postId == viewModel.items[pos].postId) {
+//                    binding.likeBtn.setBackgroundResource(R.drawable.full_heart)
+//                    binding.likeBtn.isSelected = true
+//                }
+//            }
             if (viewModel.items[pos].liked) {
                 binding.likeBtn.setBackgroundResource(R.drawable.full_heart)
                 binding.likeBtn.isSelected = true
                 //viewModel.items[pos].liked = false
+            }
+            else {
+                binding.likeBtn.setBackgroundResource(R.drawable.icons8__96)
+                binding.likeBtn.isSelected = false
             }
 
             binding.likeBtn.setOnClickListener {

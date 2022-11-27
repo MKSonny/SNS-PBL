@@ -52,9 +52,16 @@ class PostFragment : Fragment(R.layout.fragment_post_main) {
                     friends.clear()
                     friends.addAll(newFriendList)
                     friends.add(me.uid.toString()) // 자기 게시물도 볼 수 있도록
+                    for (post in viewModel.items) {
+                        for (friend in friends) {
+                            if (post.whoPosted != friend) {
+                                viewModel.deleteItem(viewModel.getPos())
+                                adapter.notifyDataSetChanged()
+                            }
+                        }
+                    }
                     snapshotListener?.remove()
                     //viewModel.clearAll() // -> 실시간성 때문에
-
                     db.collection("PostInfo").orderBy("time", Query.Direction.DESCENDING).get()
                         .addOnSuccessListener {
                             for (doc in it) {
