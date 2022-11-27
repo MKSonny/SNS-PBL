@@ -69,10 +69,14 @@ class PostFragment : Fragment(R.layout.fragment_post_main) {
         return _binding!!.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+    override fun onResume() {
+        super.onResume()
         if (myReference == null)
             attachSnapshotListener()
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         binding.refresh.setOnRefreshListener {
             if (viewModel.itemsSize > viewModel.itemNotified) {
                 println("#####$$$#####" + viewModel.itemsSize)
