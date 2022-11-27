@@ -31,27 +31,72 @@ class PostFragment : Fragment(R.layout.fragment_post_main) {
     private lateinit var adapter: MyAdapter
     private val viewModel: PostViewModel by activityViewModels()
     private var cnt = 0
+    private var nowRefresh = false
+    private val friends = mutableSetOf<String>()
+    private val db = Firebase.firestore
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        var nowRefresh = false
-        val friends = mutableSetOf<String>()
-        val db = Firebase.firestore
-
         val navigate = findNavController()
         adapter = MyAdapter(Firebase.firestore, navigate, viewModel)
+    }
 
-        myReference =
-            getReferenceOfMine()?.addSnapshotListener { snapshot, err ->
-                snapshot?.let {
-                    val me = it.toUser()
-                    if (me.uid == User.INVALID_USER)
-                        return@addSnapshotListener
-                    val newFriendList = me.friends?.toMutableList() ?: mutableListOf()
-                    friends.clear()
-                    friends.addAll(newFriendList)
-                    friends.add(me.uid.toString()) // 자기 게시물도 볼 수 있도록
+    override fun onDestroyView() {
+        super.onDestroyView()
+        //snapshotListener?.remove()
+        //binding.recyclerView.adapter = null
+        _binding = null
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        myReference?.remove()
+        snapshotListener?.remove()
+        binding.recyclerView.adapter = null
+        //adapter = null
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        //val viewModel = ViewModelProvider(requireActivity()).get(PostViewModel::class.java)
+        _binding = FragmentPostMainBinding.inflate(inflater, container, false)
+        //val navigate = findNavController()
+        //adapter = MyAdapter(Firebase.firestore, navigate, viewModel)
+        return _binding!!.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        if (myReference == null)
+            attachSnapshotListener()
+        binding.refresh.setOnRefreshListener {
+            if (viewModel.itemsSize > viewModel.itemNotified) {
+                println("#####$$$#####" + viewModel.itemsSize)
+                println("#####$$$#####" + viewModel.itemNotified)
+                adapter.notifyItemInserted(viewModel.itemsSize)
+                adapter.notifyDataSetChanged()
+            }
+            binding.refresh.isRefreshing = false
+        }
+        binding.recyclerView.adapter = adapter
+        binding.recyclerView.layoutManager = LinearLayoutManager(context)
+        binding.recyclerView.setHasFixedSize(true)
+    }
+
+    private fun attachSnapshotListener() {
+        getReferenceOfMine()?.addSnapshotListener { snapshot, err ->
+            snapshot?.let {
+                val me = it.toUser()
+                if (me.uid == User.INVALID_USER)
+                    return@addSnapshotListener
+                val newFriendList = me.friends?.toMutableList() ?: mutableListOf()
+                friends.clear()
+                friends.addAll(newFriendList)
+                friends.add(me.uid.toString()) // 자기 게시물도 볼 수 있도록
 //                    for (post in viewModel.items) {
 //                        for (friend in friends) {
 //                            if (post.whoPosted != friend) {
@@ -60,24 +105,25 @@ class PostFragment : Fragment(R.layout.fragment_post_main) {
 //                            }
 //                        }
 //                    }
-                    snapshotListener?.remove()
-                    //viewModel.clearAll() // -> 실시간성 때문에
-                    db.collection("PostInfo").orderBy("time", Query.Direction.DESCENDING).get()
-                        .addOnSuccessListener {
-                            for (doc in it) {
-                                val post = doc.toItem()
-                                for (friend in friends) {
-                                    if (post.whoPosted == friend) {
-                                        viewModel.addItem(post)
-                                    }
+                snapshotListener?.remove()
+                //viewModel.clearAll() // -> 실시간성 때문에
+                db.collection("PostInfo").orderBy("time", Query.Direction.DESCENDING).get()
+                    .addOnSuccessListener {
+                        for (doc in it) {
+                            val post = doc.toItem()
+                            for (friend in friends) {
+                                if (post.whoPosted == friend) {
+                                    viewModel.addItem(post)
                                 }
-                                adapter.notifyItemInserted(viewModel.itemNotified)
-                                nowRefresh = true
                             }
-
+                            adapter.notifyItemInserted(viewModel.itemNotified)
                             nowRefresh = true
                         }
 
+                        nowRefresh = true
+                    }
+
+                if (snapshotListener == null)
                     snapshotListener =
                         db.collection("PostInfo").addSnapshotListener { snapshot, error ->
                             if (nowRefresh) {
@@ -127,52 +173,7 @@ class PostFragment : Fragment(R.layout.fragment_post_main) {
                                 }
                             }
                         }
-                }
             }
-
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        //snapshotListener?.remove()
-        //binding.recyclerView.adapter = null
-        _binding = null
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        myReference?.remove()
-        snapshotListener?.remove()
-        binding.recyclerView.adapter = null
-        //adapter = null
-    }
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        //val viewModel = ViewModelProvider(requireActivity()).get(PostViewModel::class.java)
-        _binding = FragmentPostMainBinding.inflate(inflater, container, false)
-        //val navigate = findNavController()
-        //adapter = MyAdapter(Firebase.firestore, navigate, viewModel)
-        return _binding!!.root
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-
-        super.onViewCreated(view, savedInstanceState)
-        binding.refresh.setOnRefreshListener {
-            if (viewModel.itemsSize > viewModel.itemNotified) {
-                println("#####$$$#####" + viewModel.itemsSize)
-                println("#####$$$#####" + viewModel.itemNotified)
-                adapter.notifyItemInserted(viewModel.itemsSize)
-                adapter.notifyDataSetChanged()
-            }
-            binding.refresh.isRefreshing = false
         }
-        binding.recyclerView.adapter = adapter
-        binding.recyclerView.layoutManager = LinearLayoutManager(context)
-        binding.recyclerView.setHasFixedSize(true)
     }
 }

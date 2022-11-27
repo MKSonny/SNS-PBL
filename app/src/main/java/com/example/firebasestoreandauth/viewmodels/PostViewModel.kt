@@ -91,6 +91,8 @@ class PostViewModel : ViewModel() {
             val idx = items.indexOfFirst { it.postId == item.postId }
             items[idx].comments = item.comments
             items[idx].likes = item.likes
+            itemNotifiedType = ItemNotify.UPDATE
+            itemNotified = itemsSize
             return
         }
 //            items.removeIf { it.postId == item.postId }
@@ -108,6 +110,8 @@ class PostViewModel : ViewModel() {
             val idx = items.indexOfFirst { it.postId == item.postId }
             items[idx].comments = item.comments
             items[idx].likes = item.likes
+            itemNotifiedType = ItemNotify.UPDATE
+            itemNotified = itemsSize
             return
         }
         itemNotifiedType = ItemNotify.ADD
