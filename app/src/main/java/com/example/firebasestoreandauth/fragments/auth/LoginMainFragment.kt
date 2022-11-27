@@ -6,9 +6,11 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.children
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.findNavController
@@ -61,6 +63,18 @@ class LoginMainFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.loginStartWithEmailButton.setOnClickListener {
             view?.findNavController()?.navigate(R.id.action_loginMainFragment_to_emailLoginFragment)
+        }
+
+        try {
+
+
+            val children = binding.startWithGoogleButton.children
+            for (item in children) {
+                if (item is TextView) {
+                    item.text = "구글로 시작하기"
+                }
+            }
+        } catch (e: Exception) {
         }
         binding.startWithGoogleButton.setOnClickListener {
             signInWithGoogle()

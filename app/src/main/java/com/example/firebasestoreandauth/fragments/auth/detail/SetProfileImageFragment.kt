@@ -100,20 +100,30 @@ class SetProfileImageFragment : Fragment() {
                 builder.photoUri = Uri.EMPTY
                 Firebase.auth.currentUser?.updateProfile(builder.build())
                 val baos = ByteArrayOutputStream()
-                val bitmap = (binding.selectedImage.drawable as BitmapDrawable).bitmap
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
-                val data = baos.toByteArray()
-                val storageRef = Firebase.storage.reference
-                val imageRef = storageRef.child("users/${Firebase.auth.currentUser?.uid}.jpg")
-                imageRef.putBytes(data).addOnFailureListener {
-                    Snackbar.make(requireView(), "계정데이터 업로드에 실패했습니다.", Snackbar.LENGTH_SHORT).show()
-                }.addOnSuccessListener {
+                try {
+                    val bitmap = (binding.selectedImage.drawable as BitmapDrawable).bitmap
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+                    val data = baos.toByteArray()
+                    val storageRef = Firebase.storage.reference
+
+                    val imageRef = storageRef.child("users/${Firebase.auth.currentUser?.uid}.jpg")
+                    imageRef.putBytes(data).addOnFailureListener {
+                        Snackbar.make(requireView(), "계정데이터 업로드에 실패했습니다.", Snackbar.LENGTH_SHORT)
+                            .show()
+                    }.addOnSuccessListener {
+                        User(
+                            Firebase.auth.currentUser?.uid,
+                            nickname = viewModel.nickname.value.toString(),
+                            profileImage = "${it.metadata?.reference.toString()}",
+                        ).toFirebase { requireActivity().finish() } //가입을 완료하고 프래그먼트를 종료
+
+                    }
+                } catch (e: Exception) {
                     User(
                         Firebase.auth.currentUser?.uid,
                         nickname = viewModel.nickname.value.toString(),
-                        profileImage = "${it.metadata?.reference.toString()}",
+                        profileImage = "null",
                     ).toFirebase { requireActivity().finish() } //가입을 완료하고 프래그먼트를 종료
-
                 }
             }
         }

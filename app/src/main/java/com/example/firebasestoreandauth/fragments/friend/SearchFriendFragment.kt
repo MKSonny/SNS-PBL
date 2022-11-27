@@ -61,6 +61,13 @@ class SearchFriendFragment : Fragment() {
         setupMenu()
 
         viewModel.addObserver(viewLifecycleOwner) { adapter.notifyDataSetChanged() }
+        binding.keyword.setOnKeyListener { v, keyCode, event ->
+            if (keyCode == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_UP) {
+                val keyword = binding.keyword.text.toString()
+                searchFriendWithKeyword(keyword)
+            }
+            true
+        }
 
         binding.searchButton.setOnClickListener {
             val keyword = binding.keyword.text.toString()
@@ -120,6 +127,7 @@ class SearchFriendFragment : Fragment() {
                         val viewModel: SearchResultViewModel by viewModels()
                         viewModel.setQueryResult(queryResult)
                     }
+                    binding.queryHolder.adapter?.notifyDataSetChanged()
                 } else {
                     println(it.exception)
                 }

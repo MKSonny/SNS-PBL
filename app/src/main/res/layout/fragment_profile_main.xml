@@ -182,7 +182,7 @@
         android:background="@color/white"
         android:scaleX="1.7"
         android:scaleY="1.7"
-        android:src="@drawable/ic_baseline_settings_24"
+        android:src="@drawable/ic_baseline_logout_24"
         android:text="Button"
         app:layout_constraintBottom_toBottomOf="@+id/profile_toolbar"
         app:layout_constraintStart_toStartOf="@+id/profile_toolbar"

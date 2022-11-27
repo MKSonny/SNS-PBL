@@ -1,5 +1,6 @@
 package com.example.firebasestoreandauth.adapter
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.AsyncListDiffer
@@ -12,7 +13,6 @@ import com.example.firebasestoreandauth.utils.extentions.acceptFriendRequest
 import com.example.firebasestoreandauth.utils.extentions.rejectFriendRequest
 import com.example.firebasestoreandauth.utils.getReferenceOfMine
 import com.example.firebasestoreandauth.utils.getUserDocumentWith
-import com.example.firebasestoreandauth.viewmodels.FriendViewModel
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
 
@@ -42,13 +42,24 @@ class RequestReceivedAdapter() :
             }
             if (user.profileImage == null || user.profileImage == User.INVALID_USER
                 || (user.profileImage ?: "").isEmpty()
-            ) return
+            ) {
+                try {
+                    image.setImageResource(android.R.color.transparent)
+                } catch (_: Exception) {
+                }
+                return
+            }
             image.clipToOutline = true
             val stRef = Firebase.storage
-            val pathRef = stRef.getReferenceFromUrl(user.profileImage!!)
-            pathRef.getBytes(3 * 1024 * 1024).addOnCompleteListener {
-                if (it.isSuccessful)
-                    Glide.with(image.rootView.context).asBitmap().load(it.result).into(image)
+            try {
+                val pathRef = stRef.getReferenceFromUrl(user.profileImage!!)
+                pathRef.getBytes(3 * 1024 * 1024).addOnCompleteListener {
+                    if (it.isSuccessful)
+                        Glide.with(image.rootView.context).asBitmap().load(it.result).into(image)
+                }
+            } catch (e: Exception) {
+                Log.w("RequestReceivedItem", "${e.message}")
+                image.setImageResource(android.R.color.transparent)
             }
         }
     }

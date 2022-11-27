@@ -43,13 +43,24 @@ class SearchResultAdapter(val viewModel: SearchFriendFragment.SearchResultViewMo
 
             if (user.profileImage == null || user.profileImage == User.INVALID_USER
                 || (user.profileImage ?: "").isEmpty() || user.profileImage == "null"
-            ) return
+            ) {
+                try {
+                    image.setImageResource(android.R.color.transparent)
+                } catch (_: Exception) {
+                }
+                return
+            }
             image.clipToOutline = true
             val stRef = Firebase.storage
-            val pathRef = stRef.getReferenceFromUrl(user.profileImage!!)
-            pathRef.getBytes(3 * 1024 * 1024).addOnCompleteListener {
-                if (it.isSuccessful)
-                    Glide.with(image.rootView.context).asBitmap().load(it.result).into(image)
+            try {
+                val pathRef = stRef.getReferenceFromUrl(user.profileImage!!)
+                pathRef.getBytes(3 * 1024 * 1024).addOnCompleteListener {
+                    if (it.isSuccessful)
+                        Glide.with(image.rootView.context).asBitmap().load(it.result).into(image)
+                }
+            } catch (e: Exception) {
+                Log.w("SearchItem", "${e.message}")
+                image.setImageResource(android.R.color.transparent)
             }
         }
     }

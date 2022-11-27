@@ -37,10 +37,8 @@ class SetNickNameFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val nickname = binding.editNickName
-        val goodNickname = binding.usableNickname
         val nextButton = binding.submit
         val store = Firebase.firestore
-        goodNickname.visibility = View.INVISIBLE
         nextButton.isEnabled = false
 
         val afterTextChangedListener = object : TextWatcher {
@@ -56,11 +54,9 @@ class SetNickNameFragment : Fragment() {
                         val documents = it.result.documents
                         if (documents.isEmpty()) {
                             nickname.contentDescription = "Good"
-                            goodNickname.visibility = View.VISIBLE
                             nextButton.isEnabled = true
                         } else if (documents.isNotEmpty()) {
                             nickname.error = "이미 사용중인 닉네임입니다."
-                            goodNickname.visibility = View.INVISIBLE
                             nextButton.isEnabled = false
                         }
                     }
