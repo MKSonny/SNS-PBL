@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.firebasestoreandauth.R
@@ -30,7 +31,8 @@ class PostFragment : Fragment(R.layout.fragment_post_main) {
     private var snapshotListener: ListenerRegistration? = null
     private var myReference: ListenerRegistration? = null
     private lateinit var adapter: MyAdapter
-    private val viewModel: PostViewModel by activityViewModels()
+    //private val viewModel: PostViewModel by activityViewModels()
+
     private var cnt = 0
     private var nowRefresh = false
     private val friends = mutableSetOf<String>()
@@ -39,6 +41,7 @@ class PostFragment : Fragment(R.layout.fragment_post_main) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val viewModel = ViewModelProvider(requireActivity()).get(PostViewModel::class.java)
         val navigate = findNavController()
         adapter = MyAdapter(Firebase.firestore, navigate, viewModel)
     }
@@ -90,6 +93,7 @@ class PostFragment : Fragment(R.layout.fragment_post_main) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val viewModel = ViewModelProvider(requireActivity()).get(PostViewModel::class.java)
         binding.refresh.setOnRefreshListener {
             if (viewModel.itemsSize > viewModel.itemNotified) {
                 println("#####$$$#####" + viewModel.itemsSize)
@@ -105,6 +109,7 @@ class PostFragment : Fragment(R.layout.fragment_post_main) {
     }
 
     private fun attachSnapshotListener() {
+        val viewModel = ViewModelProvider(requireActivity()).get(PostViewModel::class.java)
         getReferenceOfMine()?.addSnapshotListener { snapshot, err ->
             snapshot?.let {
                 val me = it.toUser()
@@ -114,15 +119,7 @@ class PostFragment : Fragment(R.layout.fragment_post_main) {
                 friends.clear()
                 friends.addAll(newFriendList)
                 friends.add(me.uid.toString()) // 자기 게시물도 볼 수 있도록
-//                    for (post in viewModel.items) {
-//                        for (friend in friends) {
-//                            if (post.whoPosted != friend) {
-//                                viewModel.deleteItem(viewModel.getPos())
-//                                adapter.notifyDataSetChanged()
-//                            }
-//                        }
-//                    }
-                snapshotListener?.remove()
+                //snapshotListener?.remove() 11-27 수정 오후 9시, 있으면 시간 순서 꼬여요
                 //viewModel.clearAll() // -> 실시간성 때문에
                 db.collection("PostInfo").orderBy("time", Query.Direction.DESCENDING).get()
                     .addOnSuccessListener {

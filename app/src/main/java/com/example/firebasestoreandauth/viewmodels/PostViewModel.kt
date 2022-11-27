@@ -95,8 +95,8 @@ class PostViewModel : ViewModel() {
             itemNotified = itemsSize
             return
         }
-//            items.removeIf { it.postId == item.postId }
-        items.removeIf { it.postId == item.postId }
+            items.removeIf { it.postId == item.postId }
+//        items.removeIf { it.postId == item.postId }
         itemNotifiedType = ItemNotify.ADD
         itemNotified = itemsSize
         items.add(0, item)
