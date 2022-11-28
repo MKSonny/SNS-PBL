@@ -3,9 +3,10 @@ package com.example.firebasestoreandauth.fragments.post
 import android.annotation.SuppressLint
 import android.content.ContentUris
 import android.graphics.Bitmap
-import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -25,6 +26,7 @@ import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.ktx.storage
 import java.io.ByteArrayOutputStream
 import java.util.*
+
 
 class PostingFragment : Fragment(R.layout.fragment_profile_posting) {
     private var _binding: FragmentProfilePostingBinding? = null
@@ -61,6 +63,16 @@ class PostingFragment : Fragment(R.layout.fragment_profile_posting) {
 
         val now = System.currentTimeMillis()
         val date = Date(now)
+
+        binding.posting.isEnabled = false;
+
+        binding.comments.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {}
+            override fun onTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {}
+            override fun afterTextChanged(editable: Editable) {
+                binding.posting.isEnabled = editable.isNotEmpty()
+            }
+        })
 
         binding.posting.setOnClickListener {
 
