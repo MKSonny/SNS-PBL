@@ -149,6 +149,7 @@ class PostFragment : Fragment(R.layout.fragment_post_main) {
                                                     Toast.LENGTH_LONG
                                                 )
                                                     .show()
+                                                cnt = 0
                                             }
 
                                         }
