@@ -73,11 +73,6 @@ class PostViewModel : ViewModel() {
     val itemsSize
         get() = items.size
 
-    init {
-        //addItem(Item("son", "gs://sns-pbl.appspot.com/상상부기 2.png"))
-        //addItem(Item("j", "s"))
-    }
-
     fun clearAll() {
         itemNotifiedType = ItemNotify.ADD
         items.clear()
@@ -91,31 +86,27 @@ class PostViewModel : ViewModel() {
             val idx = items.indexOfFirst { it.postId == item.postId }
             items[idx].comments = item.comments
             items[idx].likes = item.likes
-            itemNotifiedType = ItemNotify.UPDATE
-            itemNotified = itemsSize
             return
         }
-            items.removeIf { it.postId == item.postId }
-//        items.removeIf { it.postId == item.postId }
-        itemNotifiedType = ItemNotify.ADD
-        itemNotified = itemsSize
+        items.removeIf { it.postId == item.postId }
         items.add(0, item)
         //items.add(item)
         itemLiveData.value = items
     }
 
+    /**
+     * 중복되는 글이면 업데이트
+     * 새로운 글이면 추가
+     */
     fun addItem(item: Item) {
         val prev = items.filter { it.postId == item.postId }.toList()
         if (prev.isNotEmpty()) {
             val idx = items.indexOfFirst { it.postId == item.postId }
-            items[idx].comments = item.comments
-            items[idx].likes = item.likes
-            itemNotifiedType = ItemNotify.UPDATE
-            itemNotified = itemsSize
+            item.liked = items[idx].liked
+            items[idx] = item
+            itemLiveData.value = items
             return
         }
-        itemNotifiedType = ItemNotify.ADD
-        itemNotified = itemsSize
         items.add(item)
         itemLiveData.value = items
     }
